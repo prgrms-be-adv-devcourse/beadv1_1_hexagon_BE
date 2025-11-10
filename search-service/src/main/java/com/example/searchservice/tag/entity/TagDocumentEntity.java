@@ -15,7 +15,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "tags")
+@Document(indexName = "tags", createIndex = false)
 public class TagDocumentEntity {
 
     @Id
