@@ -1,4 +1,4 @@
-package com.example.searchservice.entity;
+package com.example.searchservice.selfpromotion.entity;
 
 import java.time.Instant;
 import lombok.AllArgsConstructor;

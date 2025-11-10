@@ -1,6 +1,6 @@
-package com.example.searchservice.repository;
+package com.example.searchservice.commission.repository;
 
-import com.example.searchservice.entity.CommissionDocumentEntity;
+import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface CommissionRepository extends ElasticsearchRepository<CommissionDocumentEntity, String> {

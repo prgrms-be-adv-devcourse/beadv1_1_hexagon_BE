@@ -1,4 +1,4 @@
-package com.example.searchservice.entity;
+package com.example.searchservice.commission.entity;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
