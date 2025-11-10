@@ -1,4 +1,4 @@
-package com.example.searchservice.commission.controller;
+package com.example.searchservice.commission.common;
 
 public enum SearchScope {
     ALL,

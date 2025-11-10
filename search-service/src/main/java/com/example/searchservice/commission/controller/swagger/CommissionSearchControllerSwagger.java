@@ -1,7 +1,7 @@
 package com.example.searchservice.commission.controller.swagger;
 
 import com.example.searchservice.commission.common.PaymentType;
-import com.example.searchservice.commission.controller.SearchScope;
+import com.example.searchservice.commission.common.SearchScope;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;

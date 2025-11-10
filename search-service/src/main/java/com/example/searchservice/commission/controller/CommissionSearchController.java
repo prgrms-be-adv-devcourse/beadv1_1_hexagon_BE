@@ -1,6 +1,7 @@
 package com.example.searchservice.commission.controller;
 
 import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.commission.common.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionSearchControllerSwagger;
 import java.time.LocalDate;
 import java.util.List;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/search/commissions")
+@RequestMapping("/api/search/commissions")
 public class CommissionSearchController implements CommissionSearchControllerSwagger {
 
     @GetMapping
