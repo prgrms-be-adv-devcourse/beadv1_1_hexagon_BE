@@ -22,7 +22,7 @@ public class CommissionSearchController implements CommissionSearchControllerSwa
         return null;
     }
 
-    @Override
+    @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> suggest(String q, int size) {
         return null;
