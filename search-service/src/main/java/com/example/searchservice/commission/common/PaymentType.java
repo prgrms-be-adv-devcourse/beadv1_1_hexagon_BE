@@ -1,4 +1,4 @@
-package com.example.searchservice.commission.entity;
+package com.example.searchservice.commission.common;
 
 public enum PaymentType {
     MONTHLY,

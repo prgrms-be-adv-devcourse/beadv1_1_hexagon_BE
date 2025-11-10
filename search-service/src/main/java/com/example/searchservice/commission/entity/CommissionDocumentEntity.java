@@ -1,7 +1,8 @@
 package com.example.searchservice.commission.entity;
 
+import com.example.searchservice.commission.common.PaymentType;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "commissions")
+@Document(indexName = "commissions", createIndex = false)
 public class CommissionDocumentEntity {
 
     @Id
@@ -38,10 +39,10 @@ public class CommissionDocumentEntity {
     private List<String> tags;
 
     @Field(type = FieldType.Date, format = DateFormat.date, name = "started_at")
-    private LocalDateTime startedAt;
+    private LocalDate startedAt;
 
     @Field(type = FieldType.Date, format = DateFormat.date, name = "ended_at")
-    private LocalDateTime endedAt;
+    private LocalDate endedAt;
 
     @Field(type = FieldType.Keyword, name = "payment_type")
     private PaymentType paymentType;
