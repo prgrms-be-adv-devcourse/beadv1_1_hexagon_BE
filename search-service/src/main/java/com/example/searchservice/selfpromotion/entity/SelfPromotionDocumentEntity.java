@@ -17,7 +17,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "self_promotions")
+@Document(indexName = "self_promotions", createIndex = false)
 public class SelfPromotionDocumentEntity {
 
     @Id
