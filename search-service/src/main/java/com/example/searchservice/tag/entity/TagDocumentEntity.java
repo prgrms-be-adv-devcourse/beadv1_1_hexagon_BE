@@ -17,7 +17,7 @@ import org.springframework.data.elasticsearch.core.suggest.Completion;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "tags", createIndex = false)
+@Document(indexName = "tags")
 public class TagDocumentEntity {
 
     @Id
