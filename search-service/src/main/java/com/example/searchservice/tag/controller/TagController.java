@@ -1,6 +1,6 @@
 package com.example.searchservice.tag.controller;
 
-import com.example.searchservice.tag.controller.swagger.TagSuggestControllerSwagger;
+import com.example.searchservice.tag.controller.swagger.TagControllerSwagger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/search/tags")
-public class TagSuggestController implements TagSuggestControllerSwagger {
+public class TagController implements TagControllerSwagger {
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)

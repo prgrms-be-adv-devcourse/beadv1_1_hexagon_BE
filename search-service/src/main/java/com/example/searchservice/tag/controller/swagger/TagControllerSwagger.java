@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Tag Suggest API", description = "Tag 검색어 추천 API")
-public interface TagSuggestControllerSwagger {
+public interface TagControllerSwagger {
 
     @Operation(summary = "Tag 추천 검색어", description = "입력한 접두어(prefix)를 기반으로 추천 검색어를 반환합니다.")
     @Parameters({
