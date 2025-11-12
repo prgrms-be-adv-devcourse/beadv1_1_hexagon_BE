@@ -6,9 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.CompletionField;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.core.suggest.Completion;
 
 @Getter
 @Setter
@@ -23,4 +25,8 @@ public class TagDocumentEntity {
 
     @Field(type = FieldType.Keyword)
     private String skill;
+
+    @Field(name = "skill_suggest")
+    @CompletionField
+    private Completion skillSuggest;
 }

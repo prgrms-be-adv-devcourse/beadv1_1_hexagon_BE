@@ -1,0 +1,6 @@
+{
+  "Java": ["Java", "java", "자바"],
+  "Spring": ["Spring", "spring", "스프링"],
+  "Spring Boot": ["Spring Boot", "spring boot", "스프링 부트", "스프링부트"],
+  "React": ["React", "react", "리액트"]
+}
