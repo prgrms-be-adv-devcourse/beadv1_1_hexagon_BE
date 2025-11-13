@@ -25,7 +25,6 @@ public class TagController implements TagControllerSwagger {
     private final TagService tagService;
 
     @GetMapping("/suggest")
-    @ResponseStatus(HttpStatus.OK)
     public BaseResponse<List<TagDto>> suggest(
             @RequestParam String q,
             @RequestParam(defaultValue = "10") int size
