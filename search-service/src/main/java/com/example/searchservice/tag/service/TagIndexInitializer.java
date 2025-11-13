@@ -1,14 +1,15 @@
 package com.example.searchservice.tag.service;
 
-import com.example.searchservice.tag.dto.TagDto;
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.exception.TagErrorCode;
 import com.example.searchservice.tag.exception.TagException;
 import com.example.searchservice.tag.repository.TagRepository;
-import jakarta.annotation.PostConstruct;
+import com.example.searchservice.tag.service.dto.ProfileTagDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.elasticsearch.core.suggest.Completion;
 import org.springframework.http.HttpMethod;
@@ -24,12 +25,12 @@ public class TagIndexInitializer {
     private final TagRepository tagRepository;
     private final TagAliasLoadService tagAliasLoadService;
 
-    @Value("${external.tag-service.url}")
+    @Value("${external.profile-service.url}")
     private String getAllTagsUrl;
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        ResponseEntity<List<TagDto>> response = restTemplate.exchange(
+        ResponseEntity<List<ProfileTagDto>> response = restTemplate.exchange(
                 getAllTagsUrl,
                 HttpMethod.GET,
                 null,
@@ -37,7 +38,7 @@ public class TagIndexInitializer {
                 }
         );
 
-        List<TagDto> tags = response.getBody();
+        List<ProfileTagDto> tags = response.getBody();
 
         if (tags == null || tags.isEmpty()) {
             throw new TagException(TagErrorCode.TAG_FETCH_FAILED);
@@ -50,18 +51,17 @@ public class TagIndexInitializer {
         tagRepository.saveAll(docs);
     }
 
-    public TagDocumentEntity toDocument(TagDto tagDto) {
-        List<String> aliases = tagAliasLoadService.getTagAlias(tagDto.skill());
+    public TagDocumentEntity toDocument(ProfileTagDto profileTagDto) {
+        List<String> aliases = tagAliasLoadService.getTagAlias(profileTagDto.skill());
         if (aliases == null || aliases.isEmpty()) {
-            aliases = List.of(tagDto.skill());
+            aliases = List.of(profileTagDto.skill());
         }
 
         Completion completion = new Completion(aliases);
-//        completion.setWeight(100);
 
         return TagDocumentEntity.builder()
-                .code(tagDto.code())
-                .skill(tagDto.skill())
+                .code(profileTagDto.tagCode())
+                .skill(profileTagDto.skill())
                 .skillSuggest(completion)
                 .build();
     }
