@@ -1,7 +1,7 @@
 package com.example.searchservice.commission.controller;
 
 import com.example.searchservice.commission.common.PaymentType;
-import com.example.searchservice.commission.common.SearchScope;
+import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionSearchControllerSwagger;
 import java.time.LocalDate;
 import java.util.List;
