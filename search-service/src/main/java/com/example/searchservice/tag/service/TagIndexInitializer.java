@@ -26,10 +26,11 @@ public class TagIndexInitializer {
     private final TagAliasLoadService tagAliasLoadService;
 
     @Value("${external.profile-service.url}")
-    private String getAllTagsUrl;
+    private String profileServiceUrl;
 
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
+        String getAllTagsUrl = profileServiceUrl + "/api/tags";
         ResponseEntity<List<ProfileTagDto>> response = restTemplate.exchange(
                 getAllTagsUrl,
                 HttpMethod.GET,
