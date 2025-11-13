@@ -3,6 +3,7 @@ package com.example.searchservice.tag.service;
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.exception.TagErrorCode;
 import com.example.searchservice.tag.exception.TagException;
+import com.example.searchservice.tag.mapper.TagMapper;
 import com.example.searchservice.tag.repository.TagRepository;
 import com.example.searchservice.tag.service.dto.ProfileTagDto;
 import java.util.List;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.elasticsearch.core.suggest.Completion;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -44,25 +44,11 @@ public class TagIndexInitializer {
             throw new TagException(TagErrorCode.TAG_FETCH_FAILED);
         }
 
-        List<TagDocumentEntity> docs = tags.stream()
-                .map(this::toDocument)
-                .toList();
+        for (ProfileTagDto tagDto : tags) {
+            List<String> aliases = tagAliasLoadService.getTagAlias(tagDto.skill());
 
-        tagRepository.saveAll(docs);
-    }
-
-    public TagDocumentEntity toDocument(ProfileTagDto profileTagDto) {
-        List<String> aliases = tagAliasLoadService.getTagAlias(profileTagDto.skill());
-        if (aliases == null || aliases.isEmpty()) {
-            aliases = List.of(profileTagDto.skill());
+            TagDocumentEntity document = TagMapper.toDocument(tagDto, aliases);
+            tagRepository.save(document);
         }
-
-        Completion completion = new Completion(aliases);
-
-        return TagDocumentEntity.builder()
-                .code(profileTagDto.tagCode())
-                .skill(profileTagDto.skill())
-                .skillSuggest(completion)
-                .build();
     }
 }
