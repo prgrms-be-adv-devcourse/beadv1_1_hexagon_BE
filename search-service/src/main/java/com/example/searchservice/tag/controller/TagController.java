@@ -30,6 +30,6 @@ public class TagController implements TagControllerSwagger {
             @RequestParam(defaultValue = "10") int size
     ) {
         List<TagDto> suggestions = tagService.getSuggestions(q, size);
-        return new BaseResponse<>(200, "자동완성 목록 조회 성공", suggestions);
+        return new BaseResponse<>(0,200, "요청이 성공하였습니다.", suggestions);
     }
 }
