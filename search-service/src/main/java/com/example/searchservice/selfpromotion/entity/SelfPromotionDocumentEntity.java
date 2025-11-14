@@ -31,6 +31,9 @@ public class SelfPromotionDocumentEntity {
     @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
     private String content;
 
+    @Field(type = FieldType.Keyword)
+    private String memberCode;
+
     @Field(type = FieldType.Keyword, name = "member_nickname")
     private String memberNickname;
 

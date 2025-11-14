@@ -1,6 +1,6 @@
 package com.example.searchservice.tag.dto;
 
-public record TagDto(
+public record TagResponseDto(
         String code,
         String skill
 ) {

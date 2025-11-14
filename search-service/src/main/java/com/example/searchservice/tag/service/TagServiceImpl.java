@@ -7,7 +7,7 @@ import co.elastic.clients.elasticsearch.core.search.CompletionSuggest;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggester;
 import co.elastic.clients.elasticsearch.core.search.Suggester;
 import co.elastic.clients.elasticsearch.core.search.Suggestion;
-import com.example.searchservice.tag.dto.TagDto;
+import com.example.searchservice.tag.dto.TagResponseDto;
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.exception.TagErrorCode;
 import com.example.searchservice.tag.exception.TagException;
@@ -24,7 +24,7 @@ public class TagServiceImpl implements TagService {
     private final ElasticsearchClient esClient;
 
     @Override
-    public List<TagDto> getSuggestions(String prefix, int size) {
+    public List<TagResponseDto> getSuggestions(String prefix, int size) {
         try {
             CompletionSuggester completion = new CompletionSuggester.Builder()
                     .field("skill_suggest")
@@ -51,7 +51,7 @@ public class TagServiceImpl implements TagService {
             List<Suggestion<TagDocumentEntity>> bucket = response.suggest().get("tag-suggest");
             if (bucket == null || bucket.isEmpty()) return List.of();
 
-            List<TagDto> result = new ArrayList<>();
+            List<TagResponseDto> result = new ArrayList<>();
 
             for (Suggestion<TagDocumentEntity> s : bucket) {
                 CompletionSuggest<TagDocumentEntity> completionResult = s.completion();
@@ -61,7 +61,7 @@ public class TagServiceImpl implements TagService {
                     TagDocumentEntity src = opt.source();
                     String code  = (src != null && src.getCode() != null) ? src.getCode() : opt.id();
                     String skill = (src != null && src.getSkill() != null) ? src.getSkill() : opt.text();
-                    result.add(new TagDto(code, skill));
+                    result.add(new TagResponseDto(code, skill));
                 });
             }
             return result;

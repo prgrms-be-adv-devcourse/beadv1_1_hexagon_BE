@@ -2,7 +2,7 @@ package com.example.searchservice.selfpromotion.controller;
 
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.controller.swagger.SelfPromotionControllerSwagger;
-import com.example.searchservice.selfpromotion.dto.SelfPromotionDto;
+import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.service.SelfPromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,7 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Page<SelfPromotionDto>> search(
+    public ResponseEntity<Page<SelfPromotionResponseDto>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "all") String scope,
             @RequestParam(defaultValue = "0") int page,
@@ -31,7 +31,7 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
 
         SearchScope searchScope = SearchScope.from(scope);
 
-        Page<SelfPromotionDto> result;
+        Page<SelfPromotionResponseDto> result;
 
         result = selfPromotionService.search(q, searchScope, page, size);
 
@@ -46,4 +46,5 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
             @RequestParam(defaultValue = "10") int size) {
         return null;
     }
+
 }

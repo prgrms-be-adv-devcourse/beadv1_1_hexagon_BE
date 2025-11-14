@@ -1,4 +1,4 @@
-package com.example.searchservice.tag.mapper;
+package com.example.searchservice.tag.service.mapper;
 
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.service.dto.ProfileTagDto;
