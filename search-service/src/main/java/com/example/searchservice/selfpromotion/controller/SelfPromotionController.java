@@ -33,17 +33,7 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
 
         Page<SelfPromotionDto> result;
 
-        // 1) 검색어가 비어있으면 -> 전체 조회 (scope 상관없이 최신순)
-        if (q == null || q.isBlank()) {
-            result = selfPromotionService.searchAll(page, size);
-        } else {
-            // 2) 검색어가 있으면 scope 에 따라 분기
-            switch (searchScope) {
-                case TITLE -> result = selfPromotionService.searchByTitle(q, page, size);
-                case CONTENT -> result = selfPromotionService.searchByContent(q, page, size);
-                default -> result = selfPromotionService.searchByTitleAndContent(q, page, size);
-            }
-        }
+        result = selfPromotionService.search(q, searchScope, page, size);
 
         // 나중에 공통 응답 DTO(BaseResponse 같은)로 감싸고 싶으면 여기서 감싸면 됨
         return ResponseEntity.ok(result);

@@ -1,46 +1,49 @@
 package com.example.searchservice.selfpromotion.service;
 
+import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionDto;
+import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.repository.SelfPromotionRepository;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
 public class SelfPromotionServiceImpl implements SelfPromotionService {
 
-    private final SelfPromotionRepository repository;
+    private final SelfPromotionRepository selfPromotionRepository;
 
     @Override
-    public Page<SelfPromotionDto> searchAll(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "updatedAt")   // 최신순
-        );
+    public Page<SelfPromotionDto> search(String q, SearchScope scope, int page, int size) {
 
-        return repository.findAll(pageRequest)
-                .map(SelfPromotionDto::from);
-    }
+        if (q == null || q.isBlank()) {
+            PageRequest sortedByUpdatedAt = PageRequest.of(
+                    page,
+                    size,
+                    Sort.by(Sort.Direction.DESC, "updatedAt")
+            );
 
-    @Override
-    public Page<SelfPromotionDto> searchByTitleAndContent(String q, int page, int size) {
-        return repository.findByTitleContainingOrContentContaining(q, q, PageRequest.of(page, size))
-                .map(SelfPromotionDto::from);
-    }
+            return selfPromotionRepository.findAll(sortedByUpdatedAt)
+                    .map(SelfPromotionDto::from);
+        }
 
-    @Override
-    public Page<SelfPromotionDto> searchByTitle(String q, int page, int size) {
-        return repository.findByTitleContaining(q, PageRequest.of(page, size))
-                .map(SelfPromotionDto::from);
-    }
+        PageRequest pageable = PageRequest.of(page, size);
 
-    @Override
-    public Page<SelfPromotionDto> searchByContent(String q, int page, int size) {
-        return repository.findByContentContaining(q, PageRequest.of(page, size))
-                .map(SelfPromotionDto::from);
+        return switch (scope) {
+            case ALL       -> selfPromotionRepository.searchAllFields(q, pageable).map(SelfPromotionDto::from);
+            case TITLE     -> selfPromotionRepository.searchTitle(q, pageable).map(SelfPromotionDto::from);
+            case CONTENT   -> selfPromotionRepository.searchContent(q, pageable).map(SelfPromotionDto::from);
+        };
     }
 }
