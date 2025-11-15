@@ -1,6 +1,7 @@
 package com.example.searchservice.selfpromotion.controller.swagger;
 
 import com.example.searchservice.common.response.BaseResponse;
+import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +20,7 @@ public interface SelfPromotionControllerSwagger {
             @Parameter(name = "page", description = "페이지 번호", required = false),
             @Parameter(name = "size", description = "페이지 크기", required = false)
     })
-    BaseResponse<Page<SelfPromotionResponseDto>> search(String query, String scope, int page, int size);
+    BaseResponse<Page<SelfPromotionResponseDto>> search(String query, SearchScope scope, int page, int size);
 
     @Operation(summary = "Self Promotion 추천 검색 키워드", description = "입력한 접두어(prefix)를 기반으로 추천 검색어 키워드를 반환합니다.")
     @Parameters({

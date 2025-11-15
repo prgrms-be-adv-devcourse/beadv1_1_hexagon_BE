@@ -25,15 +25,13 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
     @GetMapping
     public BaseResponse<Page<SelfPromotionResponseDto>> search(
             @RequestParam(required = false) String query,
-            @RequestParam(defaultValue = "all") String scope,
+            @RequestParam(defaultValue = "all") SearchScope scope,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        SearchScope searchScope = SearchScope.from(scope);
-
         Page<SelfPromotionResponseDto> result;
 
-        result = selfPromotionService.search(query, searchScope, page, size);
+        result = selfPromotionService.search(query, scope, page, size);
 
         return BaseResponse.ok(result);
     }

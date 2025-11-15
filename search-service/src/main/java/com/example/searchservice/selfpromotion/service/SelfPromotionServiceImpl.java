@@ -32,9 +32,9 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
         PageRequest pageable = PageRequest.of(page, size);
 
         return switch (scope) {
-            case ALL       -> selfPromotionRepository.searchAllFields(q, pageable).map(SelfPromotionResponseDto::from);
-            case TITLE     -> selfPromotionRepository.searchTitle(q, pageable).map(SelfPromotionResponseDto::from);
-            case CONTENT   -> selfPromotionRepository.searchContent(q, pageable).map(SelfPromotionResponseDto::from);
+            case all       -> selfPromotionRepository.searchAllFields(q, pageable).map(SelfPromotionResponseDto::from);
+            case title     -> selfPromotionRepository.searchTitle(q, pageable).map(SelfPromotionResponseDto::from);
+            case content   -> selfPromotionRepository.searchContent(q, pageable).map(SelfPromotionResponseDto::from);
         };
     }
 }
