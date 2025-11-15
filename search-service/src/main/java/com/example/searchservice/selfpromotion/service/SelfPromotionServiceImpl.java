@@ -16,9 +16,9 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
     private final SelfPromotionRepository selfPromotionRepository;
 
     @Override
-    public Page<SelfPromotionResponseDto> search(String q, SearchScope scope, int page, int size) {
+    public Page<SelfPromotionResponseDto> search(String query, SearchScope scope, int page, int size) {
 
-        if (q == null || q.isBlank()) {
+        if (query == null || query.isBlank()) {
             PageRequest sortedByUpdatedAt = PageRequest.of(
                     page,
                     size,
@@ -32,9 +32,9 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
         PageRequest pageable = PageRequest.of(page, size);
 
         return switch (scope) {
-            case all       -> selfPromotionRepository.searchAllFields(q, pageable).map(SelfPromotionResponseDto::from);
-            case title     -> selfPromotionRepository.searchTitle(q, pageable).map(SelfPromotionResponseDto::from);
-            case content   -> selfPromotionRepository.searchContent(q, pageable).map(SelfPromotionResponseDto::from);
+            case all       -> selfPromotionRepository.searchAll(query, pageable).map(SelfPromotionResponseDto::from);
+            case title     -> selfPromotionRepository.searchTitle(query, pageable).map(SelfPromotionResponseDto::from);
+            case content   -> selfPromotionRepository.searchContent(query, pageable).map(SelfPromotionResponseDto::from);
         };
     }
 }

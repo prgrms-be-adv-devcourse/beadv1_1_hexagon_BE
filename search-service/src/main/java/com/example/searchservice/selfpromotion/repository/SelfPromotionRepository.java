@@ -18,7 +18,7 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               }
             }
             """)
-    Page<SelfPromotionDocumentEntity> searchAllFields(String q, Pageable pageable);
+    Page<SelfPromotionDocumentEntity> searchAll(String q, Pageable pageable);
 
     @Query("""
             {
