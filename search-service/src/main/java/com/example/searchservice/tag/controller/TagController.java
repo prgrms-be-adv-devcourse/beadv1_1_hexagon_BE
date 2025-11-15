@@ -20,10 +20,10 @@ public class TagController implements TagControllerSwagger {
 
     @GetMapping("/suggest")
     public BaseResponse<List<TagResponseDto>> suggest(
-            @RequestParam String q,
+            @RequestParam String query,
             @RequestParam(defaultValue = "10") int size
     ) {
-        List<TagResponseDto> suggestions = tagService.getSuggestions(q, size);
+        List<TagResponseDto> suggestions = tagService.getSuggestions(query, size);
         return new BaseResponse<>(0,200, "요청이 성공하였습니다.", suggestions);
     }
 }

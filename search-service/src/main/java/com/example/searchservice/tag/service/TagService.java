@@ -6,3 +6,4 @@ import java.util.List;
 public interface TagService {
     public List<TagResponseDto> getSuggestions(String prefix, int size);
 }
+

@@ -13,19 +13,19 @@ public interface SelfPromotionControllerSwagger {
 
     @Operation(summary = "Self Promotion 검색", description = "검색어, 검색 범위를 기반으로 Self Promotion을 검색합니다.")
     @Parameters({
-            @Parameter(name = "q", description = "검색어", required = false),
+            @Parameter(name = "query", description = "검색어", required = false),
             @Parameter(name = "scope", description = "검색 범위 (all(default) | title | content)"),
             @Parameter(name = "page", description = "페이지 번호", required = false),
             @Parameter(name = "size", description = "페이지 크기", required = false)
     })
-    ResponseEntity<Page<SelfPromotionResponseDto>> search(String q, String scope, int page, int size);
+    ResponseEntity<Page<SelfPromotionResponseDto>> search(String query, String scope, int page, int size);
 
     @Operation(summary = "Self Promotion 추천 검색 키워드", description = "입력한 접두어(prefix)를 기반으로 추천 검색어 키워드를 반환합니다.")
     @Parameters({
-            @Parameter(name = "q", description = "검색어 접두어", required = true),
+            @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
     ResponseEntity<Object> suggest(
-            String q, int size
+            String query, int size
     );
 }

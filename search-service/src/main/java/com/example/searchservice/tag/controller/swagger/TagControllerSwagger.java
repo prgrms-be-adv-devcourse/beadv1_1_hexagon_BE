@@ -18,11 +18,11 @@ public interface TagControllerSwagger {
 
     @Operation(summary = "Tag 추천 검색어", description = "입력한 접두어(prefix)를 기반으로 추천 검색어를 반환합니다.")
     @Parameters({
-            @Parameter(name = "q", description = "검색어 접두어", required = true),
+            @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색어 개수", required = false)
     })
     BaseResponse<List<TagResponseDto>> suggest(
-            @NotBlank String q,
+            @NotBlank String query,
             @Min(10) @Max(50) int size
     );
 }
