@@ -53,7 +53,7 @@ public class CommissionDocumentEntity {
     @Field(type = FieldType.Boolean, name = "is_closed")
     private Boolean isClosed;
 
-    @Field(type = FieldType.Date, format = DateFormat.strict_date_optional_time_nanos, name = "updated_at")
+    @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;
 
 }

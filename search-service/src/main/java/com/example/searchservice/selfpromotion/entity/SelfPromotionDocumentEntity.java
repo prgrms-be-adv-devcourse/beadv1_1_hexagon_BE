@@ -37,6 +37,6 @@ public class SelfPromotionDocumentEntity {
     @Field(type = FieldType.Keyword, name = "member_nickname")
     private String memberNickname;
 
-    @Field(type = FieldType.Date, format = DateFormat.strict_date_optional_time_nanos, name = "updated_at")
+    @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;
 }
