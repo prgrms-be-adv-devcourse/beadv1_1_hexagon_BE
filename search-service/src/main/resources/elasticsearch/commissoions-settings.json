@@ -1,0 +1,61 @@
+{
+  "analysis": {
+    "tokenizer": {
+      "korean_tokenizer": {
+        "type": "nori_tokenizer",
+        "decompound_mode": "none"
+      }
+    },
+    "filter": {
+      "nori_postfilter": {
+        "type": "nori_part_of_speech",
+        "stoptags": [
+          "IC", "MAG", "MAJ",
+          "MM", "SP", "SSC", "SSO", "SC",
+          "SE", "XPN", "XSA", "XSN", "XSV",
+          "UNA", "NA", "VSV"
+        ]
+      },
+      "ko_en_synonym": {
+        "type": "synonym",
+        "expand": true,
+        "lenient": true,
+        "synonyms": [
+          "스프링부트, spring boot",
+          "스프링, spring",
+          "리액트, react",
+          "자바스크립트, javascript, js",
+          "자바, java"
+        ]
+      },
+      "edge_ngram_2_20": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 20
+      }
+    },
+    "analyzer": {
+      "self_promotion_index_analyzer": {
+        "type": "custom",
+        "tokenizer": "korean_tokenizer",
+        "filter": [
+          "nori_readingform",
+          "nori_postfilter",
+          "lowercase",
+          "ko_en_synonym",
+          "edge_ngram_2_20"
+        ]
+      },
+      "self_promotion_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "korean_tokenizer",
+        "filter": [
+          "nori_readingform",
+          "nori_postfilter",
+          "lowercase",
+          "ko_en_synonym"
+        ]
+      }
+    }
+  }
+}

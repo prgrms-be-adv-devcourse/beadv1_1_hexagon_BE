@@ -1,0 +1,34 @@
+package com.example.searchservice.commission.dto;
+
+import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.commission.entity.CommissionDocumentEntity;
+import java.time.LocalDate;
+import java.util.List;
+
+public record CommissionResponseDto(
+        String code,
+        String title,
+        String memberCode,
+        String memberNickname,
+        List<String> tags,
+        LocalDate startedAt,
+        LocalDate endedAt,
+        PaymentType paymentType,
+        Long payAmount,
+        Boolean isClosed
+) {
+    public CommissionResponseDto from(CommissionDocumentEntity commissionDocumentEntity) {
+        return new CommissionResponseDto(
+                commissionDocumentEntity.getCode(),
+                commissionDocumentEntity.getTitle(),
+                commissionDocumentEntity.getMemberCode(),
+                commissionDocumentEntity.getMemberNickname(),
+                commissionDocumentEntity.getTags(),
+                commissionDocumentEntity.getStartedAt(),
+                commissionDocumentEntity.getEndedAt(),
+                commissionDocumentEntity.getPaymentType(),
+                commissionDocumentEntity.getPayAmount(),
+                commissionDocumentEntity.getIsClosed()
+        );
+    }
+}
