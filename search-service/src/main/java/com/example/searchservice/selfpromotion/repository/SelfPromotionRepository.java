@@ -18,7 +18,7 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               }
             }
             """)
-    Page<SelfPromotionDocumentEntity> searchAll(String q, Pageable pageable);
+    Page<SelfPromotionDocumentEntity> searchAll(String query, Pageable pageable);
 
     @Query("""
             {
@@ -30,7 +30,7 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               }
             }
             """)
-    Page<SelfPromotionDocumentEntity> searchTitle(String q, Pageable pageable);
+    Page<SelfPromotionDocumentEntity> searchTitle(String query, Pageable pageable);
 
     @Query("""
             {
@@ -42,5 +42,5 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               }
             }
             """)
-    Page<SelfPromotionDocumentEntity> searchContent(String q, Pageable pageable);
+    Page<SelfPromotionDocumentEntity> searchContent(String query, Pageable pageable);
 }

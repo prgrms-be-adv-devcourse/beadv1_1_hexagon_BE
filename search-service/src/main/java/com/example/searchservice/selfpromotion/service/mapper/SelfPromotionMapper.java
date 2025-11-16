@@ -1,6 +1,5 @@
 package com.example.searchservice.selfpromotion.service.mapper;
 
-import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.service.dto.ProfileSelfPromotionDto;
 
