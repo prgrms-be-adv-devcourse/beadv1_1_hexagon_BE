@@ -17,7 +17,7 @@ public record CommissionResponseDto(
         Long payAmount,
         Boolean isClosed
 ) {
-    public CommissionResponseDto from(CommissionDocumentEntity commissionDocumentEntity) {
+    public static CommissionResponseDto from(CommissionDocumentEntity commissionDocumentEntity) {
         return new CommissionResponseDto(
                 commissionDocumentEntity.getCode(),
                 commissionDocumentEntity.getTitle(),
