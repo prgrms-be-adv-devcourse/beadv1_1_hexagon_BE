@@ -18,14 +18,14 @@ public class CommissionSearchController implements CommissionSearchControllerSwa
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> search(String q, SearchScope scope, List<String> tags, PaymentType paymentType,
+    public ResponseEntity<Object> search(String query, SearchScope scope, List<String> tags, PaymentType paymentType,
             Long minPay, LocalDate startedAt, LocalDate endedAt, int page, int size) {
         return null;
     }
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> suggest(String q, int size) {
+    public ResponseEntity<Object> suggest(String query, int size) {
         return null;
     }
 }

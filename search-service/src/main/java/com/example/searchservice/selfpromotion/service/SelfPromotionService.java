@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 
 public interface SelfPromotionService {
 
-    public Page<SelfPromotionResponseDto> search(String q, SearchScope scope, int page, int size);
+    public Page<SelfPromotionResponseDto> search(String query, SearchScope scope, int page, int size);
 }

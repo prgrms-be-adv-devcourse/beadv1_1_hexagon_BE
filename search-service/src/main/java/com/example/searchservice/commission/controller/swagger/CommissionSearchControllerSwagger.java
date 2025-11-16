@@ -16,7 +16,7 @@ public interface CommissionSearchControllerSwagger {
 
     @Operation(summary = "의뢰글 검색", description = "조건(검색어, 태그, 급여, 기간 등)을 기반으로 의뢰글을 검색합니다.")
     @Parameters({
-            @Parameter(name = "q", description = "검색어", required = false),
+            @Parameter(name = "query", description = "검색어", required = false),
             @Parameter(name = "scope", description = "검색 범위 (all(default) | title | content)"),
             @Parameter(name = "tags", description = "태그 목록", required = false),
             @Parameter(name = "payment-type", description = "급여 지급 방식 (MONTHLY | ONE_TIME)", required = false),
@@ -27,7 +27,7 @@ public interface CommissionSearchControllerSwagger {
             @Parameter(name = "size", description = "페이지 크기", required = false)
     })
     ResponseEntity<Object> search(
-            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "all") SearchScope scope,
             @RequestParam(required = false) List<String> tags,
             @RequestParam(name = "payment-type", required = false) PaymentType paymentType,
@@ -40,11 +40,11 @@ public interface CommissionSearchControllerSwagger {
 
     @Operation(summary = "의뢰글 추천 검색 키워드", description = "입력한 접두어(prefix)를 기반으로 추천 검색 키워드를 반환합니다.")
     @Parameters({
-            @Parameter(name = "q", description = "검색어 접두어", required = true),
+            @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
     ResponseEntity<Object> suggest(
-            @RequestParam String q,
+            @RequestParam String query,
             @RequestParam(defaultValue = "10") int size
     );
 }
