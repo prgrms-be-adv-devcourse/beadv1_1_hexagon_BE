@@ -1,6 +1,8 @@
 package com.example.searchservice.commission.controller.swagger;
 
 import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.commission.dto.CommissionResponseDto;
+import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -26,7 +29,7 @@ public interface CommissionSearchControllerSwagger {
             @Parameter(name = "page", description = "페이지 번호", required = false),
             @Parameter(name = "size", description = "페이지 크기", required = false)
     })
-    ResponseEntity<Object> search(
+    BaseResponse<Page<CommissionResponseDto>> search(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "all") SearchScope scope,
             @RequestParam(required = false) List<String> tags,
@@ -43,7 +46,7 @@ public interface CommissionSearchControllerSwagger {
             @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
-    ResponseEntity<Object> suggest(
+    BaseResponse<CommissionResponseDto> suggest(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int size
     );
