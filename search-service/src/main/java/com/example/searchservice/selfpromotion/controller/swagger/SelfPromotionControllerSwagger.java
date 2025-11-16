@@ -35,6 +35,7 @@ public interface SelfPromotionControllerSwagger {
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
     BaseResponse<Object> suggest(
-            String query, int size
+            String query,
+            int size
     );
 }

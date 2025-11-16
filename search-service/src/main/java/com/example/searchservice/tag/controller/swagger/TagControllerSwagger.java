@@ -2,9 +2,11 @@ package com.example.searchservice.tag.controller.swagger;
 
 import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.tag.dto.TagResponseDto;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -13,6 +15,11 @@ import java.util.List;
 import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "Tag Suggest API", description = "Tag 검색어 추천 API")
+@OpenAPIDefinition(
+        servers = {
+                @Server(url = "http://localhost:8000", description = "Gateway URL")
+        }
+)
 @Validated
 public interface TagControllerSwagger {
 

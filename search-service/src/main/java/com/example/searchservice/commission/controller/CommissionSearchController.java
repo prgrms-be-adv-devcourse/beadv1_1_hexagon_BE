@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,8 +26,17 @@ public class CommissionSearchController implements CommissionSearchControllerSwa
     private final CommissionService commissionService;
 
     @GetMapping
-    public BaseResponse<Page<CommissionResponseDto>> search(String query, SearchScope scope, List<String> tags, PaymentType paymentType,
-            Long minPay, LocalDate startedAt, LocalDate endedAt, int page, int size) {
+    public BaseResponse<Page<CommissionResponseDto>> search(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "all") SearchScope scope,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(name = "payment-type", required = false) PaymentType paymentType,
+            @RequestParam(name = "min-pay", required = false) Long minPay,
+            @RequestParam(name = "started-at", required = false) LocalDate startedAt,
+            @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
 
         Page<CommissionResponseDto> result;
 
