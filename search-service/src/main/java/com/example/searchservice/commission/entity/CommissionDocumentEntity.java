@@ -22,7 +22,7 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "commissions", createIndex = false)
+@Document(indexName = "commissions")
 @Setting(settingPath = "elasticsearch/commissions-settings.json")
 public class CommissionDocumentEntity {
 
