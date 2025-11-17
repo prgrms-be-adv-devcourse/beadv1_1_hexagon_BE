@@ -12,41 +12,11 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
+// 더미 데이터 삽입용 클래스
 public class TagIndexInitializer {
 
-    private final RestTemplate restTemplate;
     private final TagRepository tagRepository;
-    private final TagAliasLoadService tagAliasLoadService;
 
-    @Value("${external.profile-service.url}")
-    private String profileServiceUrl;
-
-//    @EventListener(ApplicationReadyEvent.class)
-//    public void initIndex() {
-//        String getAllTagsUrl = profileServiceUrl + "/api/tags";
-//        ResponseEntity<List<ProfileTagDto>> response = restTemplate.exchange(
-//                getAllTagsUrl,
-//                HttpMethod.GET,
-//                null,
-//                new ParameterizedTypeReference<>() {
-//                }
-//        );
-//
-//        List<ProfileTagDto> tags = response.getBody();
-//
-//        if (tags == null || tags.isEmpty()) {
-//            throw new TagException(TagErrorCode.TAG_FETCH_FAILED);
-//        }
-//
-//        for (ProfileTagDto tagDto : tags) {
-//            List<String> aliases = tagAliasLoadService.getTagAlias(tagDto.skill());
-//
-//            TagDocumentEntity document = TagMapper.toDocument(tagDto, aliases);
-//            tagRepository.save(document);
-//        }
-//    }
-
-    // 테스트용 메소드
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
         tagRepository.save(TagDocumentEntity.builder()

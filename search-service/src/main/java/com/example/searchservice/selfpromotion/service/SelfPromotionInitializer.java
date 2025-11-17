@@ -12,36 +12,10 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
+// 더미 데이터 삽입용 클래스
 public class SelfPromotionInitializer {
 
-    private final RestTemplate restTemplate;
     private final SelfPromotionRepository selfPromotionRepository;
-
-    @Value("${external.profile-service.url}")
-    private String profileServiceUrl;
-
-//    @EventListener(ApplicationReadyEvent.class)
-//    public void initIndex() {
-//        String getAllSelfPromotionsUrl = profileServiceUrl + "/api/self-promotions"; // TODO : 실제 컨트롤러 완성되면 URL 수정
-//        ResponseEntity<List<SelfPromotionDto>> response = restTemplate.exchange(
-//                getAllSelfPromotionsUrl,
-//                HttpMethod.GET,
-//                null,
-//                new ParameterizedTypeReference<>() {
-//                }
-//        );
-//
-//        List<SelfPromotionDto> selfPromotions = response.getBody();
-//        if (selfPromotions == null || selfPromotions.isEmpty()) {
-//            throw new SelfPromotionException(SelfPromotionErrorCode.SELF_PROMOTION_FETCH_FAILED);
-//        }
-//
-//        List<SelfPromotionDocumentEntity> selfPromotionDocs = selfPromotions.stream()
-//                .map(SelfPromotionMapper::toSelfPromotionDocument)
-//                .toList();
-//
-//        selfPromotionRepository.saveAll(selfPromotionDocs);
-//    }
 
     // 테스트용 메소드
     @EventListener(ApplicationReadyEvent.class)
