@@ -40,7 +40,7 @@ public class SearchServiceListener {
     private final TagService tagService;
 
     @KafkaHandler
-    public void handle(@Payload TagInitEvent event) {
+    public void handleEvent(@Payload TagInitEvent event) {
         tagService.saveAll(event.tags());
     }
 
