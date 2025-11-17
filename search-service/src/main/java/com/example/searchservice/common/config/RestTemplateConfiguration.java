@@ -1,4 +1,4 @@
-package com.example.searchservice.config;
+package com.example.searchservice.common.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;

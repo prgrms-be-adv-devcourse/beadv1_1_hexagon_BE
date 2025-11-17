@@ -13,11 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "Self Promotion Search API", description = "Self Promotion 검색 / 검색 키워드 추천 API")
-@OpenAPIDefinition(
-        servers = {
-                @Server(url = "http://localhost:8000", description = "Gateway URL")
-        }
-)
 public interface SelfPromotionControllerSwagger {
 
     @Operation(summary = "Self Promotion 검색", description = "검색어, 검색 범위를 기반으로 Self Promotion을 검색합니다.")

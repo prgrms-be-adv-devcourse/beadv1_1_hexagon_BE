@@ -17,11 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Commission Search API", description = "의뢰글 검색 / 검색 키워드 추천 API")
-@OpenAPIDefinition(
-        servers = {
-                @Server(url = "http://localhost:8000", description = "Gateway URL")
-        }
-)
 public interface CommissionSearchControllerSwagger {
 
     @Operation(summary = "의뢰글 검색", description = "조건(검색어, 태그, 급여, 기간 등)을 기반으로 의뢰글을 검색합니다.")

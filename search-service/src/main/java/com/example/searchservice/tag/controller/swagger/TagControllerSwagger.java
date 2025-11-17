@@ -15,11 +15,6 @@ import java.util.List;
 import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "Tag Suggest API", description = "Tag 검색어 추천 API")
-@OpenAPIDefinition(
-        servers = {
-                @Server(url = "http://localhost:8000", description = "Gateway URL")
-        }
-)
 @Validated
 public interface TagControllerSwagger {
 
