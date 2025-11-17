@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.elasticsearch.annotations.CompletionField;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -29,4 +30,7 @@ public class TagDocumentEntity {
     @Field(name = "skill_suggest")
     @CompletionField
     private Completion skillSuggest;
+
+    @Version
+    Long version;
 }

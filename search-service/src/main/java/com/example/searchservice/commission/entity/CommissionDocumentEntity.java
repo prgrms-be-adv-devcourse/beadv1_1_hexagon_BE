@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -61,4 +62,6 @@ public class CommissionDocumentEntity {
     @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;
 
+    @Version
+    Long version;
 }
