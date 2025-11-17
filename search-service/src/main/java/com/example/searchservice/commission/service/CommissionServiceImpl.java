@@ -1,9 +1,11 @@
 package com.example.searchservice.commission.service;
 
 import com.example.searchservice.commission.dto.CommissionResponseDto;
+import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.repository.CommissionRepository;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,5 +39,43 @@ public class CommissionServiceImpl implements CommissionService {
             case title     -> commissionRepository.searchTitle(query, pageable).map(CommissionResponseDto::from);
             case content   -> commissionRepository.searchContent(query, pageable).map(CommissionResponseDto::from);
         };
+    }
+
+    @Override
+    public void saveAll(List<CommissionDocumentEntity> commissions) {
+        commissionRepository.saveAll(commissions);
+    }
+
+    @Override
+    public void save(CommissionDocumentEntity commission) {
+        commissionRepository.save(commission);
+    }
+
+    @Override
+    public void update(CommissionDocumentEntity commission) {
+        commissionRepository.findById(commission.getCode())
+                .ifPresentOrElse(existing -> {
+                    existing.setCode(commission.getCode());
+                    existing.setTitle(commission.getTitle());
+                    existing.setContent(commission.getContent());
+                    existing.setMemberCode(commission.getMemberCode());
+                    existing.setMemberNickname(commission.getMemberNickname());
+                    existing.setTags(commission.getTags());
+                    existing.setStartedAt(commission.getStartedAt());
+                    existing.setEndedAt(commission.getEndedAt());
+                    existing.setPaymentType(commission.getPaymentType());
+                    existing.setPayAmount(commission.getPayAmount());
+                    existing.setIsClosed(commission.getIsClosed());
+                    existing.setUpdatedAt(commission.getUpdatedAt());
+
+                    commissionRepository.save(existing);
+                }, () -> {
+                    commissionRepository.save(commission);
+                });
+    }
+
+    @Override
+    public void delete(String code) {
+        commissionRepository.deleteById(code);
     }
 }

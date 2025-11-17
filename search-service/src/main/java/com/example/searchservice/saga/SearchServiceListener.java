@@ -1,6 +1,7 @@
 package com.example.searchservice.saga;
 
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
+import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.commission.service.mapper.CommissionMapper;
 import com.example.searchservice.saga.events.commission.CommissionCreatedEvent;
 import com.example.searchservice.saga.events.commission.CommissionDeletedEvent;
@@ -11,11 +12,10 @@ import com.example.searchservice.saga.events.selfpromotion.SelfPromotionDeletedE
 import com.example.searchservice.saga.events.selfpromotion.SelfPromotionInitEvent;
 import com.example.searchservice.saga.events.selfpromotion.SelfPromotionUpdatedEvent;
 import com.example.searchservice.saga.events.tag.TagInitEvent;
-import com.example.searchservice.saga.service.CommissionService;
-import com.example.searchservice.saga.service.SelfPromotionService;
-import com.example.searchservice.saga.service.TagService;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
+import com.example.searchservice.selfpromotion.service.SelfPromotionService;
 import com.example.searchservice.selfpromotion.service.mapper.SelfPromotionMapper;
+import com.example.searchservice.tag.service.TagService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaHandler;

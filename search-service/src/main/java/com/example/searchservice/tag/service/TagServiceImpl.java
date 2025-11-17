@@ -11,6 +11,9 @@ import com.example.searchservice.tag.dto.TagResponseDto;
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.exception.TagErrorCode;
 import com.example.searchservice.tag.exception.TagException;
+import com.example.searchservice.tag.repository.TagRepository;
+import com.example.searchservice.tag.service.dto.ProfileTagDto;
+import com.example.searchservice.tag.service.mapper.TagMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,8 @@ import org.springframework.stereotype.Service;
 public class TagServiceImpl implements TagService {
 
     private final ElasticsearchClient esClient;
+    private final TagAliasLoadService tagAliasLoadService;
+    private final TagRepository tagRepository;
 
     @Override
     public List<TagResponseDto> getSuggestions(String prefix, int size) {
@@ -68,6 +73,18 @@ public class TagServiceImpl implements TagService {
 
         } catch (ElasticsearchException | IOException e) {
             throw new TagException(TagErrorCode.TAG_SUGGEST_FAILED, e);
+        }
+    }
+
+    @Override
+    public void saveAll(List<ProfileTagDto> tags) {
+        for (ProfileTagDto tagDto : tags) {
+            // 별칭 사전(json)에서 별칭 데이터 불러옴
+            List<String> aliases = tagAliasLoadService.getTagAlias(tagDto.skill());
+
+            // Completion 필드에 별칭 데이터 추가
+            TagDocumentEntity document = TagMapper.toDocument(tagDto, aliases);
+            tagRepository.save(document);
         }
     }
 }
