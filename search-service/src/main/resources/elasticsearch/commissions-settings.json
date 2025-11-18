@@ -35,7 +35,7 @@
       }
     },
     "analyzer": {
-      "self_promotion_index_analyzer": {
+      "commission_index_analyzer": {
         "type": "custom",
         "tokenizer": "korean_tokenizer",
         "filter": [
@@ -46,7 +46,7 @@
           "edge_ngram_2_20"
         ]
       },
-      "self_promotion_search_analyzer": {
+      "commission_search_analyzer": {
         "type": "custom",
         "tokenizer": "korean_tokenizer",
         "filter": [
