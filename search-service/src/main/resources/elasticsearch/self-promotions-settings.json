@@ -59,7 +59,6 @@
           "nori_readingform",
           "nori_postfilter",
           "lowercase",
-          "ko_en_synonym",
           "edge_ngram_2_20"
         ]
       },
