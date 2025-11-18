@@ -5,13 +5,12 @@ import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
-import com.example.searchservice.commission.controller.swagger.CommissionSearchControllerSwagger;
+import com.example.searchservice.commission.controller.swagger.CommissionControllerSwagger;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/search/commissions")
 @RequiredArgsConstructor
-public class CommissionSearchController implements CommissionSearchControllerSwagger {
+public class CommissionController implements CommissionControllerSwagger {
 
     private final CommissionService commissionService;
 
