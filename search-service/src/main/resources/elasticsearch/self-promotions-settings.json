@@ -59,13 +59,11 @@
           "ko_en_synonym"
         ]
       },
-      "korean_noun_edge_ngram": {
+      "korean_noun_analyzer": {
         "type": "custom",
         "tokenizer": "korean_tokenizer",
         "filter": [
-          "nori_pos_noun_filter",
-          "lowercase",
-          "edge_ngram_2_20"
+          "nori_pos_noun_filter"
         ]
       }
     }
