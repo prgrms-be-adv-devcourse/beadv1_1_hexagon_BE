@@ -13,7 +13,7 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
     @Query("""
             {
               "multi_match": {
-                "query": "#{#q}",
+                "query": "#{#query}",
                 "fields": ["title", "content"],
                 "operator": "or",
                 "fuzziness": "1"
@@ -26,7 +26,7 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
             {
               "match": {
                 "title": {
-                  "query": "#{#q}",
+                  "query": "#{#query}",
                   "fuzziness": "1"
                 }
               }
@@ -38,7 +38,7 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
             {
               "match": {
                 "content": {
-                  "query": "#{#q}",
+                  "query": "#{#query}",
                   "fuzziness": "1"
                 }
               }
