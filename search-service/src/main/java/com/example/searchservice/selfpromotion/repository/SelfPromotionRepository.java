@@ -15,7 +15,7 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               "multi_match": {
                 "query": "#{#query}",
                 "fields": ["title", "content"],
-                "operator": "or",
+                "minimum_should_match": "2<75%",
                 "fuzziness": "1"
               }
             }
@@ -27,6 +27,7 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               "match": {
                 "title": {
                   "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
@@ -39,6 +40,7 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
               "match": {
                 "content": {
                   "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }

@@ -16,7 +16,7 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
               "multi_match": {
                 "query": "#{#query}",
                 "fields": ["title", "content"],
-                "operator": "or",
+                "minimum_should_match": "2<75%",
                 "fuzziness": "1"
               }
             }
@@ -28,6 +28,7 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
               "match": {
                 "title": {
                   "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
@@ -40,6 +41,7 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
               "match": {
                 "content": {
                   "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
