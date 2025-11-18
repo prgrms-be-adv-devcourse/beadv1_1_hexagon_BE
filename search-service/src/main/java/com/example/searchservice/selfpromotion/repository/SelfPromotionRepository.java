@@ -1,6 +1,5 @@
 package com.example.searchservice.selfpromotion.repository;
 
-import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
