@@ -6,6 +6,7 @@ import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntit
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface CommissionRepository extends ElasticsearchRepository<CommissionDocumentEntity, String> {
@@ -45,4 +46,19 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
             }
             """)
     Page<CommissionDocumentEntity> searchContent(String query, Pageable pageable);
+
+    @Query("""
+            {
+              "multi_match": {
+                  "query": "#{#query}",
+                  "type": "bool_prefix",
+                  "fields": [
+                    "title.completion",
+                    "title.completion._2gram",
+                    "title.completion._3gram"
+                  ]
+                }
+            }
+            """)
+    SearchHits<CommissionDocumentEntity> autoComplete(String query);
 }
