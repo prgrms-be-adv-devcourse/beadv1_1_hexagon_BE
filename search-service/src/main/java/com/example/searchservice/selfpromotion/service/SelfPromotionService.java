@@ -10,6 +10,8 @@ public interface SelfPromotionService {
 
     public Page<SelfPromotionResponseDto> search(String query, SearchScope scope, int page, int size);
 
+    public List<String> getSuggestions(String query, int size);
+
     public void saveAll(List<SelfPromotionDocumentEntity> selfPromotions);
 
     public void save(SelfPromotionDocumentEntity selfPromotion);
