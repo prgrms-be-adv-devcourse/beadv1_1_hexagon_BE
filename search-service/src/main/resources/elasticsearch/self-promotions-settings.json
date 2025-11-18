@@ -19,6 +19,20 @@
           "UNA", "NA", "VSV"
         ]
       },
+      "nori_pos_noun_filter": {
+        "type": "nori_part_of_speech",
+        "stoptags": [
+          "EC", "EF", "EP", "ETM", "ETN",
+          "IC",
+          "JC", "JKB", "JKC", "JKG", "JKO", "JKQ", "JKS", "JKV", "JX",
+          "MAG", "MAJ", "MM",
+          "NA", "NNB", "NNBC", "NP", "NR",
+          "SC", "SE", "SF", "SH", "SN", "SP", "SSC", "SSO", "SY",
+          "UNA", "UNKNOWN",
+          "VA", "VCN", "VCP", "VSV", "VV", "VX",
+          "XPN", "XR", "XSA", "XSN", "XSV"
+        ]
+      },
       "ko_en_synonym": {
         "type": "synonym",
         "expand": true,

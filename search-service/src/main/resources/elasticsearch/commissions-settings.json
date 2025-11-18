@@ -23,10 +23,14 @@
         "type": "nori_part_of_speech",
         "stoptags": [
           "EC", "EF", "EP", "ETM", "ETN",
-          "JC", "JKB", "JKC", "JKG", "JKO",
-          "VA", "VCN", "VCP", "VSV", "VV", "VX",
+          "IC",
+          "JC", "JKB", "JKC", "JKG", "JKO", "JKQ", "JKS", "JKV", "JX",
           "MAG", "MAJ", "MM",
-          "IC"
+          "NA", "NNB", "NNBC", "NP", "NR",
+          "SC", "SE", "SF", "SH", "SN", "SP", "SSC", "SSO", "SY",
+          "UNA", "UNKNOWN",
+          "VA", "VCN", "VCP", "VSV", "VV", "VX",
+          "XPN", "XR", "XSA", "XSN", "XSV"
         ]
       },
       "ko_en_synonym": {
