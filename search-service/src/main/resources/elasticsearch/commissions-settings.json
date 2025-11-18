@@ -10,10 +10,23 @@
       "nori_postfilter": {
         "type": "nori_part_of_speech",
         "stoptags": [
-          "IC", "MAG", "MAJ",
+          "EC", "EF", "EP", "ETM", "ETN",
+          "JC", "JKB", "JKC", "JKG", "JKO",
+          "JKQ", "JKS", "JKV", "JX",
+          "IC",  "MAG", "MAJ",
           "MM", "SP", "SSC", "SSO", "SC",
           "SE", "XPN", "XSA", "XSN", "XSV",
           "UNA", "NA", "VSV"
+        ]
+      },
+      "nori_pos_noun_filter": {
+        "type": "nori_part_of_speech",
+        "stoptags": [
+          "EC", "EF", "EP", "ETM", "ETN",
+          "JC", "JKB", "JKC", "JKG", "JKO",
+          "VA", "VCN", "VCP", "VSV", "VV", "VX",
+          "MAG", "MAJ", "MM",
+          "IC"
         ]
       },
       "ko_en_synonym": {
@@ -54,6 +67,23 @@
           "nori_postfilter",
           "lowercase",
           "ko_en_synonym"
+        ]
+      },
+      "korean_noun_edge_ngram": {
+        "type": "custom",
+        "tokenizer": "korean_tokenizer",
+        "filter": [
+          "nori_pos_noun_filter",
+          "lowercase",
+          "edge_ngram_2_20"
+        ]
+      },
+      "korean_noun_analyzer": {
+        "type": "custom",
+        "tokenizer": "korean_tokenizer",
+        "filter": [
+          "nori_pos_noun_filter",
+          "lowercase"
         ]
       }
     }
