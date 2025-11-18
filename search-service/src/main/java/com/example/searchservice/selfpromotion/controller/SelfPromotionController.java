@@ -5,6 +5,7 @@ import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.controller.swagger.SelfPromotionControllerSwagger;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.service.SelfPromotionService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -38,10 +39,11 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
-    public BaseResponse<Object> suggest(
+    public BaseResponse<List<String>> suggest(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int size) {
-        return null;
+
+        return BaseResponse.ok(selfPromotionService.getSuggestions(query, size));
     }
 
 }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
@@ -29,7 +30,7 @@ public interface SelfPromotionControllerSwagger {
             @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
-    BaseResponse<Object> suggest(
+    BaseResponse<List<String>> suggest(
             String query,
             int size
     );
