@@ -12,6 +12,8 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.InnerField;
+import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Getter
@@ -26,7 +28,12 @@ public class SelfPromotionDocumentEntity {
     @Id
     private String code;
 
-    @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
+    @MultiField(
+            mainField = @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer"),
+            otherFields = {
+                @InnerField(suffix = "completion", type = FieldType.Search_As_You_Type)
+            }
+    )
     private String title;
 
     @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
