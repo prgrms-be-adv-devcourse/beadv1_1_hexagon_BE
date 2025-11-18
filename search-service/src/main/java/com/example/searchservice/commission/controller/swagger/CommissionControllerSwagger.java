@@ -44,7 +44,7 @@ public interface CommissionControllerSwagger {
             @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
-    BaseResponse<CommissionResponseDto> suggest(
+    BaseResponse<List<String>> suggest(
             String query,
             int size
     );

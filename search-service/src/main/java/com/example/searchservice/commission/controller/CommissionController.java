@@ -46,7 +46,10 @@ public class CommissionController implements CommissionControllerSwagger {
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
-    public BaseResponse<CommissionResponseDto> suggest(String query, int size) {
-        return null;
+    public BaseResponse<List<String>> suggest(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return BaseResponse.ok(commissionService.getSuggestions(query, size));
     }
 }
