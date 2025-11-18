@@ -1,9 +1,11 @@
 package com.example.searchservice.selfpromotion.repository;
 
+import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPromotionDocumentEntity, String> {
@@ -43,4 +45,19 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
             }
             """)
     Page<SelfPromotionDocumentEntity> searchContent(String query, Pageable pageable);
+
+    @Query("""
+            {
+              "multi_match": {
+                  "query": "#{#query}",
+                  "type": "bool_prefix",
+                  "fields": [
+                    "title.completion",
+                    "title.completion._2gram",
+                    "title.completion._3gram"
+                  ]
+                }
+            }
+            """)
+    SearchHits<SelfPromotionDocumentEntity> autoComplete(String query);
 }
