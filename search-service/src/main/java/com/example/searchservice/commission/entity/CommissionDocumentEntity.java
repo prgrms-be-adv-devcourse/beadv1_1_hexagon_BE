@@ -15,6 +15,8 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.InnerField;
+import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Getter
@@ -29,10 +31,15 @@ public class CommissionDocumentEntity {
     @Id
     private String code;
 
-    @Field(type = FieldType.Text)
+    @MultiField(
+            mainField = @Field(type = FieldType.Text, analyzer = "commission_index_analyzer", searchAnalyzer = "commission_search_analyzer"),
+            otherFields = {
+                    @InnerField(suffix = "completion", type = FieldType.Search_As_You_Type)
+            }
+    )
     private String title;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "commission_index_analyzer", searchAnalyzer = "commission_search_analyzer")
     private String content;
 
     @Field(type = FieldType.Keyword)
