@@ -4,12 +4,13 @@ import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.repository.CommissionRepository;
 import com.example.searchservice.common.vo.SearchScope;
-import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,6 +40,18 @@ public class CommissionServiceImpl implements CommissionService {
             case title     -> commissionRepository.searchTitle(query, pageable).map(CommissionResponseDto::from);
             case content   -> commissionRepository.searchContent(query, pageable).map(CommissionResponseDto::from);
         };
+    }
+
+    @Override
+    public List<String> getSuggestions(String query, int size) {
+        SearchHits<CommissionDocumentEntity> searchHits = commissionRepository.autoComplete(query);
+
+        return searchHits.stream()
+                .map(SearchHit::getContent)
+                .map(CommissionDocumentEntity::getTitle)
+                .distinct()
+                .limit(size)
+                .toList();
     }
 
     @Override
