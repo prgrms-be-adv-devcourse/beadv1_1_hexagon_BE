@@ -11,7 +11,7 @@ public class TagMapper {
 
     public static TagDocumentEntity toDocument(Tag tag, List<String> aliases) {
         if (aliases == null || aliases.isEmpty()) {
-            aliases = List.of(tag.skill());
+            aliases = List.of();
         }
 
         Completion completion = new Completion(aliases);
