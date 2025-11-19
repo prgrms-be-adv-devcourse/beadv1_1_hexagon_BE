@@ -1,6 +1,6 @@
 package com.example.cartpostservice.commissions.controller.dto.request;
 
-import com.example.cartpostservice.common.model.vo.PaymentType;
+import org.hexagon.core.vo.PaymentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,6 +1,6 @@
 package com.example.cartpostservice.commissions.service.dto.response;
 
-import com.example.cartpostservice.common.model.vo.PaymentType;
+import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
 
 public record CommissionsServiceResult(
