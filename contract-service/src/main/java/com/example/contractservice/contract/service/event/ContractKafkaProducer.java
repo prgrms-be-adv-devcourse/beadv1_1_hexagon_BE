@@ -1,9 +1,9 @@
 package com.example.contractservice.contract.service.event;
 
-import com.example.contractservice.contract.service.event.dto.ContractEvent;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -22,6 +22,6 @@ public class ContractKafkaProducer implements ContractEventProducer {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendEvent(ContractEvent event) {
-        return kafkaTemplate.send(contractTopicName, event.code(), event);
+        return kafkaTemplate.send(contractTopicName, event.contractCode(), event);
     }
 }

@@ -1,1 +1,4 @@
 rootProject.name = 'gateway-service'
+
+include(':core')
+project(':core').projectDir = file('../core')

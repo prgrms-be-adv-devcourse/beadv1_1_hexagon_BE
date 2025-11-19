@@ -9,7 +9,6 @@ import com.example.searchservice.saga.events.commission.CommissionInitEvent;
 import com.example.searchservice.saga.events.commission.CommissionUpdatedEvent;
 import com.example.searchservice.saga.events.selfpromotion.SelfPromotionCreatedEvent;
 import com.example.searchservice.saga.events.selfpromotion.SelfPromotionDeletedEvent;
-import com.example.searchservice.saga.events.selfpromotion.SelfPromotionInitEvent;
 import com.example.searchservice.saga.events.selfpromotion.SelfPromotionUpdatedEvent;
 import com.example.searchservice.saga.events.tag.TagInitEvent;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
@@ -18,12 +17,16 @@ import com.example.searchservice.selfpromotion.service.mapper.SelfPromotionMappe
 import com.example.searchservice.tag.service.TagService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+//import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
+//import org.hexagon.core.events.selfpromotion.SelfPromotionInitEvent;
+//import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
+//import org.hexagon.core.events.tag.TagInitEvent;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-//@Component // TODO: 현재 카프카 관련 논의가 안된 상황이므로 일시적으로 주석처리 -> 완성 후 주석 처리 제거
+@Component
 @RequiredArgsConstructor
 @KafkaListener(
         topics = {
@@ -45,7 +48,7 @@ public class SearchServiceListener {
     }
 
     @KafkaHandler
-    public void handleEvent(@Payload SelfPromotionInitEvent event) {
+    public void handleEvent(@Payload com.example.searchservice.saga.events.selfpromotion.SelfPromotionInitEvent event) {
         List<SelfPromotionDocumentEntity> docs = event.selfPromotions().stream()
                 .map(SelfPromotionMapper::toSelfPromotionDocument)
                 .toList();

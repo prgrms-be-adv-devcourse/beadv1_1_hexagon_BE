@@ -1,4 +1,4 @@
-package org.hexagon.core.events.commissions;
+package org.hexagon.core.events.commission;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,5 +19,5 @@ public record CommissionCreatedEvent(
         Boolean isClosed,
         Instant updatedAt
 ) {
-    
+
 }

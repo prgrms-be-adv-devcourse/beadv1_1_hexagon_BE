@@ -23,6 +23,7 @@ ext {
 }
 
 dependencies {
+    implementation project(':core')
 
     //discovery-service
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

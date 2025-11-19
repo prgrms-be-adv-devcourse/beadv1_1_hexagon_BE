@@ -1,1 +1,4 @@
 rootProject.name = 'discovery-service'
+
+include(':core')
+project(':core').projectDir = file('../core')

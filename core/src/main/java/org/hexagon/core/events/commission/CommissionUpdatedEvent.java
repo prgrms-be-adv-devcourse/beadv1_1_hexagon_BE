@@ -1,11 +1,11 @@
-package org.hexagon.core.events.commissions;
+package org.hexagon.core.events.commission;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.hexagon.core.vo.PaymentType;
 
-public record CommissionCreatedEvent(
+public record CommissionUpdatedEvent(
         String code,
         String title,
         String content,
@@ -19,5 +19,5 @@ public record CommissionCreatedEvent(
         Boolean isClosed,
         Instant updatedAt
 ) {
-    
+
 }

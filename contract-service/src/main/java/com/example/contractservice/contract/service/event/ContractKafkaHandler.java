@@ -1,7 +1,7 @@
 package com.example.contractservice.contract.service.event;
 
 import com.example.contractservice.contract.service.ContractEventService;
-import com.example.contractservice.contract.service.event.dto.CartItemDeletedEvent;
+import org.hexagon.core.events.cartpost.CartItemDeletedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,6 +20,6 @@ public class ContractKafkaHandler {
 
     @KafkaHandler
     public void handleCartEvent(@Payload CartItemDeletedEvent event) {
-        contractEventService.cancelContract(event.code());
+        contractEventService.cancelContract(event.contractCode());
     }
 }
