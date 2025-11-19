@@ -38,11 +38,41 @@
         "expand": true,
         "lenient": true,
         "synonyms": [
-          "스프링부트, spring boot",
-          "스프링, spring",
-          "리액트, react",
-          "자바스크립트, javascript, js",
-          "자바, java"
+          "java, 자바",
+          "javascript, js, 자바스크립트",
+          "typescript, ts, 타입스크립트",
+          "spring, 스프링",
+          "spring boot, 스프링부트, 스프링 부트",
+          "react, 리액트",
+          "next.js, nextjs, next js, 넥스트, 넥스트js",
+          "node.js, nodejs, node js, 노드, 노드js",
+          "express, 익스프레스",
+          "nestjs, nest js, 네스트, 네스트js",
+          "kotlin, 코틀린",
+
+          "html",
+          "css",
+          "tailwind css, tailwindcss, 테일윈드, 테일윈드css",
+
+          "mysql",
+          "postgresql, postgres",
+          "mongodb, 몽고db",
+          "redis",
+          "elasticsearch, es, 엘라스틱서치",
+          "kafka, 카프카",
+
+          "aws, 아마존웹서비스, 아마존 웹 서비스",
+          "docker, 도커",
+          "kubernetes, k8s, 쿠버네티스",
+          "git, 깃",
+          "github, 깃허브",
+
+          "web, 웹, 웹 개발",
+          "backend, 백엔드",
+          "frontend, 프론트엔드",
+          "fullstack, 풀스택",
+          "devops, 데브옵스",
+          "ai, 인공지능"
         ]
       },
       "edge_ngram_2_20": {
