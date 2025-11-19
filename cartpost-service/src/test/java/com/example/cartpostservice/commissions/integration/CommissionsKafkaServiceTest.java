@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-// ▼▼▼ [수정 1] 포트 지정 삭제 -> 랜덤 포트 사용
 @EmbeddedKafka(
         partitions = 1,
         topics = {"${search.topic.name}"}
@@ -52,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "search.topic.name=test-only-kafka-service",
         "spring.kafka.consumer.auto-offset-reset=earliest",
 
-        // ▼▼▼ [수정 2] 랜덤으로 생성된 브로커 주소를 Producer에게 주입 (마법의 변수)
+        // 랜덤으로 생성된 브로커 주소를 Producer에게 주입
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
 
         // 더미 설정
@@ -64,9 +63,9 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.sql.init.mode=never",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
-// ▼▼▼ [수정 3] DirtiesContext를 각 메소드마다가 아니라 클래스 단위로 적용하여 안정성 확보
+// DirtiesContext를 각 메소드마다가 아니라 클래스 단위로 적용하여 안정성 확보
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class CommissionKafkaServiceIntegrationTest {
+class CommissionsKafkaServiceTest {
 
     @Autowired
     private CommissionKafkaService commissionKafkaService;
