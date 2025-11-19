@@ -1,12 +1,10 @@
 package com.example.searchservice.commission.service;
 
-import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.repository.CommissionRepository;
-import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

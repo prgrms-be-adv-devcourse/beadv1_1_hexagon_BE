@@ -1,6 +1,6 @@
 package com.example.searchservice.commission.entity;
 
-import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.common.vo.PaymentType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;

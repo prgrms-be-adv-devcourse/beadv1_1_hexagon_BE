@@ -1,6 +1,6 @@
 package com.example.searchservice.commission.controller;
 
-import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.common.response.BaseResponse;

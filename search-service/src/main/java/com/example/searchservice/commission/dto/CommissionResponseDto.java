@@ -1,6 +1,6 @@
 package com.example.searchservice.commission.dto;
 
-import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import java.time.LocalDate;
 import java.util.List;
