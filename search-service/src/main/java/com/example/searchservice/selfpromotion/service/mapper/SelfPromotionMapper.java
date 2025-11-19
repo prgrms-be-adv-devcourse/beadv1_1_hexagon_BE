@@ -11,6 +11,8 @@ public class SelfPromotionMapper {
                 .title(profileSelfPromotionDto.title())
                 .content(profileSelfPromotionDto.content())
                 .memberNickname(profileSelfPromotionDto.memberNickname())
+                .paymentType(profileSelfPromotionDto.paymentType())
+                .payAmount(profileSelfPromotionDto.payAmount())
                 .updatedAt(profileSelfPromotionDto.updatedAt())
                 .build();
     }
