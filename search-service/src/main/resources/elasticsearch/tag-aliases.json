@@ -1,7 +1,37 @@
 {
   "Java": ["Java", "java", "자바"],
   "JavaScript": ["JavaScript", "javascript", "js", "자바스크립트"],
+  "TypeScript": ["TypeScript", "typescript", "ts", "타입스크립트"],
   "Spring": ["Spring", "spring", "스프링"],
-  "Spring Boot": ["Spring Boot", "spring boot", "스프링 부트", "스프링부트"],
-  "React": ["React", "react", "리액트"]
+  "Spring Boot": ["Spring Boot", "spring boot", "스프링부트", "스프링 부트"],
+  "React": ["React", "react", "리액트"],
+  "Next.js": ["Next.js", "nextjs", "next js", "넥스트", "넥스트js"],
+  "Node.js": ["Node.js", "nodejs", "node js", "노드", "노드js"],
+  "Express": ["Express", "express", "익스프레스"],
+  "NestJS": ["NestJS", "nestjs", "nest js", "네스트", "네스트js"],
+  "Kotlin": ["Kotlin", "kotlin", "코틀린"],
+
+  "HTML": ["HTML", "html"],
+  "CSS": ["CSS", "css"],
+  "Tailwind CSS": ["Tailwind CSS", "tailwindcss", "tailwind css", "테일윈드", "테일윈드css"],
+
+  "MySQL": ["MySQL", "mysql"],
+  "PostgreSQL": ["PostgreSQL", "postgresql", "postgres"],
+  "MongoDB": ["MongoDB", "mongodb"],
+  "Redis": ["Redis", "redis"],
+  "Elasticsearch": ["Elasticsearch", "elasticsearch", "es"],
+  "Kafka": ["Kafka", "kafka"],
+
+  "AWS": ["AWS", "aws", "아마존웹서비스", "아마존 웹 서비스"],
+  "Docker": ["Docker", "docker", "도커"],
+  "Kubernetes": ["Kubernetes", "kubernetes", "k8s", "쿠버네티스"],
+  "Git": ["Git", "git", "깃"],
+  "GitHub": ["GitHub", "github", "깃허브"],
+
+  "Web": ["Web", "web", "웹", "웹 개발"],
+  "Backend": ["Backend", "backend", "백엔드"],
+  "Frontend": ["Frontend", "frontend", "프론트엔드"],
+  "Fullstack": ["Fullstack", "fullstack", "풀스택"],
+  "DevOps": ["DevOps", "devops", "데브옵스"],
+  "AI": ["AI", "ai", "인공지능"]
 }
