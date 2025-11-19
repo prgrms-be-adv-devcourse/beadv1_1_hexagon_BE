@@ -1,5 +1,6 @@
 package com.example.searchservice.selfpromotion.entity;
 
+import com.example.searchservice.common.vo.PaymentType;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +45,12 @@ public class SelfPromotionDocumentEntity {
 
     @Field(type = FieldType.Keyword, name = "member_nickname")
     private String memberNickname;
+
+    @Field(type = FieldType.Keyword, name = "payment_type")
+    private PaymentType paymentType;
+
+    @Field(type = FieldType.Long, name = "pay_amount")
+    private Long payAmount;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;
