@@ -2,7 +2,8 @@ package com.example.searchservice.saga;
 
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.service.CommissionService;
-import com.example.searchservice.commission.service.mapper.CommissionMapper;
+
+import com.example.searchservice.saga.mapper.CommissionMapper;
 import com.example.searchservice.saga.mapper.SelfPromotionMapper;
 import com.example.searchservice.saga.mapper.TagMapper;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
@@ -99,13 +100,13 @@ public class SearchServiceListener {
 
     @KafkaHandler
     public void handleEvent(@Payload CommissionCreatedEvent event) {
-        CommissionDocumentEntity doc = CommissionCreatedEvent.toCommissionDocumentEntity(event);
+        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event);
         commissionService.save(doc);
     }
 
     @KafkaHandler
     public void handleEvent(@Payload CommissionUpdatedEvent event) {
-        CommissionDocumentEntity doc = CommissionUpdatedEvent.toCommissionDocumentEntity(event);
+        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event);
         commissionService.update(doc);
     }
 
