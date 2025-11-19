@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface PaymentService {
 
-    public PayRechargeResult payForRecharge(String code, String amount);
+    public void payForRecharge(String memberCode, Long amount);
 
     public PaymentsGetResult getAllPayments(String code);
 

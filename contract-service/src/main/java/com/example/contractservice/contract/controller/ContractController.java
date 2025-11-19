@@ -16,6 +16,7 @@ import com.example.contractservice.contract.controller.dto.response.ContractList
 import com.example.contractservice.contract.service.ContractReadService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
+import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
 import java.time.Duration;
 import java.time.Instant;
@@ -55,11 +56,12 @@ public class ContractController {
     @GetContractByCodeApi
     @GetMapping("/{code}")
     @ResponseStatus(HttpStatus.OK)
-    public ContractDetailResponse getContractByCode(@RequestHeader(name = "X-CODE") String xCode,
+    public ResponseDto<ContractDetailResponse> getContractByCode(@RequestHeader(name = "X-CODE") String xCode,
             @PathVariable String code) {
 
-        return new ContractDetailResponse("클라이언트 이름", "프리랜서 이름", Instant.now(), Instant.now(),
-                Instant.now(), "ONE_TIME", "REQUESTED", "계약명", "계약 내용");
+        ContractDetailResponse detailResponse = contractReadService.findDetailBy(new ContractDetailRequest(xCode, code));
+
+        return ResponseDto.ok(detailResponse);
     }
 
     @ContractCreateApi

@@ -29,7 +29,7 @@ public class SettlementDataProcessor implements ItemProcessor<SettlementEntity, 
 
         DepositProcessRequest depositProcessRequest = DepositProcessRequest.from(settlement);
 
-        depositService.process(depositProcessRequest, depositService::transfer);
+        depositService.transfer(depositProcessRequest);
 
         SettlementMapper.applyToEntity(settlement, settlementEntity);
 

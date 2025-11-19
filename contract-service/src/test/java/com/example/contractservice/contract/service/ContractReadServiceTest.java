@@ -3,15 +3,22 @@ package com.example.contractservice.contract.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefResponse;
+import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractListWithCursorResponse;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractJpaRepository;
+import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
@@ -22,6 +29,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 class ContractReadServiceTest {
@@ -31,6 +40,9 @@ class ContractReadServiceTest {
     private ContractJpaRepository contractJpaRepository;
     @Autowired
     private ContractReadService contractReadService;
+
+    @MockBean
+    RestTemplate restTemplate;
 
     private String memberCode;
 
@@ -88,6 +100,47 @@ class ContractReadServiceTest {
 
         assertOrderDesc(firstContracts);
         assertOrderDesc(secondContracts);
+    }
+
+    @Test
+    @DisplayName("계약 상세 내용을 조회할 수 있다.")
+    void success_find_detail_given_normal_code() {
+        // given
+        String body = "내용~";
+        String name = "이름";
+        ContractStatus done = ContractStatus.DONE;
+        String opponentCode = UUID.randomUUID().toString();
+
+        ContractEntity entity = ContractEntity.builder()
+                .code(UUID.randomUUID().toString())
+                .requestorCode(memberCode)
+                .contractorCode(opponentCode)
+                .freelancerCode(memberCode)
+                .name(name)
+                .body(body)
+                .status(done)
+                .startedAt(Instant.now())
+                .endedAt(Instant.now())
+                .unitAmount(20000000L)
+                .paymentType(PaymentType.MONTHLY)
+                .build();
+
+        ContractEntity saved = contractJpaRepository.save(entity);
+
+        when(restTemplate.getForObject(any(), eq(MemberInfoResponse.class)))
+                .thenReturn(new MemberInfoResponse(List.of(
+                        new MemberInfo(memberCode, "멤버 닉네임", true),
+                        new MemberInfo(opponentCode, "상대방 닉네임", false)))
+                );
+
+        // when
+        ContractDetailResponse detailResponse = contractReadService.findDetailBy(
+                new ContractDetailRequest(memberCode, saved.getCode()));
+
+        // then
+        assertEquals(body, detailResponse.body());
+        assertEquals(name, detailResponse.name());
+        assertEquals(done.name(), detailResponse.status());
     }
 
     private static void assertOrderDesc(List<ContractBriefResponse> contracts) {

@@ -26,4 +26,8 @@ public class DepositRepository {
     public DepositHistoryEntity saveDepositHistory(DepositHistoryEntity depositHistoryEntity) {
         return depositHistoryJpaRepository.save(depositHistoryEntity);
     }
+
+    public boolean existMemberDeposit(String memberCode) {
+        return depositJpaRepository.existsByMemberCode(memberCode);
+    }
 }

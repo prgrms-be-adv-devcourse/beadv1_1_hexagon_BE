@@ -6,8 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,14 +30,21 @@ public class DepositEntity {
     @Column(name = "amount", nullable = false)
     private Long amount;
 
-    @Builder
-    public DepositEntity(String memberCode, String code, Long amount) {
+    private DepositEntity(String code, String memberCode, Long amount) {
+        this.code = (code == null) ? generateCode() : code;
         this.memberCode = memberCode;
-        this.code = code;
-        this.amount = amount;
+        this.amount = (amount == null) ? 0L : amount;
+    }
+
+    public static DepositEntity createBy(String memberCode) {
+        return new DepositEntity(null, memberCode, 0L);
     }
 
     public void updateInfo(Long amount) {
         this.amount = amount;
+    }
+
+    private String generateCode() {
+        return UUID.randomUUID().toString();
     }
 }
