@@ -3,10 +3,10 @@ package com.example.searchservice.saga;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.commission.service.mapper.CommissionMapper;
+import com.example.searchservice.saga.mapper.SelfPromotionMapper;
 import com.example.searchservice.saga.mapper.TagMapper;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.service.SelfPromotionService;
-import com.example.searchservice.selfpromotion.service.mapper.SelfPromotionMapper;
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.service.TagAliasLoadService;
 import com.example.searchservice.tag.service.TagService;
@@ -73,13 +73,13 @@ public class SearchServiceListener {
 
     @KafkaHandler
     public void handleEvent(@Payload SelfPromotionCreatedEvent event) {
-        SelfPromotionDocumentEntity doc = SelfPromotionCreatedEvent.toDocumentEntity(event);
+        SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
         selfPromotionService.save(doc);
     }
 
     @KafkaHandler
     public void handleEvent(@Payload SelfPromotionUpdatedEvent event) {
-        SelfPromotionDocumentEntity doc = SelfPromotionUpdatedEvent.toDocumentEntity(event);
+        SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
         selfPromotionService.update(doc);
     }
 
