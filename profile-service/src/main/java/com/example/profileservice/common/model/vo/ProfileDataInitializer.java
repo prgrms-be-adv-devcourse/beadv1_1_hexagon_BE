@@ -1,17 +1,17 @@
 package com.example.profileservice.common.model.vo;
 
-import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionEsEventData;
-import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionInitEvent;
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
 import com.example.profileservice.selfPromotion.service.SelfPromotionService;
-import com.example.profileservice.tag.model.dto.response.TagInitEvent;
-import com.example.profileservice.tag.model.dto.response.TagResponse;
 import com.example.profileservice.tag.repository.TagRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.selfpromotion.SelfPromotionInitEvent;
+import org.hexagon.core.events.tag.TagInitEvent;
+import org.hexagon.core.vo.SelfPromotion;
+import org.hexagon.core.vo.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -52,28 +52,40 @@ public class ProfileDataInitializer {
 
     // Self Promotion 전체 데이터를 조회하여 Kafka에 전송
     private void sendInitialSelfPromotionData() {
-        // Soft Delete 되지 않은 모든 Self Promotion 엔티티 조회
+        // 1. Soft Delete 되지 않은 모든 Self Promotion 엔티티 조회 (기존 로직 유지)
         List<SelfPromotionResponse> allPromotions = selfPromotionService.getAllPromotions();
 
-        // ES 최적화 DTO로 변환
-        List<SelfPromotionEsEventData> eventDataList = allPromotions.stream()
-                .map(SelfPromotionEsEventData::fromResponse)
+        // 2. 코어 모듈 VO (SelfPromotion)로 변환
+        List<SelfPromotion> selfPromotionVoList = allPromotions.stream()
+                // SelfPromotionResponse -> SelfPromotion VO로 변환
+                .map(response -> new SelfPromotion(
+                        response.promotionCode(),
+                        response.title(),
+                        response.content(),
+                        response.memberCode(),
+                        response.memberNickname(),
+                        response.paymentType(),
+                        response.unitAmount(),
+                        response.updatedAt()
+                ))
                 .collect(Collectors.toList());
 
-        SelfPromotionInitEvent event = SelfPromotionInitEvent.create(eventDataList);
+        // 3. 코어 모듈의 SelfPromotionInitEvent 생성
+        SelfPromotionInitEvent event = new SelfPromotionInitEvent(selfPromotionVoList);
 
+        // 4. Kafka에 전송 (키 없이 초기 동기화 이벤트 발행)
         kafkaProducer.send(selfPromotionInitTopic, event);
-        log.info("  -> {}개의 SelfPromotion 레코드를 토픽: {}로 보냈습니다.", eventDataList.size(), selfPromotionInitTopic);
+        log.info("  -> {}개의 SelfPromotion 레코드를 토픽: {}로 보냈습니다.", selfPromotionVoList.size(), selfPromotionInitTopic);
     }
 
     // Tag 전체 데이터를 조회하여 Kafka에 전송
     private void sendInitialTagData() {
         // 모든 Tag 엔티티 조회
-        List<TagResponse> allTags = tagRepository.findAll().stream()
-                .map(tag -> new TagResponse(tag.getCode(), tag.getSkill()))
+        List<Tag> allTags = tagRepository.findAll().stream()
+                .map(tag -> new Tag(tag.getCode(), tag.getSkill()))
                 .collect(Collectors.toList());
 
-        TagInitEvent event = TagInitEvent.create(allTags);
+        TagInitEvent event = new TagInitEvent(allTags);
 
         kafkaProducer.send(tagInitTopic, event);
         log.info("  -> Sent {} Tag records to topic: {}", allTags.size(), tagInitTopic);

@@ -3,7 +3,6 @@ package com.example.profileservice.tag.service;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.exception.CustomException;
-import com.example.profileservice.tag.model.dto.request.TagEvent;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
 import com.example.profileservice.tag.model.entity.MemberTagEntity;
@@ -16,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.events.tag.TagInitEvent;
+import org.hexagon.core.vo.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +57,6 @@ public class TagService {
         TagEntity savedTag = tagRepository.save(newTag);
 
         TagResponse response = toResponse(savedTag);
-
-        // 3. 이벤트 발행
-        kafkaProducer.send(tagTopic, TagEvent.create(response));
 
         return toResponse(savedTag);
     }
@@ -102,12 +100,16 @@ public class TagService {
 
         memberTagRepository.save(memberTag);
 
-        // 4. 이벤트 발행 (회원의 태그 목록이 변경되었음을 알림)
-        // MemberTagEntity의 변경은 회원 프로필 데이터의 변경이므로, 별도의 MemberProfileUpdate 이벤트를 발행해야 할 수 있으나,
-        // 현재는 TagEvent를 활용하여 변경 사실을 알림
-        TagResponse response = toResponse(tag); // 연결된 태그 정보
 
-        kafkaProducer.send(tagTopic, TagEvent.update(response));
+        // 현재 회원의 태그 목록 전체를 조회하여 TagInitEvent 생성
+        List<Tag> memberTags = getMyTags(memberCode).stream()
+                .map(t -> new Tag(t.tagCode(), t.skill())) // TagResponse -> core.vo.Tag 변환
+                .toList();
+
+        TagInitEvent event = new TagInitEvent(memberTags);
+
+        // memberCode를 키로 사용하여 해당 회원의 데이터 변경을 알림
+        kafkaProducer.send(tagTopic, memberCode, event);
     }
 
     // 마이페이지에서 특정 태그 연결을 해제
@@ -123,9 +125,15 @@ public class TagService {
         // 2. 삭제
         memberTagRepository.delete(memberTag);
 
-        // 3. 이벤트 발행 (회원의 태그 목록이 변경되었음을 알림)
-        TagResponse response = toResponse(tag);
-        kafkaProducer.send(tagTopic, TagEvent.update(response));
+        // 현재 회원의 태그 목록 전체를 조회하여 TagInitEvent 생성
+        List<Tag> memberTags = getMyTags(memberCode).stream()
+                .map(t -> new Tag(t.tagCode(), t.skill())) // TagResponse -> core.vo.Tag 변환
+                .toList();
+
+        TagInitEvent event = new TagInitEvent(memberTags);
+
+        // memberCode를 키로 사용하여 해당 회원의 데이터 변경을 알림
+        kafkaProducer.send(tagTopic, memberCode, event);
     }
 
     // 회원 태그 목록 동기화
@@ -171,6 +179,19 @@ public class TagService {
                     .collect(Collectors.toList());
 
             memberTagRepository.saveAll(newConnections);
+        }
+
+        // 9. 이벤트 발행 (최종 동기화된 회원 태그 목록 전체 발행)
+        // (tagsToRemove.isEmpty() && tagsToAdd.isEmpty()가 아닐 경우에만 발행하는 최적화 로직 추가 권장)
+        if (!tagsToRemove.isEmpty() || !tagsToAdd.isEmpty()) {
+            List<Tag> memberTags = getMyTags(memberCode).stream()
+                    .map(t -> new Tag(t.tagCode(), t.skill())) // TagResponse -> core.vo.Tag 변환
+                    .toList();
+
+            TagInitEvent event = new TagInitEvent(memberTags);
+
+            // memberCode를 키로 사용하여 해당 회원의 데이터 변경을 알림
+            kafkaProducer.send(tagTopic, memberCode, event);
         }
     }
 

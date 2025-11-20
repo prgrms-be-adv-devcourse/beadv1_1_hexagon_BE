@@ -4,6 +4,7 @@ import com.example.memberservice.common.security.handler.OAuthLoginFailureHandle
 import com.example.memberservice.common.security.handler.OAuthLoginSuccessHandler;
 import com.example.memberservice.common.security.service.CustomOAuth2UserService;
 import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,9 +31,9 @@ public class SpringSecurityConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedHeaders(Collections.singletonList("*"));
-        config.setAllowedMethods(Collections.singletonList("*"));
-        config.setAllowedOriginPatterns(Collections.singletonList("*"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("*"));    // 모든 HTTP 메서드 허용
+        config.setAllowedHeaders(List.of("*"));    // 모든 헤더 허용
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

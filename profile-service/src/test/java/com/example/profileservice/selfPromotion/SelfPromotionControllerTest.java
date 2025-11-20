@@ -15,7 +15,6 @@ import com.example.memberservice.member.service.model.dto.output.MemberExistOutp
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import com.example.memberservice.member.service.model.vo.InternalMemberInfo;
 import com.example.profileservice.common.model.vo.KafkaProducer;
-import com.example.profileservice.common.model.vo.PaymentType;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
@@ -30,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

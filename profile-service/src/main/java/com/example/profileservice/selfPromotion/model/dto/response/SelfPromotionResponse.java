@@ -1,8 +1,8 @@
 package com.example.profileservice.selfPromotion.model.dto.response;
 
-import com.example.profileservice.common.model.vo.PaymentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
+import org.hexagon.core.vo.PaymentType;
 
 public record SelfPromotionResponse(
 

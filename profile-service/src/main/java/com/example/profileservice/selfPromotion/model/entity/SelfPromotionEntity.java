@@ -1,12 +1,16 @@
 package com.example.profileservice.selfPromotion.model.entity;
 
 import com.example.profileservice.common.model.persistence.BaseEntity;
-import com.example.profileservice.common.model.vo.PaymentType;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hexagon.core.vo.PaymentType;
 
 @Entity
 @Table(name = "self_promotions")

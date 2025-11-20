@@ -1,12 +1,13 @@
 package com.example.profileservice.common.model.vo.util;
 
-import com.example.profileservice.rating.model.dto.request.ContractEvent;
+import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.service.RatingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -37,10 +38,10 @@ public class ContractEventConsumer {
         }
 
         if (CONTRACT_STATUS_DONE.equalsIgnoreCase(event.status())) {
-            log.info("Processing DONE contract event for code: {}", event.code());
+            log.info("Processing DONE contract event for code: {}", event.contractCode());
 
-            String clientCode = event.clientCode();
-            String freelancerCode = event.freelancerCode();
+            String clientCode = event.memberCode();
+            String freelancerCode = event.contractCode();
 
             // 1. 클라이언트가 프리랜서에게 평가 (Client -> Freelancer)
             try {
@@ -48,10 +49,14 @@ public class ContractEventConsumer {
                 log.info("Attempting to trigger Client({}) -> Freelancer({}) rating.", clientCode, freelancerCode);
                 ratingService.updateRating(clientCode, freelancerCode, DUMMY_SATISFIED_REQUEST);
                 log.info("Client -> Freelancer rating successful.");
-            } catch (Exception e) {
-                // 평가 중 발생한 예외(예: 유효하지 않은 회원 코드, 자기 자신 평가 시도 등) 처리
-                log.error("Failed to process Client -> Freelancer rating for contract {}. Error: {}", event.code(), e.getMessage());
-                // Kafka 메시지를 재처리하지 않으려면 여기서 Exception을 throw하지 않아야 합니다.
+            } catch (CustomException e) { // 비즈니스 예외만 catch
+                log.error("Failed (Business Error) Client -> Freelancer rating for contract {}. Error: {}", event.contractCode(), e.getMessage());
+                // 비즈니스 예외는 재시도 필요 없으므로 return하지 않고 다음 로직으로 진행
+            } catch (Exception e) { // 그 외 시스템 오류는 throw (재시도 유발)
+                log.error("Failed (System Error) Client -> Freelancer rating for contract {}. Error: {}", event.contractCode(),
+                        e.getMessage());
+
+                throw new RuntimeException("System error during rating update.", e);
             }
 
             // 2. 프리랜서가 클라이언트에게 평가 (Freelancer -> Client)
@@ -60,8 +65,12 @@ public class ContractEventConsumer {
                 log.info("Attempting to trigger Freelancer({}) -> Client({}) rating.", freelancerCode, clientCode);
                 ratingService.updateRating(freelancerCode, clientCode, DUMMY_SATISFIED_REQUEST);
                 log.info("Freelancer -> Client rating successful.");
-            } catch (Exception e) {
-                log.error("Failed to process Freelancer -> Client rating for contract {}. Error: {}", event.code(), e.getMessage());
+            } catch (CustomException e) { // 🟢 비즈니스 예외만 catch
+                log.error("Failed (Business Error) Freelancer -> Client rating for contract {}. Error: {}", event.contractCode(), e.getMessage());
+            } catch (Exception e) { // 🟢 그 외 시스템 오류는 throw (재시도 유발)
+                log.error("Failed (System Error) Freelancer -> Client rating for contract {}. Error: {}", event.contractCode(), e.getMessage());
+
+                throw new RuntimeException("System error during rating update.", e); // 👈 재시도를 위해 throw
             }
 
         } else {

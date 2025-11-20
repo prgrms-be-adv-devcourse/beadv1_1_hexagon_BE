@@ -1,6 +1,6 @@
 package com.example.profileservice.selfPromotion.service;
 
-import static org.apache.kafka.common.requests.FetchMetadata.log;
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
 
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
@@ -11,9 +11,7 @@ import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
-import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionEvent;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
-import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionEsEventData;
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.model.entity.SelfPromotionEntity;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
@@ -21,6 +19,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
+import org.hexagon.core.vo.SelfPromotion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,8 +90,15 @@ public class SelfPromotionService {
         SelfPromotionResponse response = toResponse(promotion);
 
         // 4. 이벤트 발행 (CREATE)
-        kafkaProducer.send(selfPromotionTopic,
-                SelfPromotionEvent.create(SelfPromotionEsEventData.fromResponse(response)));
+        SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
+
+        SelfPromotionCreatedEvent createdEvent = new SelfPromotionCreatedEvent(
+                selfPromotionVo.code(), selfPromotionVo.title(), selfPromotionVo.content(),
+                selfPromotionVo.memberCode(), selfPromotionVo.memberNickname(),
+                selfPromotionVo.paymentType(), selfPromotionVo.payAmount(), selfPromotionVo.updatedAt()
+        );
+
+        kafkaProducer.send(selfPromotionTopic, response.promotionCode(), createdEvent);
 
         return toResponse(promotion);
     }
@@ -115,8 +124,15 @@ public class SelfPromotionService {
         SelfPromotionResponse response = toResponse(promotion);
 
         // 4. 이벤트 발행 (UPDATE)
-        kafkaProducer.send(selfPromotionTopic,
-                SelfPromotionEvent.update(SelfPromotionEsEventData.fromResponse(response)));
+        SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
+
+        SelfPromotionUpdatedEvent updatedEvent = new SelfPromotionUpdatedEvent(
+                selfPromotionVo.code(), selfPromotionVo.title(), selfPromotionVo.content(),
+                selfPromotionVo.memberCode(), selfPromotionVo.memberNickname(),
+                selfPromotionVo.paymentType(), selfPromotionVo.payAmount(), selfPromotionVo.updatedAt()
+        );
+
+        kafkaProducer.send(selfPromotionTopic, response.promotionCode(), updatedEvent);
 
         return toResponse(promotion);
     }
@@ -133,8 +149,9 @@ public class SelfPromotionService {
         SelfPromotionResponse response = toResponse(promotion);
 
         // 3. 이벤트 발행 (DELETE)
-        kafkaProducer.send(selfPromotionTopic,
-                SelfPromotionEvent.delete(promotionCode));
+        SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotionCode);
+
+        kafkaProducer.send(selfPromotionTopic, promotionCode, deletedEvent);
     }
 
     // 회원 코드로 닉네임을 조회하는 헬퍼 메서드
@@ -186,6 +203,23 @@ public class SelfPromotionService {
             // 존재하지 않는다면 CustomException을 던짐
             throw new CustomException(ErrorCode.INVALID_MEMBER_CODE);
         }
+    }
+
+    // SelfPromotionService.java 내부에 SelfPromotion VO 변환 헬퍼
+    private SelfPromotion toSelfPromotionVo(SelfPromotionEntity entity) {
+        // 1. 회원 닉네임 조회 (기존 getMemberNickname 재사용)
+        String memberNickname = getMemberNickname(entity.getMemberCode());
+
+        return new SelfPromotion(
+                entity.getCode(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getMemberCode(),
+                memberNickname,
+                entity.getPaymentType(),
+                entity.getUnitAmount(),
+                entity.getUpdatedAt()
+        );
     }
 
     // SelfPromotionEntity를 SelfPromotionResponse DTO로 변환
