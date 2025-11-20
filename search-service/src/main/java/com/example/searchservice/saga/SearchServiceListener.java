@@ -2,25 +2,28 @@ package com.example.searchservice.saga;
 
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.service.CommissionService;
-import com.example.searchservice.commission.service.mapper.CommissionMapper;
-import com.example.searchservice.saga.events.commission.CommissionCreatedEvent;
-import com.example.searchservice.saga.events.commission.CommissionDeletedEvent;
-import com.example.searchservice.saga.events.commission.CommissionInitEvent;
-import com.example.searchservice.saga.events.commission.CommissionUpdatedEvent;
-import com.example.searchservice.saga.events.selfpromotion.SelfPromotionCreatedEvent;
-import com.example.searchservice.saga.events.selfpromotion.SelfPromotionDeletedEvent;
-import com.example.searchservice.saga.events.selfpromotion.SelfPromotionUpdatedEvent;
-import com.example.searchservice.saga.events.tag.TagInitEvent;
+
+import com.example.searchservice.saga.mapper.CommissionMapper;
+import com.example.searchservice.saga.mapper.SelfPromotionMapper;
+import com.example.searchservice.saga.mapper.TagMapper;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.service.SelfPromotionService;
-import com.example.searchservice.selfpromotion.service.mapper.SelfPromotionMapper;
+import com.example.searchservice.tag.entity.TagDocumentEntity;
+import com.example.searchservice.tag.service.TagAliasLoadService;
 import com.example.searchservice.tag.service.TagService;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-//import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
-//import org.hexagon.core.events.selfpromotion.SelfPromotionInitEvent;
-//import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
-//import org.hexagon.core.events.tag.TagInitEvent;
+import org.hexagon.core.events.commission.CommissionCreatedEvent;
+import org.hexagon.core.events.commission.CommissionDeletedEvent;
+import org.hexagon.core.events.commission.CommissionInitEvent;
+import org.hexagon.core.events.commission.CommissionUpdatedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionInitEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
+import org.hexagon.core.events.tag.TagInitEvent;
+import org.hexagon.core.vo.Tag;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -41,14 +44,27 @@ public class SearchServiceListener {
     private final SelfPromotionService selfPromotionService;
     private final CommissionService commissionService;
     private final TagService tagService;
+    private final TagAliasLoadService tagAliasLoadService;
 
     @KafkaHandler
     public void handleEvent(@Payload TagInitEvent event) {
-        tagService.saveAll(event.tags());
+        List<Tag> tags = event.tags();
+        List<TagDocumentEntity> docs = new ArrayList<>();
+
+        for (Tag tag : tags) {
+            // 별칭 사전(json)에서 별칭 데이터 불러옴
+            List<String> aliases = tagAliasLoadService.getTagAlias(tag.skill());
+
+            // Completion 필드에 별칭 데이터 추가
+            TagDocumentEntity document = TagMapper.toDocument(tag, aliases);
+            docs.add(document);
+        }
+
+        tagService.saveAll(docs);
     }
 
     @KafkaHandler
-    public void handleEvent(@Payload com.example.searchservice.saga.events.selfpromotion.SelfPromotionInitEvent event) {
+    public void handleEvent(@Payload SelfPromotionInitEvent event) {
         List<SelfPromotionDocumentEntity> docs = event.selfPromotions().stream()
                 .map(SelfPromotionMapper::toSelfPromotionDocument)
                 .toList();
@@ -58,13 +74,13 @@ public class SearchServiceListener {
 
     @KafkaHandler
     public void handleEvent(@Payload SelfPromotionCreatedEvent event) {
-        SelfPromotionDocumentEntity doc = SelfPromotionCreatedEvent.toDocumentEntity(event);
+        SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
         selfPromotionService.save(doc);
     }
 
     @KafkaHandler
     public void handleEvent(@Payload SelfPromotionUpdatedEvent event) {
-        SelfPromotionDocumentEntity doc = SelfPromotionUpdatedEvent.toDocumentEntity(event);
+        SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
         selfPromotionService.update(doc);
     }
 
@@ -84,13 +100,13 @@ public class SearchServiceListener {
 
     @KafkaHandler
     public void handleEvent(@Payload CommissionCreatedEvent event) {
-        CommissionDocumentEntity doc = CommissionCreatedEvent.toCommissionDocumentEntity(event);
+        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event);
         commissionService.save(doc);
     }
 
     @KafkaHandler
     public void handleEvent(@Payload CommissionUpdatedEvent event) {
-        CommissionDocumentEntity doc = CommissionUpdatedEvent.toCommissionDocumentEntity(event);
+        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event);
         commissionService.update(doc);
     }
 

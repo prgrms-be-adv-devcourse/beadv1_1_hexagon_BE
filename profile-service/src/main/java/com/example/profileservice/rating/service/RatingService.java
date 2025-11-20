@@ -3,11 +3,11 @@ package com.example.profileservice.rating.service;
 import static com.example.profileservice.common.model.vo.ErrorCode.CANNOT_RATE_MYSELF;
 import static com.example.profileservice.common.model.vo.ErrorCode.RATING_MEMBER_NOT_FOUND;
 
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
-import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.model.dto.response.RatingResponse;
 import com.example.profileservice.rating.model.entity.RatingEntity;

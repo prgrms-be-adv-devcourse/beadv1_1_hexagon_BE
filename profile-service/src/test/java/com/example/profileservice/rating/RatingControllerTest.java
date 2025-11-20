@@ -5,10 +5,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.common.model.vo.util.TestKafkaConfig;
-import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.repository.RatingRepository;
 import com.example.profileservice.rating.service.RatingService;
@@ -26,10 +26,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 @Import(TestKafkaConfig.class)
 public class RatingControllerTest {
 
@@ -54,7 +56,7 @@ public class RatingControllerTest {
     private RatingService ratingService;
 
     @MockitoBean
-    private MemberFeignClient memberServiceClient;
+    private MemberFeignClient memberFeignClient;
 
     private RatingRequest satisfiedRequest;
     private RatingRequest unsatisfiedRequest;
@@ -69,7 +71,7 @@ public class RatingControllerTest {
         ResponseDto<MemberExistOutput> mockSuccessResponse = ResponseDto.success(mockExistOutput);
 
         // memberServiceClient.existMemberByCode 호출 시 성공 응답 반환하도록 Mocking
-        Mockito.when(memberServiceClient.existMemberByCode(Mockito.anyList()))
+        Mockito.when(memberFeignClient.existMemberByCode(Mockito.anyList()))
                 .thenReturn(mockSuccessResponse);
 
         // 1. 초기 평가 데이터 설정 및 저장 (만족 10, 불만족 5)
@@ -189,7 +191,7 @@ public class RatingControllerTest {
         ResponseDto<MemberExistOutput> mockFailureResponse = ResponseDto.success(mockExistOutputFailure);
 
         // 특정 인수를 받았을 때 실패 응답을 반환하도록 설정
-        Mockito.when(memberServiceClient.existMemberByCode(invalidCodes))
+        Mockito.when(memberFeignClient.existMemberByCode(invalidCodes))
                 .thenReturn(mockFailureResponse);
 
         // when & then: 유효하지 않은 회원 코드로 평가 시도

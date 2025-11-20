@@ -7,14 +7,14 @@
     <style>
         #messages { border:1px solid #ccc; padding:10px; height:300px; overflow:auto; margin-bottom:10px; }
         #roomId { width:50px; }
-        #senderId { width:80px; }
+        #senderCode { width:80px; }
         #messageInput { width:200px; }
     </style>
 </head>
 <body>
 <h2>Chat Room Test</h2>
 <label>Room ID: <input type="text" id="roomId" value="950"/></label><br><br>
-<label>Sender ID: <input type="text" id="senderId" value="userA"/></label><br><br>
+<label>Sender Code: <input type="text" id="senderCode" value="userA"/></label><br><br>
 <div id="messages"></div>
 <input type="text" id="messageInput" placeholder="Type a message" />
 <button id="sendBtn">Send</button>
@@ -24,7 +24,7 @@
     let currentSubscription = null;
     const messagesDiv = document.getElementById('messages');
     const roomInput = document.getElementById('roomId');
-    const senderInput = document.getElementById('senderId');
+    const senderInput = document.getElementById('senderCode');
 
     function appendMessage(text) {
         const p = document.createElement('p');
@@ -43,13 +43,13 @@
         currentSubscription = stompClient.subscribe('/queue/room/' + roomId, function(stompMessage) {
             try {
                 const receivedMsg = JSON.parse(stompMessage.body);
-                const currentSenderId = senderInput.value;
+                const currentSenderCode = senderInput.value;
                 let displayPrefix;
 
-                if (receivedMsg.senderId === currentSenderId) {
+                if (receivedMsg.senderCode === currentSenderCode) {
                     displayPrefix = 'Me: ';
                 } else {
-                    displayPrefix = receivedMsg.senderId + ': ';
+                    displayPrefix = receivedMsg.senderCode + ': ';
                 }
 
                 appendMessage(displayPrefix + receivedMsg.content);
@@ -67,7 +67,7 @@
     function connect() {
         appendMessage('Connecting...');
 
-        const socket = new SockJS('http://localhost:8080/chat');
+        const socket = new SockJS('http://localhost:8080/ws/chat');
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function(frame) {
@@ -85,12 +85,12 @@
     document.getElementById('sendBtn').addEventListener('click', () => {
         const msg = document.getElementById('messageInput').value;
         const roomId = roomInput.value;
-        const senderId = senderInput.value;
+        const senderCode = senderInput.value;
 
         if(stompClient && stompClient.connected && msg.trim() !== '') {
             const payload = {
                 roomId: roomId,
-                senderId: senderId,
+                senderCode: senderCode,
                 content: msg
             };
 

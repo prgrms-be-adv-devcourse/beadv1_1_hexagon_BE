@@ -11,12 +11,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
+import com.example.memberservice.member.service.model.vo.InternalMemberInfo;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.PaymentType;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
-import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,10 +42,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class SelfPromotionControllerTest {
 
     private static final String BASE_URL = "/api/self-promotions";
@@ -73,42 +77,44 @@ public class SelfPromotionControllerTest {
     private SelfPromotionEntity otherPromotion;
     private ResumeEntity validResume;
 
-    // InternalMemberInfo의 Mock 타입 정의
-    public record InternalMemberInfo(String memberCode, String nickname) {} // 닉네임 필드명을 'nickname'으로 가정
-
-    // MemberInfoOutput의 Mock 타입 정의
-    public record MockMemberInfoOutput(
-            List<InternalMemberInfo> internalMemberInfos // 필드명을 'internalMemberInfos'로 가정
-    ) {}
-
     @BeforeEach
     void setUp() {
-        // 1. Feign Client Mocking: 회원 존재 여부 및 닉네임 조회
+        // 1. 테스트에 사용할 유효한 회원 코드 목록 정의
         List<String> validCodes = List.of(TEST_MEMBER_CODE, OTHER_MEMBER_CODE);
 
-        // 2. 회원 존재 여부 Mocking (모든 유효 코드는 존재함)
+        // 2. 회원 존재 여부 Mocking (existMemberByCode)
         MemberExistOutput mockExistOutput = new MemberExistOutput(validCodes, List.of());
         ResponseDto<MemberExistOutput> mockExistResponse = ResponseDto.success(mockExistOutput);
+
         Mockito.when(memberFeignClient.existMemberByCode(anyList()))
                 .thenReturn(mockExistResponse);
 
-        // 3. 회원 닉네임 조회 Mocking (toResponse 헬퍼 메서드에서 사용)
-        List<InternalMemberInfo> internalMemberInfos = List.of(
-                new InternalMemberInfo(TEST_MEMBER_CODE, "테스터닉네임"),
-                new InternalMemberInfo(OTHER_MEMBER_CODE, "타인닉네임")
+        // 3. 회원 닉네임 조회 Mocking (getMemberInfoByCode)
+        List<InternalMemberInfo> allInternalMemberInfos = List.of(
+                new InternalMemberInfo(TEST_MEMBER_CODE, "테스터닉네임", true),
+                new InternalMemberInfo(OTHER_MEMBER_CODE, "타인닉네임", true)
         );
 
-        MemberInfoOutput actualMemberInfoOutput = Mockito.mock(MemberInfoOutput.class);
+        //  doAnswer + doReturn().when()으로 동적 필터링 및 타입 오류 회피
+        Mockito.doAnswer(invocation -> {
+                    // 1. Feign Client에 전달된 인자 (요청된 memberCode 리스트)를 추출
+                    List<String> requestedCodes = invocation.getArgument(0);
 
-        Mockito.when(memberFeignClient.getMemberInfoByCode(anyList()))
-                .thenAnswer(invocation -> {
-                    // 실제 memberInfoOutput.internalMemberInfos()의 반환값을 Mocking된 리스트로 설정
-                    Mockito.when(actualMemberInfoOutput.internalMemberInfos())
-                            .thenReturn((List) internalMemberInfos);
+                    // 2. 요청된 코드와 일치하는 InternalMemberInfo만 필터링
+                    List<InternalMemberInfo> filteredInfos = allInternalMemberInfos.stream()
+                            .filter(info -> requestedCodes.contains(info.memberCode()))
+                            .collect(Collectors.toList());
 
-                    // 최종적으로 Feign Client가 반환해야 하는 ResponseDto<MemberInfoOutput> 객체를 생성
-                    return ResponseDto.success(actualMemberInfoOutput);
-                });
+                    // 3. Mock 객체 생성
+                    MemberInfoOutput resultOutput = Mockito.mock(MemberInfoOutput.class);
+
+                    // 4. [핵심]: doReturn().when()을 사용하여 List 반환을 강제하고 타입 충돌을 회피합니다.
+                    Mockito.doReturn((List) filteredInfos).when(resultOutput).internalMemberInfos();
+
+                    // 5. ResponseDto.success(Mock 객체)를 반환
+                    return ResponseDto.success(resultOutput);
+                })
+                .when(memberFeignClient).getMemberInfoByCode(anyList()); // doAnswer().when() 사용
 
         // 4. Kafka Producer Mocking
         doNothing().when(kafkaProducer).send(any(String.class), any());
@@ -349,17 +355,20 @@ public class SelfPromotionControllerTest {
     void createPromotion_InvalidMemberCode_Failure() throws Exception {
         final String INVALID_MEMBER_CODE = "invalid-member-code-999";
 
-        // given: Mocking 재설정 - INVALID_MEMBER_CODE는 존재하지 않는다고 설정
-        List<String> invalidCodeList = List.of(INVALID_MEMBER_CODE, validResume.getMemberCode()); // 유효성 검사 요청 시 이력서 작성자 코드도 같이 갈 수 있음
+        Mockito.reset(memberFeignClient, kafkaProducer);
 
+        // given: Mocking 설정 - INVALID_MEMBER_CODE는 존재하지 않는다고 설정
+
+        // 1. 응답 데이터 정의 (요청자 코드는 존재하지 않음을 명시)
         MemberExistOutput mockExistOutputFailure = new MemberExistOutput(
-                List.of(validResume.getMemberCode()), // 이력서 작성자는 존재
-                List.of(INVALID_MEMBER_CODE) // 요청자 코드는 존재하지 않음
+                List.of(validResume.getMemberCode()), // 존재하는 코드 목록
+                List.of(INVALID_MEMBER_CODE)         // 존재하지 않는 코드 목록
         );
         ResponseDto<MemberExistOutput> mockFailureResponse = ResponseDto.success(mockExistOutputFailure);
 
-        Mockito.when(memberFeignClient.existMemberByCode(invalidCodeList))
-                .thenReturn(mockFailureResponse);
+        // 2. Mocking 설정: 어떤 리스트가 들어오든 실패 응답을 반환하도록 설정
+        Mockito.doReturn(mockFailureResponse)
+                .when(memberFeignClient).existMemberByCode(anyList());
 
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
                 "제목", "내용", PaymentType.MONTHLY, 3000000L, validResume.getCode());
@@ -370,6 +379,6 @@ public class SelfPromotionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(3006)); // INVALID_MEMBER_CODE
+                .andExpect(jsonPath("$.code").value(3006)); // 에러 코드 확인
     }
 }

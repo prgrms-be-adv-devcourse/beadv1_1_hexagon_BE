@@ -72,19 +72,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
 
     @Override
     public void update(SelfPromotionDocumentEntity selfPromotion) {
-        selfPromotionRepository.findById(selfPromotion.getCode())
-                .ifPresentOrElse(existing -> {
-                    existing.setCode(selfPromotion.getCode());
-                    existing.setTitle(selfPromotion.getTitle());
-                    existing.setContent(selfPromotion.getContent());
-                    existing.setMemberCode(selfPromotion.getMemberCode());
-                    existing.setMemberNickname(selfPromotion.getMemberNickname());
-                    existing.setUpdatedAt(selfPromotion.getUpdatedAt());
-
-                    selfPromotionRepository.save(existing);
-                }, () -> {
-                    selfPromotionRepository.save(selfPromotion);
-                });
+        selfPromotionRepository.save(selfPromotion);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.example.profileservice.selfPromotion.service;
 
 import static org.apache.kafka.common.requests.FetchMetadata.log;
 
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
@@ -66,10 +67,13 @@ public class SelfPromotionService {
     // 새 셀프 프로모션 게시글을 등록
     @Transactional
     public SelfPromotionResponse createPromotion(String memberCode, SelfPromotionCreateRequest request) {
-        // 1. 이력서 유효성 검증
+        // 1. 요청 회원 코드 유효성 검증
+        validateMemberExists(memberCode);
+
+        // 2. 이력서 유효성 검증
         validateResumeCode(request.resumeCode());
 
-        // 2. SelfPromotion 엔티티 생성 및 저장
+        // 3. SelfPromotion 엔티티 생성 및 저장
         SelfPromotionEntity promotion = SelfPromotionEntity.create(
                 memberCode,
                 request.title(),
@@ -83,7 +87,7 @@ public class SelfPromotionService {
 
         SelfPromotionResponse response = toResponse(promotion);
 
-        // 3. 이벤트 발행 (CREATE)
+        // 4. 이벤트 발행 (CREATE)
         kafkaProducer.send(selfPromotionTopic,
                 SelfPromotionEvent.create(SelfPromotionEsEventData.fromResponse(response)));
 
@@ -171,6 +175,16 @@ public class SelfPromotionService {
             if (!exists) {
                 throw new CustomException(ErrorCode.INVALID_RESUME_CODE_LINK);
             }
+        }
+    }
+
+    // 요청 회원 코드가 유효한지 확인하는 메서드
+    private void validateMemberExists(String memberCode) {
+        ResponseDto<MemberExistOutput> response = memberFeignClient.existMemberByCode(List.of(memberCode));
+
+        if (response.getData() == null || response.getData().notExists().contains(memberCode)) {
+            // 존재하지 않는다면 CustomException을 던짐
+            throw new CustomException(ErrorCode.INVALID_MEMBER_CODE);
         }
     }
 

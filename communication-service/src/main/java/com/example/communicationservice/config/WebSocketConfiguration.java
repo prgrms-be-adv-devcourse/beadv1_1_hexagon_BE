@@ -20,7 +20,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/chat") // STOMP 클라이언트가 최초로 WebSocket handshake를 요청하는 URL
+        registry.addEndpoint("/ws/chat") // STOMP 클라이언트가 최초로 WebSocket handshake를 요청하는 URL
             .withSockJS();
     }
 

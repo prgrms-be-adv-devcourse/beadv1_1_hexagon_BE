@@ -3,21 +3,14 @@ package com.example.memberservice.member.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.kafka.model.dto.MemberCreateEvent;
-import com.example.memberservice.common.kafka.model.dto.MemberUpdateEvent;
-import com.example.memberservice.common.kafka.producer.MemberCreateKafkaEventProducer;
-import com.example.memberservice.common.kafka.producer.MemberUpdateKafkaEventProducer;
+import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.common.security.model.vo.Provider;
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
 import com.example.memberservice.member.entity.Members;
 import com.example.memberservice.member.entity.vo.Gender;
 import com.example.memberservice.member.repository.MemberJpaRepository;
@@ -27,24 +20,19 @@ import com.example.memberservice.member.service.model.dto.input.MemberExistByNam
 import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateWorkStateInput;
-import com.example.memberservice.member.service.model.vo.MemberRating;
-import com.example.memberservice.member.service.model.vo.MemberTag;
 import com.example.memberservice.member.service.util.RequestURIGenerator;
 import com.example.memberservice.socialmember.entity.SocialMembers;
 import com.example.memberservice.socialmember.repository.SocialMemberJpaRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import org.junit.jupiter.api.BeforeEach;
+import org.hexagon.core.events.member.MemberCreatedEvent;
+import org.hexagon.core.events.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,13 +51,12 @@ class MemberServiceImplTest {
     @Autowired
     private MemberServiceImpl service;
 
-    @Mock
+    @MockitoBean
     private RestTemplate restTemplate; // 외부 API는 Mock
 
     @MockitoBean
-    private MemberCreateKafkaEventProducer memberCreateKafkaEventProducer;
-    @MockitoBean
-    private MemberUpdateKafkaEventProducer memberUpdateKafkaEventProducer;
+    private MemberKafkaEventProducer memberKafkaEventProducer;
+
     @MockitoBean
     private RequestURIGenerator requestURIGenerator;
     @Autowired
@@ -91,10 +78,10 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("createMember: 이미 존재하면 예외")
     void createMember_already() {
-        Members m = Members.builder().code("who").nickName("nick").build();
+        Members m = createMember();
         memberJpaRepository.save(m);
 
-        MemberCreateInput input = new MemberCreateInput("who", "nick", "010100200", LocalDate.now(), Gender.MAN);
+        MemberCreateInput input = new MemberCreateInput("c1", "nick", "010100200", LocalDate.now(), Gender.MAN);
         assertThatThrownBy(() -> service.createMember(input))
             .isInstanceOf(BusinessException.class)
             .hasMessageContaining(ErrorCode.MEMBER_ALREADY_EXISTS.getMessage());
@@ -129,19 +116,19 @@ class MemberServiceImplTest {
         // Given
         SocialMembers socialMembers = SocialMembers.builder()
             .email("e@ex.com").provider(Provider.NAVER).providerId("pid").build();
-        socialMemberJpaRepository.save(socialMembers);
+        SocialMembers save = socialMemberJpaRepository.save(socialMembers);
 
-        MemberCreateInput input = new MemberCreateInput("c2", "new", "01022223333", LocalDate.now(), Gender.MAN);
-        given(memberCreateKafkaEventProducer.sendEvent(any(MemberCreateEvent.class)))
+        MemberCreateInput input = new MemberCreateInput(save.getCode(), "new", "01022223333", LocalDate.now(), Gender.MAN);
+        given(memberKafkaEventProducer.sendCreatedEvent(any(MemberCreatedEvent.class)))
             .willReturn(CompletableFuture.completedFuture(null));
 
         // When
         service.createMember(input);
 
         // Then
-        Members saved = memberJpaRepository.findByCode("c2").get();
+        Members saved = memberJpaRepository.findByCode(socialMembers.getCode()).get();
         assertThat(saved.getEmail()).isEqualTo("e@ex.com");
-        verify(memberCreateKafkaEventProducer).sendEvent(any(MemberCreateEvent.class));
+        verify(memberKafkaEventProducer).sendCreatedEvent(any(MemberCreatedEvent.class));
     }
 
     @Test
@@ -166,14 +153,14 @@ class MemberServiceImplTest {
         memberJpaRepository.save(m);
 
         MemberUpdateInput input = new MemberUpdateInput("c1", "newNick", "01087901234", LocalDate.now(), Gender.MAN);
-        given(memberUpdateKafkaEventProducer.sendEvent(any(MemberUpdateEvent.class)))
+        given(memberKafkaEventProducer.sendUpdatedEvent(any(MemberUpdatedEvent.class)))
             .willReturn(CompletableFuture.completedFuture(null));
 
         service.updateMember(input);
 
         Members updated = memberJpaRepository.findByCode("c1").get();
         assertThat(updated.getNickName()).isEqualTo("newNick");
-        verify(memberUpdateKafkaEventProducer).sendEvent(any(MemberUpdateEvent.class));
+        verify(memberKafkaEventProducer).sendUpdatedEvent(any(MemberUpdatedEvent.class));
     }
 
     @Test

@@ -2,10 +2,7 @@ package com.example.memberservice.member.service;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.kafka.model.dto.MemberCreateEvent;
-import com.example.memberservice.common.kafka.model.dto.MemberUpdateEvent;
-import com.example.memberservice.common.kafka.producer.MemberCreateKafkaEventProducer;
-import com.example.memberservice.common.kafka.producer.MemberUpdateKafkaEventProducer;
+import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.common.web.model.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
 import com.example.memberservice.member.entity.Members;
@@ -25,9 +22,10 @@ import com.example.memberservice.socialmember.entity.SocialMembers;
 import com.example.memberservice.socialmember.repository.SocialMemberJpaRepository;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.member.MemberCreatedEvent;
+import org.hexagon.core.events.member.MemberUpdatedEvent;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -49,11 +47,8 @@ public class MemberServiceImpl implements MemberService {
     // 멤버 조회에서 태그 정보와 평가 정보를 받아올 RestTemplate
     private final RestTemplate restTemplate;
 
-    //멤버 생성 시 Deposit, Cart 가 수령할 이벤트 발생 주체
-    private final MemberCreateKafkaEventProducer memberCreateKafkaEventProducer;
-
-    //멤버 업데이트 시 받을 이벤트 발생 주체
-    private final MemberUpdateKafkaEventProducer memberUpdateKafkaEventProducer;
+    //멤버 생성 및 업데이트 시 이벤트 발생 주체
+    private final MemberKafkaEventProducer memberKafkaEventProducer;
 
     private final RequestURIGenerator requestURIGenerator;
 
@@ -118,7 +113,7 @@ public class MemberServiceImpl implements MemberService {
         Members savedMember = memberJpaRepository.save(newMember);
 
         // Kafka Event 발송.
-        memberCreateKafkaEventProducer.sendEvent(new MemberCreateEvent(savedMember.getCode()));
+        memberKafkaEventProducer.sendCreatedEvent(new MemberCreatedEvent(savedMember.getCode()));
 
     }
 
@@ -134,8 +129,8 @@ public class MemberServiceImpl implements MemberService {
 
         Members updatedMember = memberJpaRepository.save(existMember);
 
-        memberUpdateKafkaEventProducer.sendEvent(
-            new MemberUpdateEvent(updatedMember.getCode(), updatedMember.getNickName()));
+        memberKafkaEventProducer.sendUpdatedEvent(
+            new MemberUpdatedEvent(updatedMember.getCode(), updatedMember.getNickName()));
     }
 
 

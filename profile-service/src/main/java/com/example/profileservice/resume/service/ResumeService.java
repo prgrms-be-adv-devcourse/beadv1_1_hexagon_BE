@@ -1,7 +1,10 @@
 package com.example.profileservice.resume.service;
 
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
+import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
+import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.experience.model.dto.request.ExperienceRequest;
 import com.example.profileservice.experience.model.dto.response.ExperienceResponse;
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
@@ -25,6 +28,7 @@ public class ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final ExperienceRepository experienceRepository;
+    private final MemberFeignClient memberFeignClient;
 
     // 회원이 작성한 모든 이력서를 조회
     public List<ResumeSimpleResponse> getMyResumes(String memberCode) {
@@ -38,7 +42,10 @@ public class ResumeService {
     // 새로운 이력서를 등록하고, 최초 등록 시 이벤트 발행
     @Transactional
     public ResumeDetailResponse createResume(String memberCode, ResumeCreateRequest request) {
-        // 1. 이력서 엔티티 생성 및 저장
+        // 1. 회원 유효성 검증 로직
+        validateMemberCode(memberCode);
+
+        // 2. 이력서 엔티티 생성 및 저장
         ResumeEntity resume = ResumeEntity.builder()
                 .memberCode(memberCode)
                 .title(request.title())
@@ -147,6 +154,29 @@ public class ResumeService {
 
         // 3. Soft Delete 처리
         experience.delete();
+    }
+
+    // 회원 코드 유효성을 검증하는 헬퍼 메서드
+    private void validateMemberCode(String memberCode) {
+        // 1. Feign Client 호출
+        ResponseDto<MemberExistOutput> response = memberFeignClient.existMemberByCode(List.of(memberCode));
+
+        // 2. 응답 DTO의 성공/실패 여부 확인
+        if (response.getCode() != 0) {
+            return;
+        }
+
+        // 3. 응답 데이터(data)의 유효성 확인
+        if (response.getData() == null) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        MemberExistOutput existOutput = response.getData();
+
+        // 4. 존재하지 않는 회원 코드가 있는지 확인
+        if (!existOutput.notExists().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_MEMBER_CODE);
+        }
     }
 
     // resumeCode와 memberCode를 사용하여 이력서를 조회하고, 없거나 권한이 없으면 예외를 발생

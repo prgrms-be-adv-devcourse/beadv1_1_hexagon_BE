@@ -9,13 +9,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.common.model.vo.util.TestKafkaConfig;
 import com.example.profileservice.experience.model.dto.request.ExperienceRequest;
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
 import com.example.profileservice.experience.repository.ExperienceRepository;
-import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import com.example.profileservice.resume.model.dto.request.ResumeCreateRequest;
 import com.example.profileservice.resume.model.dto.request.ResumeUpdateRequest;
 import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
@@ -40,11 +40,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestKafkaConfig.class)
+@Transactional
 public class ResumeControllerTest {
 
     private static final String BASE_URL = "/api/resumes";
@@ -66,7 +68,7 @@ public class ResumeControllerTest {
     private ExperienceRepository experienceRepository;
 
     @MockitoBean
-    private MemberFeignClient memberServiceClient;
+    private MemberFeignClient memberFeignClient;
 
     private ResumeEntity initialResume;
     private ExperienceEntity initialExperience;
@@ -83,7 +85,7 @@ public class ResumeControllerTest {
         ResponseDto<MemberExistOutput> mockSuccessResponse = ResponseDto.success(mockExistOutput);
 
         // memberServiceClient.existMemberByCode 호출 시 성공 응답 반환하도록 Mocking
-        Mockito.when(memberServiceClient.existMemberByCode(anyList()))
+        Mockito.when(memberFeignClient.existMemberByCode(anyList()))
                 .thenReturn(mockSuccessResponse);
 
         // 테스트 환경 고정 시간 설정
@@ -236,29 +238,32 @@ public class ResumeControllerTest {
     @Test
     @DisplayName("POST /api/resumes - 유효하지 않은 회원 코드로 등록 시도 시 400 Bad Request")
     void createResume_InvalidMemberCode_Failure() throws Exception {
-        // given: 유효하지 않은 회원 코드를 시뮬레이션하기 위한 Mocking 재설정
-        // INVALID_MEMBER_CODE는 존재하지 않는다고 Mocking
+        // given: 유효하지 않은 회원 코드를 시뮬레이션하기 위한 Mocking 설정
 
-        List<String> validCodes = List.of(INVALID_MEMBER_CODE);
-
-        // INVALID_MEMBER_CODE는 존재하지 않도록 응답 설정
+        // 1. Mock 응답 데이터 (존재하지 않는 코드 목록)
         MemberExistOutput mockExistOutputFailure = new MemberExistOutput(
-                List.of(), // 존재하는 코드 없음
-                List.of(INVALID_MEMBER_CODE) // 존재하지 않는 코드
+                List.of(),
+                List.of(INVALID_MEMBER_CODE) // 요청 코드가 존재하지 않음
         );
         ResponseDto<MemberExistOutput> mockFailureResponse = ResponseDto.success(mockExistOutputFailure);
 
-        // 해당 코드를 포함하는 호출에 대해서만 실패 응답을 반환하도록 설정
-        Mockito.when(memberServiceClient.existMemberByCode(validCodes))
+        // 2. Mocking 실행: INVALID_MEMBER_CODE가 포함된 모든 호출에 대해 실패 응답을 반환하도록 설정
+        Mockito.when(memberFeignClient.existMemberByCode(Mockito.argThat(
+                        codes -> codes.contains(INVALID_MEMBER_CODE) // <-- 이 코드가 포함된 List 호출을 잡음
+                )))
                 .thenReturn(mockFailureResponse);
 
-        // when & then: 유효하지 않은 회원 코드로 이력서 등록 시도
+        // when & then
         mockMvc.perform(post(BASE_URL)
-                        .header(HEADER_X_CODE, INVALID_MEMBER_CODE) // 유효하지 않은 코드를 HEADER에 사용
+                        .header(HEADER_X_CODE, INVALID_MEMBER_CODE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(3006));
+                .andExpect(jsonPath("$.code").value(3006)); // INVALID_MEMBER_CODE (프로필 서비스 명세)
+
+        // 3. (선택) verify
+        Mockito.verify(memberFeignClient, Mockito.times(1))
+                .existMemberByCode(Mockito.argThat(codes -> codes.contains(INVALID_MEMBER_CODE)));
     }
 
     //Experience API 테스트

@@ -72,25 +72,7 @@ public class CommissionServiceImpl implements CommissionService {
 
     @Override
     public void update(CommissionDocumentEntity commission) {
-        commissionRepository.findById(commission.getCode())
-                .ifPresentOrElse(existing -> {
-                    existing.setCode(commission.getCode());
-                    existing.setTitle(commission.getTitle());
-                    existing.setContent(commission.getContent());
-                    existing.setMemberCode(commission.getMemberCode());
-                    existing.setMemberNickname(commission.getMemberNickname());
-                    existing.setTags(commission.getTags());
-                    existing.setStartedAt(commission.getStartedAt());
-                    existing.setEndedAt(commission.getEndedAt());
-                    existing.setPaymentType(commission.getPaymentType());
-                    existing.setPayAmount(commission.getPayAmount());
-                    existing.setIsClosed(commission.getIsClosed());
-                    existing.setUpdatedAt(commission.getUpdatedAt());
-
-                    commissionRepository.save(existing);
-                }, () -> {
-                    commissionRepository.save(commission);
-                });
+        commissionRepository.save(commission);
     }
 
     @Override
