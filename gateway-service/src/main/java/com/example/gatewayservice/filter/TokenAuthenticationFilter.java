@@ -14,6 +14,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 
 @Component
 @Slf4j
@@ -38,8 +39,8 @@ public class TokenAuthenticationFilter extends AbstractGatewayFilterFactory<Toke
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            log.info("토큰 검증 로직 실행");
             ServerHttpRequest request = exchange.getRequest();
-
             // Request에서 토큰 및 헤더가 있는 지 확인
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                 log.info("AccessToken이 비어있습니다. RefreshToken을 확인합니다.");
@@ -69,9 +70,14 @@ public class TokenAuthenticationFilter extends AbstractGatewayFilterFactory<Toke
                 .build();
 
             //다음 IsSignCheckFilter에서 확인할 수도 있으니 claims를 넘겨줌
-            exchange.getAttributes().put("claims", claims);
+            ServerWebExchange mutatedExchange = exchange.mutate()
+                .request(mutatedRequest)
+                .build();
 
-            return chain.filter(exchange.mutate().request(mutatedRequest).build());
+            // mutate로 새 exchange 만들었으니 새 exchange에 다시 넣어야 한다
+            mutatedExchange.getAttributes().put("claims", claims);
+
+            return chain.filter(mutatedExchange);
         };
     }
 
