@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class BaseEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Version
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
