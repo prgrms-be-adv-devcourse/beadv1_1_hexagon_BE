@@ -4,6 +4,7 @@ import static com.example.contractservice.deposit.domain.exception.DepositErrorC
 import static com.example.contractservice.deposit.service.mapper.DepositHistoryMapper.toEntity;
 import static com.example.contractservice.deposit.service.mapper.DepositMapper.toDomain;
 
+import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
 import com.example.contractservice.deposit.controller.dto.response.DepositInfoResponse;
@@ -77,6 +78,7 @@ public class DepositService {
     }
 
     @Transactional
+    @OptimisticRetry(maxAttempts = 4)
     public DepositProcessResponse withdraw(DepositProcessRequest request) {
         DepositEntity depositEntity = process(request, Deposit::withdraw);
 
