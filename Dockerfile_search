@@ -1,0 +1,27 @@
+FROM gradle:jdk17 AS builder
+
+WORKDIR /libs/search-service
+
+#COPY search-service/gradlew ./search-service/gradlew
+#COPY search-service/gradle ./search-service/gradle
+#COPY search-service/build.gradle ./search-service
+#COPY search-service/settings.gradle ./search-service
+
+COPY search-service/ .
+
+RUN chmod +x ./gradlew
+
+RUN ./gradlew dependencies --no-daemon || true
+
+
+COPY core ../core
+
+RUN ./gradlew build --no-daemon -x test
+
+FROM eclipse-temurin:17.0.10_7-jre
+
+WORKDIR /app
+
+COPY --from=builder /libs/search-service/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

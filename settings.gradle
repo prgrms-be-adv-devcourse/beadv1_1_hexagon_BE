@@ -1,3 +1,4 @@
 rootProject.name = "beadv1_1_hexagon_BE"
 
 include 'core'
+include 'member-service'

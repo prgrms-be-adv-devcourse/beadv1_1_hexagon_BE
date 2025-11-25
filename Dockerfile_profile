@@ -1,0 +1,27 @@
+FROM gradle:jdk17 AS builder
+
+WORKDIR /libs/profile-service
+
+#COPY profile-service/gradlew ./profile-service/gradlew
+#COPY profile-service/gradle ./profile-service/gradle
+#COPY profile-service/build.gradle ./profile-service
+#COPY profile-service/settings.gradle ./profile-service
+
+COPY profile-service/ .
+
+RUN chmod +x ./gradlew
+
+RUN ./gradlew dependencies --no-daemon || true
+
+
+COPY core ../core
+
+RUN ./gradlew build --no-daemon -x test
+
+FROM eclipse-temurin:17.0.10_7-jre
+
+WORKDIR /app
+
+COPY --from=builder /libs/profile-service/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

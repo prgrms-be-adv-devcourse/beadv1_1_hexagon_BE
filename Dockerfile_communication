@@ -1,0 +1,27 @@
+FROM gradle:jdk17 AS builder
+
+WORKDIR /libs/communication-service
+
+#COPY communication-service/gradlew ./communication-service/gradlew
+#COPY communication-service/gradle ./communication-service/gradle
+#COPY communication-service/build.gradle ./communication-service
+#COPY communication-service/settings.gradle ./communication-service
+
+COPY communication-service/ .
+
+RUN chmod +x ./gradlew
+
+RUN ./gradlew dependencies --no-daemon || true
+
+
+COPY core ../core
+
+RUN ./gradlew build --no-daemon -x test
+
+FROM eclipse-temurin:17.0.10_7-jre
+
+WORKDIR /app
+
+COPY --from=builder /libs/communication-service/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

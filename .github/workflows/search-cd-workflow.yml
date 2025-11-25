@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-search-service
       service-dir: ./search-service
-      file-name: Dockerfile
+      file-name: Dockerfile_member
 
   deploying:
     needs: releasing

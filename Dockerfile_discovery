@@ -1,0 +1,27 @@
+FROM gradle:jdk17 AS builder
+
+WORKDIR /libs/discovery-service
+
+#COPY discovery-service/gradlew ./discovery-service/gradlew
+#COPY discovery-service/gradle ./discovery-service/gradle
+#COPY discovery-service/build.gradle ./discovery-service
+#COPY discovery-service/settings.gradle ./discovery-service
+
+COPY discovery-service/ .
+
+RUN chmod +x ./gradlew
+
+RUN ./gradlew dependencies --no-daemon || true
+
+
+COPY core ../core
+
+RUN ./gradlew build --no-daemon -x test
+
+FROM eclipse-temurin:17.0.10_7-jre
+
+WORKDIR /app
+
+COPY --from=builder /libs/discovery-service/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

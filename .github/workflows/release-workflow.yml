@@ -112,7 +112,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.service-dir }}
-          file: ${{ inputs.service-dir }}/${{ inputs.file-name }}
+          file: ./${{ inputs.file-name }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

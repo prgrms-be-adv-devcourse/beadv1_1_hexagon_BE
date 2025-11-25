@@ -1,0 +1,27 @@
+FROM gradle:jdk17 AS builder
+
+WORKDIR /libs/payment-service
+
+#COPY payment-service/gradlew ./payment-service/gradlew
+#COPY payment-service/gradle ./payment-service/gradle
+#COPY payment-service/build.gradle ./payment-service
+#COPY payment-service/settings.gradle ./payment-service
+
+COPY payment-service/ .
+
+RUN chmod +x ./gradlew
+
+RUN ./gradlew dependencies --no-daemon || true
+
+
+COPY core ../core
+
+RUN ./gradlew build --no-daemon -x test
+
+FROM eclipse-temurin:17.0.10_7-jre
+
+WORKDIR /app
+
+COPY --from=builder /libs/payment-service/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
