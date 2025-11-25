@@ -88,7 +88,6 @@ jobs:
           else
           echo "알 수 없는 서비스입니다."
           fi
-#          echo '${{ vars.TEST_YML }}' > ${{ inputs.service-dir }}/src/main/resources/application-test.yml
           cat ${{ inputs.service-dir }}/src/main/resources/application-prod.yml
 
       - name: Sign in github container registry
