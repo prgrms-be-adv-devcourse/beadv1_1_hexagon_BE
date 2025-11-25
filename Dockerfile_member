@@ -23,7 +23,8 @@ RUN ./member-service/gradlew dependencies --no-daemon || true
 # /libs에 core 복사 /libs/core 로 카피
 COPY ./core ./core
 
-RUN ./member-service/gradlew build --no-daemon -x test
+WORKDIR /libs/member-service
+RUN ./gradlew build --no-daemon -x test
 
 FROM eclipse-temurin:17.0.10_7-jre
 
