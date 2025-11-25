@@ -68,7 +68,7 @@ jobs:
         run: |
           mkdir -p ${{ inputs.service-dir }}/src/main/resources
           if [[ "${{ inputs.service-dir }}" == *"gateway"* ]]; then
-          echo '${{ vars.GATEWAY_YML }}' > ${{ inputs.service-dir }}/src/main/resources/application-prod.yml
+          echo '${{ vars.GATEWAY_YML }}' > ${{ inputs.service-dir }}/src/main/resources/application.yml
           elif [[ "${{ inputs.service-dir }}" == *"cartpost"* ]]; then
           echo '${{ vars.CARTPOST_YML }}' > ${{ inputs.service-dir }}/src/main/resources/application-prod.yml
           elif [[ "${{ inputs.service-dir }}" == *"communication"* ]]; then
