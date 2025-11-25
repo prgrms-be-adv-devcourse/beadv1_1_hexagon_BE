@@ -14,7 +14,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon || true
 
 
-COPY core ../core
+COPY core ./core
 
 RUN ./gradlew build --no-daemon -x test
 
