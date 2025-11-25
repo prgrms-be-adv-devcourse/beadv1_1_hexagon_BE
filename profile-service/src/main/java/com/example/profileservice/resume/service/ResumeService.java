@@ -1,9 +1,9 @@
 package com.example.profileservice.resume.service;
 
-import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
+import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.experience.model.dto.request.ExperienceRequest;
 import com.example.profileservice.experience.model.dto.response.ExperienceResponse;

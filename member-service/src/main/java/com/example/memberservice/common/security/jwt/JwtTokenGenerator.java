@@ -20,7 +20,6 @@ public class JwtTokenGenerator {
             .claim(jwtProperties.getIsSignedUpClaims(), isSignedUp)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessTokenTtl()))
-
             .signWith(jwtKeyProvider.getAccessTokenSignKey())
             .compact();
     }

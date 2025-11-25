@@ -1,21 +1,29 @@
+# 실행할 도커 환경 이미지
 FROM gradle:jdk17 AS builder
 
-WORKDIR /libs/contract-service
+# 작업을 수행할 가상환경 DIR
+# 앞으로 발생하는 모든 명령어는 WorkDIR을 기준으로 작성됨.
+WORKDIR /libs
 
 #COPY contract-service/gradlew ./contract-service/gradlew
 #COPY contract-service/gradle ./contract-service/gradle
 #COPY contract-service/build.gradle ./contract-service
 #COPY contract-service/settings.gradle ./contract-service
 
-COPY contract-service/ .
+# 즉 이거는 현재 위치에 있는 contract-service를
+# 가상 환경의 /libs에 contract-servic라는 폴더 생성
+COPY ./contract-service ./contract-service
 
-RUN chmod +x ./gradlew
+# contract-service 내 /gradlew 실행 권한 부여
+RUN chmod +x ./contract-service/gradlew
 
-RUN ./gradlew dependencies --no-daemon || true
+# contract-service내 의존성 추가
+RUN ./contract-service/gradlew dependencies --no-daemon || true
 
+# /libs에 core 복사 /libs/core 로 카피
+COPY ./core ./core
 
-COPY core ../core
-
+WORKDIR /libs/contract-service
 RUN ./gradlew build --no-daemon -x test
 
 FROM eclipse-temurin:17.0.10_7-jre
@@ -23,5 +31,4 @@ FROM eclipse-temurin:17.0.10_7-jre
 WORKDIR /app
 
 COPY --from=builder /libs/contract-service/build/libs/*.jar app.jar
-
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,7 +1,6 @@
 package com.example.profileservice.common.model.vo.util;
 
-import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
-import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
+
 import com.example.profileservice.common.model.vo.ResponseDto;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;

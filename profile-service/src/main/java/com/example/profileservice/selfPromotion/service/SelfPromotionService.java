@@ -2,13 +2,13 @@ package com.example.profileservice.selfPromotion.service;
 
 import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
 
-import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
-import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
+import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
+import com.example.profileservice.common.model.vo.util.MemberInfoOutput;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;

@@ -25,6 +25,9 @@ ext {
 dependencies {
     implementation project(':core')
 
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign' // Feign Client
+
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
