@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-gateway-service
       service-dir: ./gateway-service
-      file-name: Dockerfile_member
+      file-name: Dockerfile_gateway
 
   deploying:
     needs: releasing
