@@ -21,8 +21,6 @@ RUN chmod +x ./gateway-service/gradlew
 RUN ./gateway-service/gradlew dependencies --no-daemon || true
 
 # /libs에 core 복사 /libs/core 로 카피
-COPY ./core ./core
-
 WORKDIR /libs/gateway-service
 RUN ./gradlew build --no-daemon -x test
 
