@@ -32,7 +32,21 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendCreatedEvent(MemberCreatedEvent event) {
-        return kafkaTemplate.send(memberCreatedTopicName, event.memberCode(), event);
+        CompletableFuture<SendResult<String, Object>> send = kafkaTemplate.send(memberCreatedTopicName,
+            event.memberCode(), event);
+
+
+        send.whenComplete((result, ex) -> {
+            if (ex != null) {
+                // 전송 실패
+                System.err.println("Kafka 메시지 전송 실패: " + ex.getMessage());
+            } else {
+                // 전송 성공
+                System.out.println("Kafka 메시지 전송 성공: " + result.getRecordMetadata());
+            }
+        });
+
+        return send;
     }
 
     @Override

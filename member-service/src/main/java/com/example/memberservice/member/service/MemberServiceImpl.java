@@ -112,6 +112,7 @@ public class MemberServiceImpl implements MemberService {
 
         Members savedMember = memberJpaRepository.save(newMember);
 
+        log.info("kafka 메세지 발송");
         // Kafka Event 발송.
         memberKafkaEventProducer.sendCreatedEvent(new MemberCreatedEvent(savedMember.getCode()));
 

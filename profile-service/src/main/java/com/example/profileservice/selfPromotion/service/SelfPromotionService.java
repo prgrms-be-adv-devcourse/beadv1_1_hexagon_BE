@@ -2,7 +2,6 @@ package com.example.profileservice.selfPromotion.service;
 
 import static org.apache.kafka.common.requests.FetchMetadata.log;
 
-import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.ResponseDto;
