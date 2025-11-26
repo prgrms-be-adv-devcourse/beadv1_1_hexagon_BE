@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-contract-service
       service-dir: ./contract-service
-      file-name: Dockerfile_member
+      file-name: Dockerfile_contract
 
   deploying:
     needs: releasing
