@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-discovery-service
       service-dir: ./discovery-service
-      file-name: Dockerfile_dicovery
+      file-name: Dockerfile_discovery
 
   deploying:
     needs: releasing
