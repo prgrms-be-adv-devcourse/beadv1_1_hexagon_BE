@@ -21,7 +21,7 @@ jobs:
     with:
       service-name: hexagon-profile-service
       service-dir: ./profile-service
-      file-name: Dockerfile_member
+      file-name: Dockerfile_profile
 
   deploying:
     needs: releasing

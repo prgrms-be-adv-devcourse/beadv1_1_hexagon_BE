@@ -19,7 +19,7 @@ jobs:
     with:
       service-name: hexagon-cartpost-service
       service-dir: ./cartpost-service
-      file-name: Dockerfile_member
+      file-name: Dockerfile_cartpost
 
   deploying:
     needs: releasing
