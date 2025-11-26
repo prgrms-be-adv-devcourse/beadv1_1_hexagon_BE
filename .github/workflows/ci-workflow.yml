@@ -3,10 +3,10 @@ name: CI Test Script
 #이벤트의 종류
 on:
   # 특정 원격지 레포지토리의 어떤 이벤트가 발생했을때
-  pull_request:
+  push:
     ## 어떤 브랜치로 발생했을 때
     branches:
-      - test/ci-cd/119
+      - test/ci-cd/132
 
 # 해당 job을 순서대로 실행하겠다.
 # 해당 jobs는 파이프라인 형태로 작동함.
@@ -39,56 +39,47 @@ jobs:
       - name: CARTPOST yml 생성
         run: |
           mkdir -p ./cartpost-service/src/main/resources
-          echo '${{ vars.CARTPOST_YML }}' > ./cartpost-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./cartpost-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./cartpost-service/src/main/resources/application.yml
 
       - name: COMMUNICATION yml 생성
         run: |
           mkdir -p ./communication-service/src/main/resources
-          echo '${{ vars.COMMUNICATION_YML }}' > ./communication-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./communication-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./communication-service/src/main/resources/application.yml
 
       - name: CONTRACT yml 생성
         run: |
           mkdir -p ./contract-service/src/main/resources
-          echo '${{ vars.CONTRACT_YML }}' > ./contract-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./contract-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./contract-service/src/main/resources/application.yml
 
       - name: DISCOVERY yml 생성
         run: |
           mkdir -p ./discovery-service/src/main/resources
-          echo '${{ vars.DISCOVERY_YML }}' > ./discovery-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./discovery-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./discovery-service/src/main/resources/application.yml
 
       - name: GATEWAY yml 생성
         run: |
           mkdir -p ./gateway-service/src/main/resources
-          echo '${{ vars.GATEWAY_YML }}' > ./gateway-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./gateway-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./gateway-service/src/main/resources/application.yml
 
       - name: MEMBER yml 생성
         run: |
           mkdir -p ./member-service/src/main/resources
-          echo '${{ vars.MEMBER_YML }}' > ./member-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./member-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./member-service/src/main/resources/application.yml
 
       - name: PAYMENT yml 생성
         run: |
           mkdir -p ./payment-service/src/main/resources
-          echo '${{ vars.PAYMENT_YML }}' > ./payment-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./payment-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./payment-service/src/main/resources/application.yml
 
       - name: PROFILE yml 생성
         run: |
           mkdir -p ./profile-service/src/main/resources
-          echo '${{ vars.PROFILE_YML }}' > ./profile-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./profile-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./profile-service/src/main/resources/application.yml
 
       - name: SEARCH yml 생성
         run: |
           mkdir -p ./search-service/src/main/resources
-          echo '${{ vars.SEARCH_YML }}' > ./search-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./search-service/src/main/resources/application-test.yml
+          echo '${{ vars.TEST_YML }}' > ./search-service/src/main/resources/application.yml
 
       - name: 전체 모듈 gradlew 권한 세팅
         run: |
@@ -155,12 +146,12 @@ jobs:
             sleep 8
           done
 
-      - name: application-test.properties 파일 내용 확인
-        run: cat ./search-service/src/main/resources/application-test.yml
+      - name: application.yml 파일 내용 확인
+        run: cat ./search-service/src/main/resources/application.yml
 
       - name: search-service 테스트 실행
         working-directory: ./search-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
       - name: Elasticsearch docker down
         run: |
@@ -187,33 +178,31 @@ jobs:
 
       - name: member-service 테스트 실행
         working-directory: ./member-service
-        run: |
-          if [ -f ./gradlew ]; then
-            echo "gradlew exists"
-          fi
-          ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
       - name: contract-service 테스트 실행
         working-directory: ./contract-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
       - name: cartpost-service 테스트 실행
         working-directory: ./cartpost-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
       - name: communication-service 테스트 실행
         working-directory: ./communication-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
       - name: payment-service 테스트 실행
         working-directory: ./payment-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
       - name: profile-service 테스트 실행
         working-directory: ./profile-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
-
-
-# Git의 Runners를 통해서 원격지 서버와의 연결을 설정
-# self-hosted runner는 
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-report
+          path: build/reports/tests/test
