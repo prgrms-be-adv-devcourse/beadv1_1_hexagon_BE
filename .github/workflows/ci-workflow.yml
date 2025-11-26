@@ -39,48 +39,48 @@ jobs:
       - name: CARTPOST yml 생성
         run: |
           mkdir -p ./cartpost-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./cartpost-service/src/main/resources/application.yml
-
+          echo '${{ vars.CARTPOST_YML }}' > ./cartpost-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./cartpost-service/src/main/resources/application-test.yml
       - name: COMMUNICATION yml 생성
         run: |
           mkdir -p ./communication-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./communication-service/src/main/resources/application.yml
-
+          echo '${{ vars.COMMUNICATION_YML }}' > ./communication-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./communication-service/src/main/resources/application-test.yml
       - name: CONTRACT yml 생성
         run: |
           mkdir -p ./contract-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./contract-service/src/main/resources/application.yml
-
+          echo '${{ vars.CONTRACT_YML }}' > ./contract-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./contract-service/src/main/resources/application-test.yml
       - name: DISCOVERY yml 생성
         run: |
           mkdir -p ./discovery-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./discovery-service/src/main/resources/application.yml
-
+          echo '${{ vars.DISCOVERY_YML }}' > ./discovery-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./discovery-service/src/main/resources/application-test.yml
       - name: GATEWAY yml 생성
         run: |
           mkdir -p ./gateway-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./gateway-service/src/main/resources/application.yml
-
+          echo '${{ vars.GATEWAY_YML }}' > ./gateway-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./gateway-service/src/main/resources/application-test.yml
       - name: MEMBER yml 생성
         run: |
           mkdir -p ./member-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./member-service/src/main/resources/application.yml
-
+          echo '${{ vars.MEMBER_YML }}' > ./member-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./member-service/src/main/resources/application-test.yml
       - name: PAYMENT yml 생성
         run: |
           mkdir -p ./payment-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./payment-service/src/main/resources/application.yml
-
+          echo '${{ vars.PAYMENT_YML }}' > ./payment-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./payment-service/src/main/resources/application-test.yml
       - name: PROFILE yml 생성
         run: |
           mkdir -p ./profile-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./profile-service/src/main/resources/application.yml
-
+          echo '${{ vars.PROFILE_YML }}' > ./profile-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./profile-service/src/main/resources/application-test.yml
       - name: SEARCH yml 생성
         run: |
           mkdir -p ./search-service/src/main/resources
-          echo '${{ vars.TEST_YML }}' > ./search-service/src/main/resources/application.yml
-
+          echo '${{ vars.SEARCH_YML }}' > ./search-service/src/main/resources/application.yml
+          echo '${{ vars.TEST_YML }}' > ./search-service/src/main/resources/application-test.yml
       - name: 전체 모듈 gradlew 권한 세팅
         run: |
           chmod +x ./cartpost-service/gradlew
@@ -92,14 +92,12 @@ jobs:
           chmod +x ./payment-service/gradlew
           chmod +x ./profile-service/gradlew
           chmod +x ./search-service/gradlew
-
       - name: Configure sysctl limits
         run: |
           sudo swapoff -a
           sudo sysctl -w vm.swappiness=1
           sudo sysctl -w fs.file-max=262144
           sudo sysctl -w vm.max_map_count=262144
-
       - name: Run Kafka container and wait for ready
         run: |
           docker run -d \
@@ -120,7 +118,6 @@ jobs:
             -e KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1 \
             -e KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1 \
             apache/kafka
-
       - name: Elasticsearch docker run
         run: |
           docker run -d \
@@ -133,8 +130,6 @@ jobs:
             -e xpack.security.http.ssl.enabled=false \
             -e ES_JAVA_OPTS="-Xms512m -Xmx512m" \
             eddie1031/es:9.1.3
-
-
       - name: Wait for Elasticsearch to be up
         run: |
           for i in {1..10}; do
@@ -145,27 +140,23 @@ jobs:
             echo "Waiting for Elasticsearch..."
             sleep 8
           done
-
-      - name: application.yml 파일 내용 확인
-        run: cat ./search-service/src/main/resources/application.yml
+      - name: application-test.properties 파일 내용 확인
+        run: cat ./search-service/src/main/resources/application-test.yml
 
       - name: search-service 테스트 실행
         working-directory: ./search-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
       - name: Elasticsearch docker down
         run: |
           docker stop elasticsearch
           docker rm elasticsearch
-
       - name: Redis docker run
         run: |
           docker run -d \
             --name redis \
             -p 6379:6379 \
             redis:7
-
       - name: Wait for Redis to be up
         run: |
           for i in {1..10}; do
@@ -176,40 +167,36 @@ jobs:
             echo "Waiting for Redis..."
             sleep 2
           done
-
       - name: member-service 테스트 실행
         working-directory: ./member-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
-
+        run: |
+          if [ -f ./gradlew ]; then
+            echo "gradlew exists"
+          fi
+          ./gradlew test --no-daemon -Dspring.profiles.active=test
       - name: contract-service 테스트 실행
         working-directory: ./contract-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
       - name: cartpost-service 테스트 실행
         working-directory: ./cartpost-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
       - name: communication-service 테스트 실행
         working-directory: ./communication-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
       - name: payment-service 테스트 실행
         working-directory: ./payment-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
       - name: profile-service 테스트 실행
         working-directory: ./profile-service
-        run: ./gradlew test --no-daemon --continue
-        continue-on-error: true
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
       - name: Upload Test Reports
         uses: actions/upload-artifact@v4
-        if: always()
+        if: failure()
         with:
           name: test-report
           path: "**/build/reports/tests/test"
