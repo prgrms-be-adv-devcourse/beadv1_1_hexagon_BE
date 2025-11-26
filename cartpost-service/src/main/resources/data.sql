@@ -27,7 +27,7 @@ SET @c10 = RANDOM_UUID();
 -- 2. commissions 테이블 데이터 생성 (10개)
 -- 구조: (ID, 작성자_코드, 커미션_UUID, ...)
 -- ==========================================
-MERGE INTO "commissions" KEY("id") VALUES
+MERGE INTO commissions KEY("id") VALUES
 -- [User 1: Alice] 3개의 커미션 작성 (활발한 활동)
     (1, @user1, @c1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 'SD 캐릭터 그려드립니다', '귀엽고 깜찍한 SD 스타일', 'PER_JOB', 30000, CURRENT_TIMESTAMP, DATEADD('DAY', 7, CURRENT_TIMESTAMP), TRUE, 'Alice'),
     (2, @user1, @c2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, '방송용 배경음악 작곡', '유튜브 인트로/아웃트로 제작', 'PER_JOB', 150000, CURRENT_TIMESTAMP, DATEADD('DAY', 14, CURRENT_TIMESTAMP), TRUE, 'Alice'),
@@ -53,7 +53,7 @@ MERGE INTO "commissions" KEY("id") VALUES
 -- 3. commissions_tags 테이블 데이터 생성
 -- 구조: (ID, 커미션_UUID, 태그_UUID)
 -- ==========================================
-MERGE INTO "commissions_tags" KEY("id") VALUES
+MERGE INTO commissions_tags KEY("id") VALUES
 -- Alice의 1번 커미션 (그림 관련) -> 태그 3개
     (1, @c1, RANDOM_UUID()), -- 태그: 그림
     (2, @c1, RANDOM_UUID()), -- 태그: SD
