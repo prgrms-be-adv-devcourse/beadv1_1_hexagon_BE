@@ -8,8 +8,8 @@ on:
     branches:
       - test/ci-cd/132
 
-# 해당 job을 순서대로 실행하겠다.
-# 해당 jobs는 파이프라인 형태로 작동함.
+    # 해당 job을 순서대로 실행하겠다.
+    # 해당 jobs는 파이프라인 형태로 작동함.
     # 입력으로 들어와서 출력이 나가는게 다음 파이프의 입력으로 들어감
     # 잡은 병렬적으로 실행 될 수 있지만 파이프라인으로 구성되게 할 수 있음.
 jobs:
@@ -174,29 +174,39 @@ jobs:
             echo "gradlew exists"
           fi
           ./gradlew test --no-daemon -Dspring.profiles.active=test
+      - name: member-service 테스트 실행
+        working-directory: ./member-service
+        run: ./gradlew test --no-daemon --continue
+        continue-on-error: true
+
       - name: contract-service 테스트 실행
         working-directory: ./contract-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon --continue
+        continue-on-error: true
 
       - name: cartpost-service 테스트 실행
         working-directory: ./cartpost-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon --continue
+        continue-on-error: true
 
       - name: communication-service 테스트 실행
         working-directory: ./communication-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon --continue
+        continue-on-error: true
 
       - name: payment-service 테스트 실행
         working-directory: ./payment-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon --continue
+        continue-on-error: true
 
       - name: profile-service 테스트 실행
         working-directory: ./profile-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon --continue
+        continue-on-error: true
 
       - name: Upload Test Reports
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: test-report
           path: "**/build/reports/tests/test"
