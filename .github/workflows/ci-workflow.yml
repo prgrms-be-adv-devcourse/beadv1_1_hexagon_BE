@@ -167,41 +167,35 @@ jobs:
             echo "Waiting for Redis..."
             sleep 2
           done
+
       - name: member-service 테스트 실행
         working-directory: ./member-service
-        run: |
-          if [ -f ./gradlew ]; then
-            echo "gradlew exists"
-          fi
-          ./gradlew test --no-daemon -Dspring.profiles.active=test
-      - name: member-service 테스트 실행
-        working-directory: ./member-service
-        run: ./gradlew test --no-daemon --continue
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
       - name: contract-service 테스트 실행
         working-directory: ./contract-service
-        run: ./gradlew test --no-daemon --continue
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
       - name: cartpost-service 테스트 실행
         working-directory: ./cartpost-service
-        run: ./gradlew test --no-daemon --continue
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
       - name: communication-service 테스트 실행
         working-directory: ./communication-service
-        run: ./gradlew test --no-daemon --continue
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
       - name: payment-service 테스트 실행
         working-directory: ./payment-service
-        run: ./gradlew test --no-daemon --continue
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
       - name: profile-service 테스트 실행
         working-directory: ./profile-service
-        run: ./gradlew test --no-daemon --continue
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
       - name: Upload Test Reports
