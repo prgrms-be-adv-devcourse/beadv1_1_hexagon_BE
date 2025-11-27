@@ -44,8 +44,10 @@ jobs:
       - name: versioning and tagging
         id: tag_version
         run: |
-          RAND=$(openssl rand -base64 16)
-          echo "random_string=$RAND" >> $GITHUB_OUTPUT
+          RANDOM_STR=$(openssl rand -hex 8)   # 예: a3f9c1d2bb44e21f
+          echo "Generated random string: $RANDOM_STR"
+          echo "new_tag=$RANDOM_STR" >> $GITHUB_OUTPUT
+          echo "changelog=자동 생성된 릴리즈 노트입니다." >> $GITHUB_OUTPUT
 
       - name: releasing
         uses: ncipollo/release-action@v1
