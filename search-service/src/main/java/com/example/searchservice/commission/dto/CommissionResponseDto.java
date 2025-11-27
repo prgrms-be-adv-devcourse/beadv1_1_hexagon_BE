@@ -1,9 +1,9 @@
 package com.example.searchservice.commission.dto;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import java.time.LocalDate;
 import java.util.List;
+import org.hexagon.core.vo.PaymentType;
 
 public record CommissionResponseDto(
         String code,

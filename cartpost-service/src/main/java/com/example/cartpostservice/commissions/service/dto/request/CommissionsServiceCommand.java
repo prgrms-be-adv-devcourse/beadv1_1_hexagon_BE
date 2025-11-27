@@ -1,7 +1,7 @@
 package com.example.cartpostservice.commissions.service.dto.request;
 
-import com.example.cartpostservice.common.model.vo.PaymentType;
 import java.time.LocalDate;
+import org.hexagon.core.vo.PaymentType;
 
 public record CommissionsServiceCommand(
         String memberCode,

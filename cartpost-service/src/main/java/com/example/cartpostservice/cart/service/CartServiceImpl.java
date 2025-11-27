@@ -9,12 +9,12 @@ import com.example.cartpostservice.cart.repository.CartsRepository;
 import com.example.cartpostservice.common.dto.EmptyResponse;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
-import com.example.cartpostservice.common.model.vo.PaymentType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

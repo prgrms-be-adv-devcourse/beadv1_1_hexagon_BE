@@ -1,6 +1,5 @@
 package com.example.searchservice.commission.controller.swagger;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
@@ -10,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
 
 @Tag(name = "Commission Search API", description = "의뢰글 검색 / 검색 키워드 추천 API")

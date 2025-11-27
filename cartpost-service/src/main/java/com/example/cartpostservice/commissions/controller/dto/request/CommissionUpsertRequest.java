@@ -1,11 +1,11 @@
 package com.example.cartpostservice.commissions.controller.dto.request;
 
-import com.example.cartpostservice.common.model.vo.PaymentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import org.hexagon.core.vo.PaymentType;
 
 @Schema(description = "커미션 생성 요청 DTO")
 public record CommissionUpsertRequest(

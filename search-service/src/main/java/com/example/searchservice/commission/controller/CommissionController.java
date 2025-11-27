@@ -1,6 +1,5 @@
 package com.example.searchservice.commission.controller;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.common.response.BaseResponse;
@@ -9,6 +8,7 @@ import com.example.searchservice.commission.controller.swagger.CommissionControl
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -9,7 +9,7 @@ import com.example.cartpostservice.cart.repository.CartsRepository;
 import com.example.cartpostservice.common.dto.EmptyResponse;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
-import com.example.cartpostservice.common.model.vo.PaymentType;
+import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

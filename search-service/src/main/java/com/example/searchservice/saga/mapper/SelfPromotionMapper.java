@@ -1,9 +1,9 @@
 package com.example.searchservice.saga.mapper;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
+import org.hexagon.core.vo.PaymentType;
 import org.hexagon.core.vo.SelfPromotion;
 
 public class SelfPromotionMapper {

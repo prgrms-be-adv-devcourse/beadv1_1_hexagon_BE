@@ -1,10 +1,10 @@
 package com.example.searchservice.saga.mapper;
 
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
-import com.example.searchservice.common.vo.PaymentType;
 import org.hexagon.core.events.commission.CommissionCreatedEvent;
 import org.hexagon.core.events.commission.CommissionUpdatedEvent;
 import org.hexagon.core.vo.Commission;
+import org.hexagon.core.vo.PaymentType;
 
 public class CommissionMapper {
 
