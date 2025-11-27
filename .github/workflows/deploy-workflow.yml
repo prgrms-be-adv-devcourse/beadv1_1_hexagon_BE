@@ -27,6 +27,8 @@ jobs:
           echo "Stopping and removing old container..."
           docker stop ${{ inputs.service-name }} || true
           docker rm ${{ inputs.service-name }} || true
+          IMAGE=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep "^$IMAGE:" | xargs -r docker rmi -f || true
 
       - name: 도커 이미지 PULL 받기
         run: |
