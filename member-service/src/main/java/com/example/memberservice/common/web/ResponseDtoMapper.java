@@ -1,5 +1,6 @@
-package com.example.memberservice.common.exception;
+package com.example.memberservice.common.web;
 
+import com.example.memberservice.common.exception.ErrorCode;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 

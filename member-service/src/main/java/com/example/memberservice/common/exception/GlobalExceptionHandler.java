@@ -1,6 +1,6 @@
 package com.example.memberservice.common.exception;
 
-import static com.example.memberservice.common.exception.ResponseDtoMapper.getErrorResponse;
+import static com.example.memberservice.common.web.ResponseDtoMapper.getErrorResponse;
 
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;

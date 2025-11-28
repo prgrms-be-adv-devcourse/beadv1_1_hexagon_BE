@@ -1,6 +1,6 @@
 package com.example.memberservice.common.swagger.adaptor;
 
-import static com.example.memberservice.common.exception.ResponseDtoMapper.getErrorResponse;
+import static com.example.memberservice.common.web.ResponseDtoMapper.getErrorResponse;
 
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.model.vo.ExampleHolder;
