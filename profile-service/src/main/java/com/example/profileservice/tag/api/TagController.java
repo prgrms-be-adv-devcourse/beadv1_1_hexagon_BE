@@ -6,20 +6,12 @@ import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
 import com.example.profileservice.tag.service.TagService;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tags")
@@ -98,5 +90,17 @@ public class TagController implements TagApiController {
         TagResponse tag = tagService.getTagBySkill(skill);
 
         return ResponseEntity.ok(ResponseDto.success(tag));
+    }
+
+    // 멤버 모듈에서 호출할 기술 태그 연결 정보 일괄 삭제
+    @DeleteMapping("/internal/member/{memberCode}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<ResponseDto<Empty>> deleteMemberTagsForUnregister(
+            @PathVariable String memberCode) {
+
+        // 해당 회원의 MemberTag 연결 정보만 Hard Delete 처리
+        tagService.deleteMemberTagsByMemberCode(memberCode);
+
+        return ResponseEntity.noContent().build();
     }
 }

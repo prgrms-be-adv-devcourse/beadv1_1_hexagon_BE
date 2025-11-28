@@ -7,19 +7,12 @@ import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionU
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.service.SelfPromotionService;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/self-promotions")
@@ -95,5 +88,17 @@ public class SelfPromotionController implements SelfPromotionApiController {
         selfPromotionService.deletePromotion(memberCode, promotionCode);
 
         return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
+    }
+
+    // 멤버 모듈에서 호출할 셀프 프로모션 일괄 삭제 API
+    @DeleteMapping("/internal/member/{memberCode}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<ResponseDto<Empty>> deletePromotionsForUnregister(
+            @PathVariable String memberCode) {
+
+        // 해당 회원의 Self Promotion 정보만 Soft Delete 처리합니다.
+        selfPromotionService.deletePromotionsByMemberCode(memberCode);
+
+        return ResponseEntity.noContent().build();
     }
 }
