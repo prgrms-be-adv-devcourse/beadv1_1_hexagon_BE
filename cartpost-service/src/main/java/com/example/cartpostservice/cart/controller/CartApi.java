@@ -66,6 +66,6 @@ public interface CartApi {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "결제 성공", content = @Content(mediaType = "application/json")),
     })
-    ResponseEntity<ResponseDto<EmptyResponse>> payRequest(@RequestHeader(name = "X-CODE") String xCode,
+    ResponseEntity<ResponseDto<Empty>> payRequest(@RequestHeader(name = "X-CODE") String xCode,
             @RequestBody ContractPayRequest requests);
 }

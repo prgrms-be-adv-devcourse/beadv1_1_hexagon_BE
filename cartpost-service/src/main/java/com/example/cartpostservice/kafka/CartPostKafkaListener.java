@@ -1,17 +1,5 @@
 package com.example.cartpostservice.kafka;
 
-import com.example.cartpostservice.cart.controller.dto.response.ContractBriefWithNicknameResponse;
-import com.example.cartpostservice.cart.controller.internal.ContractClient;
-import com.example.cartpostservice.cart.model.CartItemsEntity;
-import com.example.cartpostservice.cart.model.CartsEntity;
-import com.example.cartpostservice.cart.model.vo.ContractStatus;
-import com.example.cartpostservice.cart.repository.CartItemsRepository;
-import com.example.cartpostservice.cart.repository.CartsRepository;
-import com.example.cartpostservice.common.dto.ResponseDto;
-import com.example.cartpostservice.common.exception.BusinessException;
-import com.example.cartpostservice.common.exception.CustomStatusCode;
-import com.example.cartpostservice.common.model.vo.PaymentType;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.contract.ContractEvent;
@@ -20,7 +8,6 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component

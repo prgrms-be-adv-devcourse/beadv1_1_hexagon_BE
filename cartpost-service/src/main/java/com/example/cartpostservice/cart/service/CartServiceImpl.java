@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,7 +82,6 @@ public class CartServiceImpl implements CartService {
 
         cartItemsRepository.delete(cartItem);
 
-        return Empty.getInstance();
         cartKafkaService.deleteProducer(cartItem.getContractCode());
 
         return Empty.getInstance();

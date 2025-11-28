@@ -59,7 +59,7 @@ public class CartController implements CartApi {
 
         Empty emptyResponse = cartService.payCartItems(xCode, requests);
 
-        return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, emptyResponse),
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, emptyResponse),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 }
