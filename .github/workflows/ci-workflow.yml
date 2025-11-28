@@ -6,7 +6,7 @@ on:
   push:
     ## 어떤 브랜치로 발생했을 때
     branches:
-      - test/ci-cd/132
+      - test/ci/119-2
 
     # 해당 job을 순서대로 실행하겠다.
     # 해당 jobs는 파이프라인 형태로 작동함.
