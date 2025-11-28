@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.profileservice.common.model.vo.KafkaProducer;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
 import com.example.profileservice.tag.model.entity.MemberTagEntity;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.hexagon.core.dto.ResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -227,7 +227,7 @@ public class TagControllerTest {
         String responseJson = result.getResponse().getContentAsString();
         ResponseDto<List<TagResponse>> responseDto = objectMapper.readValue(responseJson, new com.fasterxml.jackson.core.type.TypeReference<ResponseDto<List<TagResponse>>>() {});
 
-        List<String> returnedCodes = responseDto.getData().stream().map(TagResponse::tagCode).collect(Collectors.toList());
+        List<String> returnedCodes = responseDto.data().stream().map(TagResponse::tagCode).collect(Collectors.toList());
         assertThat(returnedCodes).containsExactlyInAnyOrder(springTag.getCode(), javaTag.getCode());
     }
 
