@@ -67,6 +67,8 @@ public class PaymentController implements PaymentApi {
 
         JSONParser parser = new JSONParser();
 
+        log.info("confirm 로직을 수행합니다.");
+
         Map<String, Object> requestMap = Map.of(
                 "paymentKey", request.paymentKey(),
                 "orderId", request.orderId(),

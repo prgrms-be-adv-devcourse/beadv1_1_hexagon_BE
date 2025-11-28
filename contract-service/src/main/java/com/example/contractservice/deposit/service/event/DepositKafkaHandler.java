@@ -1,8 +1,8 @@
 package com.example.contractservice.deposit.service.event;
 
 import com.example.contractservice.deposit.service.DepositService;
-import com.example.contractservice.deposit.service.dto.event.MemberCreatedEvent;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -20,6 +20,6 @@ public class DepositKafkaHandler {
 
     @KafkaHandler
     public void handleMemberCreatedEvent(@Payload MemberCreatedEvent event) {
-        depositService.createDeposit(event.code());
+        depositService.createDeposit(event.memberCode());
     }
 }

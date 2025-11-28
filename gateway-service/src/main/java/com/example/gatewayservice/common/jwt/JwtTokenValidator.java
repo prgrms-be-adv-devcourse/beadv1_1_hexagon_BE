@@ -6,10 +6,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtTokenValidator {
 
     private final JwtKeyProvider jwtKeyProvider;
@@ -23,6 +25,7 @@ public class JwtTokenValidator {
                 .parseSignedClaims(token)
                 .getPayload();
         } catch (JwtException e) {
+            log.info("acesssToken 검증이 실패했습니다.");
             throw new BusinessException(ErrorCode.UNAUTHORIZATION);
         }
     }

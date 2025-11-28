@@ -78,7 +78,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
             redirectUri = needSignUpRedirectUrl;
         }
 
-        response.addHeader(HttpHeaders.SET_COOKIE, CookieGenerator.createCookies("RefreshToken", refreshToken,
+        response.addHeader(HttpHeaders.SET_COOKIE, CookieGenerator.createCookies("refresh-token", refreshToken,
             TimeUnit.MILLISECONDS.toSeconds(jwtProperties.getRefreshTokenTtl())));
 
         response.sendRedirect(redirectUri);

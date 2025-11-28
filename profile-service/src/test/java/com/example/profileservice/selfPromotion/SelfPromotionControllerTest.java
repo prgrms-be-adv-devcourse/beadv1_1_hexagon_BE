@@ -11,12 +11,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
-import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
-import com.example.memberservice.member.service.model.vo.InternalMemberInfo;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.ResponseDto;
+import com.example.profileservice.common.model.vo.util.InternalMemberInfo;
+import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
+import com.example.profileservice.common.model.vo.util.MemberInfoOutput;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;

@@ -3,7 +3,7 @@ name: discovery-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/119
     paths:
       - 'discovery-service/**'
 
