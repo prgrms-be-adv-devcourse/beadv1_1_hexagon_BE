@@ -42,7 +42,7 @@ public class ChatRoomService {
             throw new ChatRoomException(ResponseDtoStatus.CHATROOM_NOT_INCLUDE_SELF);
         }
 
-        MemberExistOutput result = memberServiceClient.getMemberExistences(memberCodes).getData();
+        MemberExistOutput result = memberServiceClient.getMemberExistences(memberCodes).data();
 
         // memberCodes의 모든 참여자 코드가 유효한지 확인
         if (!result.notExists().isEmpty()) {

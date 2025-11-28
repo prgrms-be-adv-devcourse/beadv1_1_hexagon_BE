@@ -1,6 +1,5 @@
 package com.example.communicationservice.controller.api;
 
-import com.example.communicationservice.common.response.ResponseDto;
 import com.example.communicationservice.controller.dto.request.ChatRoomCreateRequest;
 import com.example.communicationservice.controller.dto.response.ChatMessageListReadResponse;
 import com.example.communicationservice.controller.dto.response.ChatRoomCreateResponse;
@@ -12,6 +11,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.hexagon.core.dto.ResponseDto;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
