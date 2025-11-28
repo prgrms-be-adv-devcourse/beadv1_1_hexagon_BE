@@ -3,7 +3,7 @@ name: gateway-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'gateway-service/**'
 
@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-gateway-service
       service-dir: ./gateway-service
-      file-name: Dockerfile
+      file-name: Dockerfile_gateway
 
   deploying:
     needs: releasing

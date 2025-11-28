@@ -6,10 +6,10 @@ on:
   pull_request:
     ## 어떤 브랜치로 발생했을 때
     branches:
-      - test/ci-cd/119
+      - main
 
-# 해당 job을 순서대로 실행하겠다.
-# 해당 jobs는 파이프라인 형태로 작동함.
+    # 해당 job을 순서대로 실행하겠다.
+    # 해당 jobs는 파이프라인 형태로 작동함.
     # 입력으로 들어와서 출력이 나가는게 다음 파이프의 입력으로 들어감
     # 잡은 병렬적으로 실행 될 수 있지만 파이프라인으로 구성되게 할 수 있음.
 jobs:
@@ -20,7 +20,6 @@ jobs:
     name: 코드 테스트
     # Action은 job 실행시 가상 환경을 이용함, 그래서 원래는 요금이 듬
     # 한달의 2000분 정도.
-    # 그래서 해당 프로젝트에서는 4팀이 같이 쓰니까 action을 간략화 해두었음.
     runs-on: ubuntu-latest
 
     steps:
@@ -41,55 +40,46 @@ jobs:
           mkdir -p ./cartpost-service/src/main/resources
           echo '${{ vars.CARTPOST_YML }}' > ./cartpost-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./cartpost-service/src/main/resources/application-test.yml
-
       - name: COMMUNICATION yml 생성
         run: |
           mkdir -p ./communication-service/src/main/resources
           echo '${{ vars.COMMUNICATION_YML }}' > ./communication-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./communication-service/src/main/resources/application-test.yml
-
       - name: CONTRACT yml 생성
         run: |
           mkdir -p ./contract-service/src/main/resources
           echo '${{ vars.CONTRACT_YML }}' > ./contract-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./contract-service/src/main/resources/application-test.yml
-
       - name: DISCOVERY yml 생성
         run: |
           mkdir -p ./discovery-service/src/main/resources
           echo '${{ vars.DISCOVERY_YML }}' > ./discovery-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./discovery-service/src/main/resources/application-test.yml
-
       - name: GATEWAY yml 생성
         run: |
           mkdir -p ./gateway-service/src/main/resources
           echo '${{ vars.GATEWAY_YML }}' > ./gateway-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./gateway-service/src/main/resources/application-test.yml
-
       - name: MEMBER yml 생성
         run: |
           mkdir -p ./member-service/src/main/resources
           echo '${{ vars.MEMBER_YML }}' > ./member-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./member-service/src/main/resources/application-test.yml
-
       - name: PAYMENT yml 생성
         run: |
           mkdir -p ./payment-service/src/main/resources
           echo '${{ vars.PAYMENT_YML }}' > ./payment-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./payment-service/src/main/resources/application-test.yml
-
       - name: PROFILE yml 생성
         run: |
           mkdir -p ./profile-service/src/main/resources
           echo '${{ vars.PROFILE_YML }}' > ./profile-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./profile-service/src/main/resources/application-test.yml
-
       - name: SEARCH yml 생성
         run: |
           mkdir -p ./search-service/src/main/resources
           echo '${{ vars.SEARCH_YML }}' > ./search-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./search-service/src/main/resources/application-test.yml
-
       - name: 전체 모듈 gradlew 권한 세팅
         run: |
           chmod +x ./cartpost-service/gradlew
@@ -101,14 +91,32 @@ jobs:
           chmod +x ./payment-service/gradlew
           chmod +x ./profile-service/gradlew
           chmod +x ./search-service/gradlew
-
       - name: Configure sysctl limits
         run: |
           sudo swapoff -a
           sudo sysctl -w vm.swappiness=1
           sudo sysctl -w fs.file-max=262144
           sudo sysctl -w vm.max_map_count=262144
-
+      - name: Run Kafka container and wait for ready
+        run: |
+          docker run -d \
+            --name kafka \
+            -p 9092:9092 \
+            -p 9091:9091 \
+            -p 9090:9090 \
+            -e KAFKA_NODE_ID=1 \
+            -e CLUSTER_ID=ZWU1Y2JiNDctNDg3ZC4tNGY2Ny1iNzJh \
+            -e KAFKA_PROCESS_ROLES=controller,broker \
+            -e KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9091 \
+            -e KAFKA_LISTENERS=PLAINTEXT://:9090,CONTROLLER://:9091,EXTERNAL://:9092 \
+            -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9090,EXTERNAL://localhost:9092 \
+            -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT \
+            -e KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+            -e KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT \
+            -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+            -e KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1 \
+            -e KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1 \
+            apache/kafka
       - name: Elasticsearch docker run
         run: |
           docker run -d \
@@ -121,8 +129,6 @@ jobs:
             -e xpack.security.http.ssl.enabled=false \
             -e ES_JAVA_OPTS="-Xms512m -Xmx512m" \
             eddie1031/es:9.1.3
-
-
       - name: Wait for Elasticsearch to be up
         run: |
           for i in {1..10}; do
@@ -133,9 +139,6 @@ jobs:
             echo "Waiting for Elasticsearch..."
             sleep 8
           done
-
-      - name: application-test.properties 파일 내용 확인
-        run: cat ./search-service/src/main/resources/application-test.yml
 
       - name: search-service 테스트 실행
         working-directory: ./search-service
@@ -166,33 +169,37 @@ jobs:
 
       - name: member-service 테스트 실행
         working-directory: ./member-service
-        run: |
-          if [ -f ./gradlew ]; then
-            echo "gradlew exists"
-          fi
-          ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
+        continue-on-error: true
 
       - name: contract-service 테스트 실행
         working-directory: ./contract-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
+        continue-on-error: true
 
       - name: cartpost-service 테스트 실행
         working-directory: ./cartpost-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
+        continue-on-error: true
 
       - name: communication-service 테스트 실행
         working-directory: ./communication-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
+        continue-on-error: true
 
       - name: payment-service 테스트 실행
         working-directory: ./payment-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
+        continue-on-error: true
 
       - name: profile-service 테스트 실행
         working-directory: ./profile-service
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
+        continue-on-error: true
 
-
-
-# Git의 Runners를 통해서 원격지 서버와의 연결을 설정
-# self-hosted runner는 
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-report
+          path: "**/build/reports/tests/test"

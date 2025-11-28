@@ -3,7 +3,7 @@ name: search-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'search-service/**'
 
@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-search-service
       service-dir: ./search-service
-      file-name: Dockerfile
+      file-name: Dockerfile_search
 
   deploying:
     needs: releasing

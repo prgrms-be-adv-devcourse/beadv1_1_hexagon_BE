@@ -3,7 +3,7 @@ name: contract-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'contract-service/**'
 
@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-contract-service
       service-dir: ./contract-service
-      file-name: Dockerfile
+      file-name: Dockerfile_contract
 
   deploying:
     needs: releasing

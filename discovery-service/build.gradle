@@ -39,6 +39,7 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+    systemProperties = System.properties
 }
 
 tasks.named('bootJar') {

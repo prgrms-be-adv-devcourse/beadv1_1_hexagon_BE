@@ -3,7 +3,7 @@ name: communication-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'communication-service/**'
 
@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-communication-service
       service-dir: ./communication-service
-      file-name: Dockerfile
+      file-name: Dockerfile_communication
 
   deploying:
     needs: releasing
