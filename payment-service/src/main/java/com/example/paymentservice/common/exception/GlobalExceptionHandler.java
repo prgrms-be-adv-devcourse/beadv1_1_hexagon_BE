@@ -1,9 +1,11 @@
 package com.example.paymentservice.common.exception;
 
-import com.example.paymentservice.common.dto.EmptyResponse;
-import com.example.paymentservice.common.dto.ResponseDto;
+import static com.example.paymentservice.common.dto.ResponseDtoMapper.getErrorResponse;
+
 import com.example.paymentservice.common.dto.enums.CustomStatusCode;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,11 +15,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<ResponseDto<EmptyResponse>> handleBusinessException(BusinessException ex) {
+    protected ResponseEntity<ResponseDto<Empty>> handleBusinessException(BusinessException ex) {
         log.warn("handleBusinessException: {}", ex.getMessage());
 
         CustomStatusCode customStatusCode = ex.getCustomStatusCode();
-        ResponseDto response = ResponseDto.of(customStatusCode);
+        ResponseDto<Empty> response = getErrorResponse(customStatusCode);
 
         return new ResponseEntity<>(response, customStatusCode.getStatus());
     }
