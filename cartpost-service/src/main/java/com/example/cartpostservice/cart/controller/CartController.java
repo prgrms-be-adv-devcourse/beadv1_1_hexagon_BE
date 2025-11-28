@@ -1,6 +1,7 @@
 package com.example.cartpostservice.cart.controller;
 
 
+import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import com.example.cartpostservice.cart.service.CartService;
 import com.example.cartpostservice.common.dto.EmptyResponse;
@@ -46,6 +47,16 @@ public class CartController implements CartApi {
             @PathVariable(name = "item-code") String itemCode) {
 
         EmptyResponse emptyResponse = cartService.deleteCartItems(xCode, itemCode);
+
+        return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, emptyResponse),
+                CustomStatusCode.SUCCESS.getStatus());
+    }
+
+    @Override
+    @GetMapping("/pay/items")
+    public ResponseEntity<ResponseDto<EmptyResponse>> payRequest(String xCode, ContractPayRequest requests) {
+
+        EmptyResponse emptyResponse = cartService.payCartItems(xCode, requests);
 
         return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, emptyResponse),
                 CustomStatusCode.SUCCESS.getStatus());

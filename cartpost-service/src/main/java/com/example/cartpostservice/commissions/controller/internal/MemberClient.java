@@ -1,6 +1,8 @@
 package com.example.cartpostservice.commissions.controller.internal;
 
-import com.example.cartpostservice.commissions.controller.dto.response.MemberResponse;
+import com.example.cartpostservice.commissions.controller.dto.response.MemberInfoOutput;
+import com.example.cartpostservice.common.dto.ResponseDto;
+import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,5 +11,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface MemberClient {
 
     @GetMapping("/internal/members")
-    MemberResponse getMember(@RequestParam("member-code") String memberCode);
+    ResponseDto<MemberInfoOutput> getMemberInfoByCode(@RequestParam("member-code") List<String> memberCodes);
 }

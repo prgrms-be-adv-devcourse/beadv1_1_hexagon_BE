@@ -1,5 +1,6 @@
 package com.example.cartpostservice.cart.controller;
 
+import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import com.example.cartpostservice.common.dto.EmptyResponse;
 import com.example.cartpostservice.common.dto.ResponseDto;
@@ -8,13 +9,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "Cart API", description = "장바구니 API 명세")
@@ -59,4 +60,12 @@ public interface CartApi {
     })
     ResponseEntity<ResponseDto<EmptyResponse>> deleteCartItem(@RequestHeader(name = "X-CODE") String xCode,
             @PathVariable String itemCode);
+
+
+    @Operation(summary = "장바구니 아이템 결제 요청", description = "X-CODE 헤더를 기준으로 경로 변수로 받은 아이템들을 결제하도록 합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "결제 성공", content = @Content(mediaType = "application/json")),
+    })
+    ResponseEntity<ResponseDto<EmptyResponse>> payRequest(@RequestHeader(name = "X-CODE") String xCode,
+            @RequestBody ContractPayRequest requests);
 }

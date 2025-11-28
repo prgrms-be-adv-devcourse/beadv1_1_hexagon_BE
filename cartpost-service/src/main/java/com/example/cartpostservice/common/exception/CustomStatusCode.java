@@ -18,7 +18,8 @@ public enum CustomStatusCode {
     NOT_FOUND_ITEM(HttpStatus.BAD_REQUEST, 6404, "아이템이 존재하지 않습니다"),
     NOT_FOUND_COMMISSION(HttpStatus.BAD_REQUEST, 6414, "의뢰글이 존재하지 않습니다"),
 
-    NOT_FOUND_MEMBER(HttpStatus.INTERNAL_SERVER_ERROR, 6500, "내부 서버 문제로 장바구니가 없습니다");
+    NOT_FOUND_MEMBER(HttpStatus.INTERNAL_SERVER_ERROR, 6500, "내부 서버 문제로 장바구니가 없습니다"),
+    NOT_FOUND_MEMBER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, 6510, "내부 서버 문제로 사용자 정보가 없습니다");
 
 
     private final HttpStatus status;

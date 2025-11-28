@@ -1,6 +1,6 @@
 package com.example.cartpostservice.commissions.model;
 
-import com.example.cartpostservice.common.model.vo.PaymentType;
+import org.hexagon.core.vo.PaymentType;
 import com.example.cartpostservice.common.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
