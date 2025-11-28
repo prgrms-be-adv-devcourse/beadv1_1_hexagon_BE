@@ -1,14 +1,15 @@
 package com.example.memberservice.common.security.handler;
 
 
+import static com.example.memberservice.common.exception.ResponseDtoMapper.getErrorResponse;
+
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Null;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class OAuthLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
         response.setContentType("application/json;charset=UTF-8");
 
 
-        ResponseDto<Empty> responseBody = ResponseDto.fail(ErrorCode.FAIL_LOGIN);
+        ResponseDto<Empty> responseBody = getErrorResponse(ErrorCode.FAIL_LOGIN);
 
         response.sendRedirect(failureRedirectUrl);
 

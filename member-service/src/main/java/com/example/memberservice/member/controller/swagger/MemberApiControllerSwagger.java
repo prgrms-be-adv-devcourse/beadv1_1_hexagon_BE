@@ -3,8 +3,8 @@ package com.example.memberservice.member.controller.swagger;
 
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
 import com.example.memberservice.member.controller.dto.request.MemberUpdateRequest;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;

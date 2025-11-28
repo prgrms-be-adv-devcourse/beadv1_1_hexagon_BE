@@ -33,6 +33,16 @@ public record ResponseDto<T>(
         );
     }
 
+    // 요청에 성공한 경우 (결과 값 없음)
+    public static ResponseDto<Empty> success(HttpStatus httpStatus) {
+        return new ResponseDto<>(
+                DEFAULT_SUCCESS_CODE,
+                httpStatus.value(),
+                DEFAULT_SUCCESS_MESSAGE,
+                Empty.getInstance()
+        );
+    }
+
     // 요청에 성공한 경우 (결과 값 있음)
     public static <T> ResponseDto<T> success(T data) {
         return new ResponseDto<>(

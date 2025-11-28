@@ -1,7 +1,9 @@
 package com.example.memberservice.common.exception;
 
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import static com.example.memberservice.common.exception.ResponseDtoMapper.getErrorResponse;
+
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,7 +17,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ResponseDto<Empty>> handleBusinessException(BusinessException e) {
-        return ResponseEntity.status(e.getErrorCode().getHttpStatusCode()).body(ResponseDto.fail(e.getErrorCode()));
+        ErrorCode errorCode = e.getErrorCode();
+
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(getErrorResponse(errorCode));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -28,7 +32,7 @@ public class GlobalExceptionHandler {
             errorMessage = fieldError.getField() + " " + fieldError.getDefaultMessage();
         }
 
-        ResponseDto<Empty> response = ResponseDto.fail(ErrorCode.VALIDATION_FAILED, errorMessage);
+        ResponseDto<Empty> response = getErrorResponse(ErrorCode.VALIDATION_FAILED, errorMessage);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
@@ -36,7 +40,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ResponseDto<Empty>> handleNotFound(NoHandlerFoundException ex) {
 
-        ResponseDto<Empty> response = ResponseDto.fail(ErrorCode.NO_HANDLER);
+        ResponseDto<Empty> response = getErrorResponse(ErrorCode.NO_HANDLER);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }

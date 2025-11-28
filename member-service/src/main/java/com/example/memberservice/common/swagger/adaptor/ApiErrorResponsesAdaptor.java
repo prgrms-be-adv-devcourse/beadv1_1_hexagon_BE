@@ -1,9 +1,11 @@
 package com.example.memberservice.common.swagger.adaptor;
 
+import static com.example.memberservice.common.exception.ResponseDtoMapper.getErrorResponse;
+
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.model.vo.ExampleHolder;
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.stereotype.Component;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -25,11 +27,11 @@ public class ApiErrorResponsesAdaptor {
         Map<Integer, List<ExampleHolder>> statusWithExampleHolders = Arrays.stream(exceptions)
             .map(ex -> {
                 try {
-                    ResponseDto<Empty> res = ResponseDto.fail(ex);
+                    ResponseDto<Empty> res = getErrorResponse(ex);
                     return new ExampleHolder(
                         getSwaggerExample(res),
                         res.code(),
-                        res.httpStatusCode()
+                        res.httpStatus()
                     );
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -46,12 +48,12 @@ public class ApiErrorResponsesAdaptor {
         ApiResponses responses = operation.getResponses();
 
         try {
-            ResponseDto<Empty> res = ResponseDto.fail(instance);
+            ResponseDto<Empty> res = getErrorResponse(instance);
 
             ExampleHolder exampleHolder = new ExampleHolder(
                 getSwaggerExample(res),
                 res.code(),
-                res.httpStatusCode()
+                res.httpStatus()
             );
 
             addExamplesToResponses(responses, exampleHolder);
