@@ -27,7 +27,6 @@ jobs:
           echo "Stopping and removing old container..."
           docker stop ${{ inputs.service-name }} || true
           docker rm ${{ inputs.service-name }} || true
-          IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
           docker image prune -a -f
 
       - name: 도커 이미지 PULL 받기
