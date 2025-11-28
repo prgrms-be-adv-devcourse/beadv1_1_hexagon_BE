@@ -5,9 +5,9 @@ import com.example.contractservice.common.PaymentType;
 import java.time.Instant;
 
 public record ContractInfo(
-    String requestorCode,
-    String contractorCode,
+    String clientCode,
     String freelancerCode,
+    String commissionCode,
     Instant startedAt,
     Instant endedAt,
     PaymentType paymentType,
@@ -16,12 +16,12 @@ public record ContractInfo(
 ) {
 
     public ContractInfo confirm() {
-        return new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt, paymentType,
+        return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
                 unitAmount, ContractStatus.CONFIRMED);
     }
 
     public ContractInfo pay() {
-        return new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt, paymentType,
+        return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
                 unitAmount, ContractStatus.PAID);
     }
 }

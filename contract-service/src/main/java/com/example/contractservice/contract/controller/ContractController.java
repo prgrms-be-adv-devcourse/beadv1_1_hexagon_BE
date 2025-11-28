@@ -96,16 +96,12 @@ public class ContractController {
     }
 
     private void validateCreateRequest(String xCode, ContractCreateRequest request) {
-        if (!canCreateContract(xCode, request)) {
-            throw new IllegalArgumentException("X-CODE 회원 코드는 요청 회원 코드 혹은 요청 성립 회원 코드와 일치해야 합니다.");
+        if (!isUserClient(xCode, request)) {
+            throw new IllegalArgumentException("X-CODE 회원 코드는 계약 요청 클라이언트 코드와 일치해야 합니다.");
         }
 
-        if (request.requestorCode().equals(request.contractorCode())) {
+        if (request.clientCode().equals(request.freelancerCode())) {
             throw new IllegalArgumentException("자기 자신과 계약할 수 없습니다.");
-        }
-
-        if (!(request.contractorCode().equals(request.freelancerCode()) || request.requestorCode().equals(request.freelancerCode()))) {
-            throw new IllegalArgumentException("계약 요청자, 성립자 코드 중 하나는 반드시 계약 상 프리랜서 코드와 일치해야 합니다.");
         }
 
         if (request.startedAt().isAfter(request.endedAt()) || request.startedAt().isBefore(Instant.now())) {
@@ -117,12 +113,12 @@ public class ContractController {
         boolean isMonthly = request.paymentType().equals(PaymentType.MONTHLY.name());
 
         if (projectDays < DAYS_OF_MONTH && isMonthly) {
-            throw new IllegalArgumentException("프로젝트 기간이 짧아 월급 단위 금액으로 생성할 수 없습니다.");
+            throw new IllegalArgumentException("프로젝트 기간이 짧아 지급 단위를 월급으로 하여 생성할 수 없습니다.");
         }
     }
 
-    private boolean canCreateContract(String xCode, ContractCreateRequest request) {
-        return request.contractorCode().equals(xCode) || request.requestorCode().equals(xCode);
+    private boolean isUserClient(String xCode, ContractCreateRequest request) {
+        return request.clientCode().equals(xCode);
     }
 
     private Order getOrder(String order) {

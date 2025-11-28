@@ -55,14 +55,14 @@ public class ContractReadService {
         MemberInfo firstMember = memberInfos.get(0);
         MemberInfo secondMember = memberInfos.get(1);
 
-        String requestorName = firstMember.code().equals(contractEntity.getRequestorCode()) ? firstMember.name() : secondMember.name();
-        String contractorName = firstMember.code().equals(contractEntity.getRequestorCode()) ? secondMember.name() : firstMember.name();
+        String clientName = firstMember.code().equals(contractEntity.getClientCode()) ? firstMember.name() : secondMember.name();
+        String freelancerCode = firstMember.code().equals(contractEntity.getFreelancerCode()) ? secondMember.name() : firstMember.name();
 
-        return ContractDetailResponse.of(contractEntity, requestorName, contractorName);
+        return ContractDetailResponse.of(contractEntity, clientName, freelancerCode);
     }
 
     private void validateMember(String memberCode, ContractEntity contractEntity) {
-        if (contractEntity.getRequestorCode().equals(memberCode) || contractEntity.getContractorCode().equals(memberCode)) { // 요청자/계약자 중 하나에 속한다면 valid
+        if (contractEntity.getClientCode().equals(memberCode) || contractEntity.getFreelancerCode().equals(memberCode)) { // 요청자/계약자 중 하나에 속한다면 valid
             return;
         }
 

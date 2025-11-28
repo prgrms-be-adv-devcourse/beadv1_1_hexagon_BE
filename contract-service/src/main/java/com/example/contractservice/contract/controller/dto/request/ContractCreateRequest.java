@@ -13,18 +13,18 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 
 public record ContractCreateRequest(
-        @Schema(description = "계약 요청자 회원 코드", example = "8172516b-2076-460f-805d-e60cbc0463c7")
+        @Schema(description = "계약 클라이언트 회원 코드", example = "8172516b-2076-460f-805d-e60cbc0463c7")
         @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
                 message = "유효한 UUID 형식이어야 합니다.")
-        String requestorCode,
-        @Schema(description = "계약 성립자 회원 코드", example = "abdd2b21-d2a1-4d89-8271-e9941e7ef93e")
-        @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                message = "유효한 UUID 형식이어야 합니다.")
-        String contractorCode,
-        @Schema(description = "요청자, 성립자 중 프리랜서인 회원 코드 (정산, 결제에 필요한 항목)", example = "abdd2b21-d2a1-4d89-8271-e9941e7ef93e")
+        String clientCode,
+        @Schema(description = "프리랜서 회원 코드", example = "abdd2b21-d2a1-4d89-8271-e9941e7ef93e")
         @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
                 message = "유효한 UUID 형식이어야 합니다.")
         String freelancerCode,
+        @Schema(description = "관련 의뢰글 코드", example = "abdd2b22-d2c1-4d89-8271-e9941e7ef93e")
+        @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                message = "유효한 UUID 형식이어야 합니다.")
+        String commissionCode,
         @Schema(description = "프로젝트 시작일", example = "2023-08-31T01:07:25.295Z")
         Instant startedAt,
         @Schema(description = "프로젝트 종료일", example = "2023-08-31T01:07:25.295Z")
@@ -43,7 +43,7 @@ public record ContractCreateRequest(
 ) {
 
     public Contract toContract() {
-        ContractInfo contractInfo = new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt,
+        ContractInfo contractInfo = new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt,
                 PaymentType.valueOf(paymentType), unitAmount, ContractStatus.REQUESTED);
         ContractContent contractContent = new ContractContent(name, body);
         Instant nowTime = Instant.now();

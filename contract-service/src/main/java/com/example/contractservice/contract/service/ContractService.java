@@ -44,6 +44,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class ContractService {
     private static final String PAYMENT_COMMENT = "계약 결제";
+    private static final int CONTRACT_MEMBER_NUM = 2;
 
     private final SettlementService settlementService;
     private final DepositService depositService;
@@ -60,9 +61,9 @@ public class ContractService {
             return Collections.emptyList();
         }
 
-        // 계약 목록에서 요청자(requestor)와 계약자(contractor)의 code를 모두 수집 (중복 제거)
+        // 계약 목록에서 클라이언트, 프리랜서 code 수집
         Set<String> memberCodes = contractEntities.stream()
-                .flatMap(entity -> Stream.of(entity.getRequestorCode(), entity.getContractorCode()))
+                .flatMap(entity -> Stream.of(entity.getClientCode(), entity.getFreelancerCode()))
                 .collect(Collectors.toSet());
 
         // member 모듈로부터 정보 가져오기
@@ -80,14 +81,13 @@ public class ContractService {
 
     @Transactional
     public ContractCreateResponse requestContract(ContractCreateRequest request) {
-        isValidMember(List.of(request.requestorCode(), request.contractorCode()));
+        isValidMember(request.clientCode(), request.freelancerCode());
 
         Contract createdContract = request.toContract();
 
         ContractEntity contractEntity = contractRepository.saveContract(toEntity(createdContract));
-        Contract savedContract = toDomain(contractEntity);
 
-        return ContractCreateResponse.of(savedContract.getCode());
+        return ContractCreateResponse.of(contractEntity.getCode());
     }
 
     @Transactional
@@ -102,7 +102,7 @@ public class ContractService {
 
         contractRepository.saveContract(contractEntity);
 
-        applicationEventPublisher.publishEvent(new ContractEvent(contract.getInfo().requestorCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.CONFIRMED.name()));
+        applicationEventPublisher.publishEvent(new ContractEvent(contract.getInfo().clientCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.CONFIRMED.name()));
 
         return ContractInfoResponse.of(contract.getCode(), contract.getInfo().status().name());
     }
@@ -122,7 +122,8 @@ public class ContractService {
 
         saveSettlements(contracts);
 
-        contracts.forEach(contract -> applicationEventPublisher.publishEvent(new ContractEvent(request.xCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.PAID.name())));
+        contracts.forEach(contract -> applicationEventPublisher.publishEvent(
+                new ContractEvent(request.xCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.PAID.name())));
 
         return contracts.stream()
                 .map(contract -> ContractInfoResponse.of(contract.getCode(), contract.getInfo().status().name()))
@@ -133,39 +134,36 @@ public class ContractService {
             Map<String, String> membersByCode) {
         return ContractBriefWithNicknameResponse.of(
                 contractEntity,
-                membersByCode.get(contractEntity.getRequestorCode()),
-                membersByCode.get(contractEntity.getContractorCode())
+                membersByCode.get(contractEntity.getClientCode()),
+                membersByCode.get(contractEntity.getFreelancerCode())
         );
     }
 
-    private void isValidMember(List<String> memberCodes) {
-        URI memberInfoUri = uriConstructor.createMemberInfoUrl(memberCodes);
+    private void isValidMember(String clientCode, String freelancerCode) {
+        URI memberInfoUri = uriConstructor.createMemberInfoUrl(List.of(clientCode, freelancerCode));
         MemberInfoResponse memberInfoResponse = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
                 .orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
         List<MemberInfo> memberInfos = memberInfoResponse.members();
 
-        if (memberInfos.size() != memberCodes.size()) {
+        if (memberInfos.size() != CONTRACT_MEMBER_NUM) {
             throw new ContractException(INVALID_MEMBER);
         }
 
-        if (noFreelancer(memberInfos)) {
-            throw new ContractException(NO_FREELANCERS);
+        MemberInfo freelancerInfo = memberInfos.stream()
+                .filter(memberInfo -> memberInfo.code().equals(freelancerCode))
+                .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
+
+        if (!freelancerInfo.canWork()) {
+            throw new ContractException(NOT_FREELANCER);
         }
     }
 
-    private boolean noFreelancer(List<MemberInfo> memberInfos) {
-        return memberInfos.stream()
-                .filter(MemberInfo::canWork)
-                .findFirst()
-                .isEmpty();
-    }
-
     private void validateConfirm(String xCode, ContractInfo info) {
-        isValidMember(List.of(info.requestorCode(), info.contractorCode()));
+        isValidMember(info.clientCode(), info.freelancerCode());
 
-        if (!xCode.equals(info.contractorCode())) {
-            throw new ContractException(NOT_CONTRACTOR);
+        if (!xCode.equals(info.freelancerCode())) {
+            throw new ContractException(NOT_FREELANCER);
         }
 
         if (info.status() != ContractStatus.REQUESTED) {
@@ -179,7 +177,7 @@ public class ContractService {
      */
     private void validatePayments(String xCode, List<Contract> contracts) {
         boolean isValidUser = contracts.stream() // 모든 계약에 대해
-                .allMatch(contract -> contract.canUserPay(xCode)); // 로그인 유저가 (계약에 관여) && !(일하는 사람)
+                .allMatch(contract -> contract.canUserPay(xCode)); // 로그인 유저가 (계약에 관여) && 클라이언트
 
         if (!isValidUser) {
             throw new ContractException(INVALID_PAYMENT_MEMBER);
