@@ -1,6 +1,5 @@
 package com.example.contractservice.deposit.controller;
 
-import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.deposit.common.GetDepositApi;
 import com.example.contractservice.deposit.common.GetDepositHistoriesApi;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
@@ -9,6 +8,7 @@ import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.deposit.service.dto.request.DepositHistoryCursorRequest;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -27,7 +27,7 @@ public class DepositController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<DepositInfoResponse> getMyDeposit(@RequestHeader(name = "X-CODE") String xCode) {
-        return ResponseDto.ok(depositService.getMyDeposit(xCode));
+        return ResponseDto.success(depositService.getMyDeposit(xCode));
     }
 
     @GetDepositHistoriesApi
@@ -40,6 +40,6 @@ public class DepositController {
         DepositHistoryCursorRequest cursorRequest = new DepositHistoryCursorRequest(xCode, cursorDate,
                 cursorCode);
 
-        return ResponseDto.ok(depositService.getDepositHistories(cursorRequest));
+        return ResponseDto.success(depositService.getDepositHistories(cursorRequest));
     }
 }

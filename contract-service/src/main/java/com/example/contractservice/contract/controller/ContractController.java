@@ -1,6 +1,5 @@
 package com.example.contractservice.contract.controller;
 
-import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCancelApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractConfirmApi;
@@ -21,6 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,7 +61,7 @@ public class ContractController {
 
         ContractDetailResponse detailResponse = contractReadService.findDetailBy(new ContractDetailRequest(xCode, code));
 
-        return ResponseDto.ok(detailResponse);
+        return ResponseDto.success(detailResponse);
     }
 
     @ContractCreateApi
@@ -72,7 +72,7 @@ public class ContractController {
 
         validateCreateRequest(xCode, request);
 
-        return ResponseDto.ok(contractService.requestContract(request));
+        return ResponseDto.success(contractService.requestContract(request));
     }
 
     @ContractConfirmApi
@@ -83,7 +83,7 @@ public class ContractController {
 
         ContractConfirmRequest request = new ContractConfirmRequest(xCode, code);
 
-        return ResponseDto.ok(contractService.confirmContract(request));
+        return ResponseDto.success(contractService.confirmContract(request));
     }
 
     @ContractCancelApi
