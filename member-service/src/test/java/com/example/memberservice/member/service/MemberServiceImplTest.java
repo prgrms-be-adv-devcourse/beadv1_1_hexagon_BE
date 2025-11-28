@@ -40,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @Transactional
+@ActiveProfiles("test")
 class MemberServiceImplTest {
 
     @Autowired
