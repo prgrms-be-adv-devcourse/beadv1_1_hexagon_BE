@@ -22,7 +22,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @SpringBootTest
-@ActiveProfiles("test")
 class MemberInternalServiceTest {
 
     @Autowired
