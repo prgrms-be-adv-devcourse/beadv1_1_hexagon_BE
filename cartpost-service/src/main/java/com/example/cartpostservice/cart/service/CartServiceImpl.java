@@ -6,7 +6,6 @@ import com.example.cartpostservice.cart.model.CartsEntity;
 import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
-import com.example.cartpostservice.common.dto.EmptyResponse;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.time.Duration;
@@ -14,6 +13,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +56,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public EmptyResponse deleteCartItems(String xCode, String itemCode) {
+    public Empty deleteCartItems(String xCode, String itemCode) {
 
         CartsEntity cart = cartsRepository.findByMemberCode(xCode).orElseThrow(() -> new BusinessException(
                 CustomStatusCode.NOT_FOUND_MEMBER));
@@ -70,7 +70,7 @@ public class CartServiceImpl implements CartService {
 
         cartItemsRepository.delete(cartItem);
 
-        return EmptyResponse.getInstance();
+        return Empty.getInstance();
     }
 
     private Long calculateTotalAmount(Instant startedAt, Instant endedAt, PaymentType paymentType, String amount) {

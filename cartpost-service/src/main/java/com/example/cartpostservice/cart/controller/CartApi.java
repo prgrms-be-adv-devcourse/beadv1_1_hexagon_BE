@@ -1,18 +1,17 @@
 package com.example.cartpostservice.cart.controller;
 
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
-import com.example.cartpostservice.common.dto.EmptyResponse;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -57,6 +56,6 @@ public interface CartApi {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "삭제 성공", content = @Content(mediaType = "application/json")),
     })
-    ResponseEntity<ResponseDto<EmptyResponse>> deleteCartItem(@RequestHeader(name = "X-CODE") String xCode,
+    ResponseEntity<ResponseDto<Empty>> deleteCartItem(@RequestHeader(name = "X-CODE") String xCode,
             @PathVariable String itemCode);
 }
