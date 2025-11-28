@@ -16,3 +16,5 @@ build/
 
 !gradle-wrapper.properties
 !*-workflow.yml
+
+!docker-*
