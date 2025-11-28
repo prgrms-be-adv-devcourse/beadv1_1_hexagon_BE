@@ -3,6 +3,7 @@ package com.example.cartpostservice.cart.controller;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
+import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import com.example.cartpostservice.cart.service.CartService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
@@ -49,6 +50,16 @@ public class CartController implements CartApi {
         Empty emptyResponse = cartService.deleteCartItems(xCode, itemCode);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, emptyResponse),
+                CustomStatusCode.SUCCESS.getStatus());
+    }
+
+    @Override
+    @GetMapping("/pay/items")
+    public ResponseEntity<ResponseDto<Empty>> payRequest(String xCode, ContractPayRequest requests) {
+
+        Empty emptyResponse = cartService.payCartItems(xCode, requests);
+
+        return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, emptyResponse),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 }

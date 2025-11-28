@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface CartsRepository extends JpaRepository<CartsEntity, String> {
 
     Optional<CartsEntity> findByMemberCode(String xCode);
+
+    boolean existsByMemberCode(String s);
 }

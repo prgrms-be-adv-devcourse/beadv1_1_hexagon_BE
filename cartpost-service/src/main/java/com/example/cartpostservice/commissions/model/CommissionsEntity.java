@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.model;
 
+import org.hexagon.core.vo.PaymentType;
 import com.example.cartpostservice.common.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +12,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hexagon.core.vo.PaymentType;
 
 @Table(name = "commissions")
 @Entity

@@ -6,6 +6,7 @@ import com.example.cartpostservice.cart.model.CartsEntity;
 import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
+import com.example.cartpostservice.cart.service.kafka.CartKafkaService;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import org.hexagon.core.dto.Empty;
@@ -35,6 +36,9 @@ public class CartServiceTest {
     @Mock
     private CartItemsRepository cartItemsRepository;
 
+    @Mock
+    private CartKafkaService cartKafkaService;
+
     @InjectMocks
     private CartServiceImpl cartService;
 
@@ -42,11 +46,12 @@ public class CartServiceTest {
     void testGetCartItems_withItems() {
         // given
         String xCode = UUID.randomUUID().toString();
-        String cartCode = UUID.randomUUID().toString();
-
         CartsEntity cart = CartsEntity.builder()
                 .memberCode(xCode)
                 .build();
+
+        cart.generateCode();
+        String cartCode = cart.getCode();
 
         CartItemsEntity item = CartItemsEntity.builder()
                 .code(UUID.randomUUID().toString())
@@ -75,11 +80,13 @@ public class CartServiceTest {
     @Test
     void testGetCartItems_emptyCart() {
         String xCode = UUID.randomUUID().toString();
-        String cartCode = UUID.randomUUID().toString();
 
         CartsEntity cart = CartsEntity.builder()
                 .memberCode(xCode)
                 .build();
+
+        cart.generateCode();
+        String cartCode = cart.getCode();
 
         when(cartsRepository.findByMemberCode(xCode)).thenReturn(Optional.of(cart));
         when(cartItemsRepository.findByCartCode(cartCode)).thenReturn(List.of());
@@ -95,7 +102,7 @@ public class CartServiceTest {
 
         assertThatThrownBy(() -> cartService.getCartItems(xCode))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(CustomStatusCode.NOT_FOUND_MEMBER.name());
+                .hasMessageContaining(CustomStatusCode.NOT_FOUND_MEMBER.getMessage());
     }
 
     @Test
@@ -103,11 +110,12 @@ public class CartServiceTest {
         // given
         String xCode = UUID.randomUUID().toString();
         String itemCode = UUID.randomUUID().toString();
-        String cartCode = UUID.randomUUID().toString();
-
         CartsEntity cart = CartsEntity.builder()
                 .memberCode(xCode)
                 .build();
+
+        cart.generateCode();
+        String cartCode = cart.getCode();
 
         CartItemsEntity item = CartItemsEntity.builder()
                 .code(itemCode)
@@ -122,6 +130,7 @@ public class CartServiceTest {
 
         // then
         assertThat(response).isNotNull();
+        verify(cartKafkaService, times(1)).deleteProducer(any());
         verify(cartItemsRepository, times(1)).delete(item);
     }
 
@@ -134,7 +143,7 @@ public class CartServiceTest {
 
         assertThatThrownBy(() -> cartService.deleteCartItems(xCode, itemCode))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(CustomStatusCode.NOT_FOUND_MEMBER.name());
+                .hasMessageContaining(CustomStatusCode.NOT_FOUND_MEMBER.getMessage());
     }
 
     @Test
@@ -163,6 +172,8 @@ public class CartServiceTest {
                 .memberCode(xCode)
                 .build();
 
+        cart.generateCode();
+
         CartItemsEntity item = CartItemsEntity.builder()
                 .code(itemCode)
                 .cartCode(UUID.randomUUID().toString()) // cart와 다름
@@ -173,6 +184,6 @@ public class CartServiceTest {
 
         assertThatThrownBy(() -> cartService.deleteCartItems(xCode, itemCode))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(CustomStatusCode.FORBIDDEN_ITEM.name());
+                .hasMessageContaining(CustomStatusCode.FORBIDDEN_ITEM.getMessage());
     }
 }
