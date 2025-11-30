@@ -1,7 +1,6 @@
 package com.example.profileservice.resume.service;
 
 import com.example.profileservice.common.model.vo.ErrorCode;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
@@ -165,16 +164,16 @@ public class ResumeService {
         ResponseDto<MemberExistOutput> response = memberFeignClient.existMemberByCode(List.of(memberCode));
 
         // 2. 응답 DTO의 성공/실패 여부 확인
-        if (response.getCode() != 0) {
+        if (response.code() != 0) {
             return;
         }
 
         // 3. 응답 데이터(data)의 유효성 확인
-        if (response.getData() == null) {
+        if (response.data() == null) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        MemberExistOutput existOutput = response.getData();
+        MemberExistOutput existOutput = response.data();
 
         // 4. 존재하지 않는 회원 코드가 있는지 확인
         if (!existOutput.notExists().isEmpty()) {

@@ -3,9 +3,9 @@ package com.example.cartpostservice.cart.controller;
 import com.example.cartpostservice.commissions.controller.dto.response.InternalMemberInfo;
 import com.example.cartpostservice.commissions.controller.dto.response.MemberInfoOutput;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hexagon.core.dto.ResponseDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import java.util.List;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,7 +45,7 @@ class MemberClientTest {
         MemberInfoOutput mockOutput = new MemberInfoOutput(List.of(
                 new InternalMemberInfo("MEM_001", "TestUser", true)
         ));
-        ResponseDto<MemberInfoOutput> mockResponse = ResponseDto.success(CustomStatusCode.SUCCESS, mockOutput);
+        ResponseDto<MemberInfoOutput> mockResponse = getSuccessResponse(CustomStatusCode.SUCCESS, mockOutput);
         String jsonResponse = objectMapper.writeValueAsString(mockResponse);
 
         // WireMock 설정

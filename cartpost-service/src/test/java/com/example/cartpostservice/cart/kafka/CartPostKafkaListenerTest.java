@@ -7,10 +7,10 @@ import com.example.cartpostservice.cart.model.CartItemsEntity;
 import com.example.cartpostservice.cart.model.CartsEntity;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.contract.ContractEvent;
 import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.junit.jupiter.api.DisplayName;
@@ -25,11 +25,11 @@ import org.springframework.test.context.TestPropertySource;
 // Spring Boot 3.4+ (이하 버전은 @MockBean 사용)
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -135,7 +135,7 @@ class CartPostKafkaListenerTest {
                 contractCode, "requestorName", "contractorName", Instant.now(), Instant.now().plus(3, ChronoUnit.DAYS), "MONTHLY", 10000L, "홍길동과 JohnDoe의 계약"
         );
         ResponseDto<List<ContractBriefWithNicknameResponse>> responseDto =
-                ResponseDto.success(CustomStatusCode.SUCCESS, List.of(briefInfo));
+                getSuccessResponse(CustomStatusCode.SUCCESS, List.of(briefInfo));
 
         given(contractClient.getBriefInfo(anyList()))
                 .willReturn(responseDto);

@@ -1,7 +1,6 @@
 package com.example.searchservice.saga.mapper;
 
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
-import com.example.searchservice.common.vo.PaymentType;
 import org.hexagon.core.events.commission.CommissionCreatedEvent;
 import org.hexagon.core.events.commission.CommissionUpdatedEvent;
 import org.hexagon.core.vo.Commission;
@@ -18,7 +17,7 @@ public class CommissionMapper {
                 .tags(commission.tags())
                 .startedAt(commission.startedAt())
                 .endedAt(commission.endedAt())
-                .paymentType(PaymentType.valueOf(String.valueOf(commission.paymentType())))
+                .paymentType(commission.paymentType())
                 .payAmount(commission.payAmount())
                 .isClosed(commission.isClosed())
                 .updatedAt(commission.updatedAt())
@@ -35,7 +34,7 @@ public class CommissionMapper {
                 .tags(createdEvent.tags())
                 .startedAt(createdEvent.startedAt())
                 .endedAt(createdEvent.endedAt())
-                .paymentType(PaymentType.valueOf(String.valueOf(createdEvent.paymentType())))
+                .paymentType(createdEvent.paymentType())
                 .payAmount(createdEvent.payAmount())
                 .isClosed(createdEvent.isClosed())
                 .updatedAt(createdEvent.updatedAt())
@@ -52,7 +51,7 @@ public class CommissionMapper {
                 .tags(updatedEvent.tags())
                 .startedAt(updatedEvent.startedAt())
                 .endedAt(updatedEvent.endedAt())
-                .paymentType(PaymentType.valueOf(String.valueOf(updatedEvent.paymentType())))
+                .paymentType(updatedEvent.paymentType())
                 .payAmount(updatedEvent.payAmount())
                 .isClosed(updatedEvent.isClosed())
                 .updatedAt(updatedEvent.updatedAt())

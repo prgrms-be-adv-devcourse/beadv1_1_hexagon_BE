@@ -1,6 +1,6 @@
 package com.example.memberservice.member.controller;
 
-import com.example.memberservice.common.web.model.dto.ResponseDto;
+import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.swagger.MemberInternalControllerSwagger;
 import com.example.memberservice.member.service.MemberInternalService;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;

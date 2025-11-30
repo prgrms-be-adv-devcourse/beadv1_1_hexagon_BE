@@ -1,8 +1,10 @@
 package com.example.communicationservice.common.exception;
 
-import com.example.communicationservice.common.response.Empty;
-import com.example.communicationservice.common.response.ResponseDto;
+import static com.example.communicationservice.common.response.ResponseDtoMapper.getErrorResponse;
+
 import com.example.communicationservice.common.status.ResponseDtoStatus;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,7 +25,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
             .badRequest()
-            .body(ResponseDto.error(ResponseDtoStatus.VALIDATION_FAILED, errors));
+            .body(getErrorResponse(ResponseDtoStatus.VALIDATION_FAILED, errors));
     }
 
     // 커스텀 예외 처리
@@ -33,7 +35,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
             .status(status.getHttpStatusCode())
-            .body(ResponseDto.error(status));
+            .body(getErrorResponse(status));
     }
 
 }

@@ -7,10 +7,10 @@ import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
 import com.example.cartpostservice.cart.service.kafka.CartKafkaService;
-import com.example.cartpostservice.common.dto.EmptyResponse;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
-import com.example.cartpostservice.common.model.vo.PaymentType;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -126,7 +126,7 @@ public class CartServiceTest {
         when(cartItemsRepository.findByCode(itemCode)).thenReturn(Optional.of(item));
 
         // when
-        EmptyResponse response = cartService.deleteCartItems(xCode, itemCode);
+        Empty response = cartService.deleteCartItems(xCode, itemCode);
 
         // then
         assertThat(response).isNotNull();

@@ -1,12 +1,12 @@
 package com.example.profileservice.tag.api;
 
-import com.example.profileservice.common.model.vo.Empty;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
 import com.example.profileservice.tag.service.TagService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

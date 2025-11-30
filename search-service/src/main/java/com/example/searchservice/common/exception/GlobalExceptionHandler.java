@@ -1,6 +1,7 @@
 package com.example.searchservice.common.exception;
 
-import com.example.searchservice.common.response.BaseResponse;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -8,9 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
-    public BaseResponse<Empty> handleException(BaseException e) {
+    public ResponseDto<Empty> handleException(BaseException e) {
         ErrorCode errorCode = e.getErrorCode();
-        return new BaseResponse<>(
+        return new ResponseDto<>(
                 errorCode.getCode(),
                 errorCode.getHttpStatus(),
                 errorCode.getMessage(),

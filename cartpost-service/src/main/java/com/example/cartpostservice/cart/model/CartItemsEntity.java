@@ -1,7 +1,6 @@
 package com.example.cartpostservice.cart.model;
 
 import com.example.cartpostservice.cart.model.vo.ContractStatus;
-import com.example.cartpostservice.common.model.vo.PaymentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,8 +16,7 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.Instant;
+import org.hexagon.core.vo.PaymentType;
 
 @Entity
 @Table(name = "cart_items")

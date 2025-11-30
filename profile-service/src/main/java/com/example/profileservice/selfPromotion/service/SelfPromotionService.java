@@ -2,7 +2,6 @@ package com.example.profileservice.selfPromotion.service;
 
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
@@ -14,6 +13,7 @@ import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotion
 import com.example.profileservice.selfPromotion.model.entity.SelfPromotionEntity;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
@@ -177,13 +177,13 @@ public class SelfPromotionService {
         try {
             ResponseDto<MemberInfoOutput> response = memberFeignClient.getMemberInfoByCode(List.of(memberCode));
 
-            if (response.getData() == null || response.getData().internalMemberInfos().isEmpty()) {
+            if (response.data() == null || response.data().internalMemberInfos().isEmpty()) {
                 // 회원 정보는 존재하지만(컨트롤러에서 예외 처리) 빈 목록일 경우
                 log.warn("Member info not found for code: {}", memberCode);
                 return "알 수 없음";
             }
 
-            return response.getData().internalMemberInfos().get(0).nickName();
+            return response.data().internalMemberInfos().get(0).nickName();
 
         } catch (Exception e) {
             // 통신 오류 발생 시
@@ -217,7 +217,7 @@ public class SelfPromotionService {
     private void validateMemberExists(String memberCode) {
         ResponseDto<MemberExistOutput> response = memberFeignClient.existMemberByCode(List.of(memberCode));
 
-        if (response.getData() == null || response.getData().notExists().contains(memberCode)) {
+        if (response.data() == null || response.data().notExists().contains(memberCode)) {
             // 존재하지 않는다면 CustomException을 던짐
             throw new CustomException(ErrorCode.INVALID_MEMBER_CODE);
         }

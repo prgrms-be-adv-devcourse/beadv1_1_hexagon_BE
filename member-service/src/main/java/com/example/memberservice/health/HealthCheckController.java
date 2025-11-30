@@ -1,8 +1,8 @@
 package com.example.memberservice.health;
 
 
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

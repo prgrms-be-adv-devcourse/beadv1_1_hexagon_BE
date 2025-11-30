@@ -14,7 +14,6 @@ import com.example.cartpostservice.commissions.service.dto.request.TagServiceCom
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
 import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
 import com.example.cartpostservice.commissions.service.kafka.CommissionKafkaService;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.transaction.Transactional;
@@ -24,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.commission.CommissionCreatedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;

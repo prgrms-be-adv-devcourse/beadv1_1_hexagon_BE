@@ -1,15 +1,14 @@
 package com.example.searchservice.selfpromotion.controller;
 
-import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.controller.swagger.SelfPromotionControllerSwagger;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.service.SelfPromotionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +23,7 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
     private final SelfPromotionService selfPromotionService;
 
     @GetMapping
-    public BaseResponse<Page<SelfPromotionResponseDto>> search(
+    public ResponseDto<Page<SelfPromotionResponseDto>> search(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "all") SearchScope scope,
             @RequestParam(defaultValue = "0") int page,
@@ -34,16 +33,16 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
 
         result = selfPromotionService.search(query, scope, page, size);
 
-        return BaseResponse.ok(result);
+        return ResponseDto.success(result);
     }
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
-    public BaseResponse<List<String>> suggest(
+    public ResponseDto<List<String>> suggest(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int size) {
 
-        return BaseResponse.ok(selfPromotionService.getSuggestions(query, size));
+        return ResponseDto.success(selfPromotionService.getSuggestions(query, size));
     }
 
 }

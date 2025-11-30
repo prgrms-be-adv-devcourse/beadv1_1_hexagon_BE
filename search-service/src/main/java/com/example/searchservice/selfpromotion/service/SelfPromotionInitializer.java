@@ -1,15 +1,13 @@
 package com.example.searchservice.selfpromotion.service;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.repository.SelfPromotionRepository;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor

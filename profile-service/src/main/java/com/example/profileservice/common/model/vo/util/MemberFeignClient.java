@@ -1,8 +1,8 @@
 package com.example.profileservice.common.model.vo.util;
 
 
-import com.example.profileservice.common.model.vo.ResponseDto;
 import java.util.List;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
