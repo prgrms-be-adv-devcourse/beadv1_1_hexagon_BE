@@ -3,7 +3,7 @@ name: profile-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'profile-service/**'
 
@@ -21,7 +21,7 @@ jobs:
     with:
       service-name: hexagon-profile-service
       service-dir: ./profile-service
-      file-name: Dockerfile
+      file-name: Dockerfile_profile
 
   deploying:
     needs: releasing

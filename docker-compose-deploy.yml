@@ -1,0 +1,31 @@
+name: exp
+
+services:
+  cartpost-service:
+    image: cartpost-service:latest
+
+  communication-service:
+    image: communication-service:latest
+
+  contract-service:
+    image: contract-service:latest
+
+  discovery-service:
+    image: discovery-service:latest
+
+  gateway-service:
+    image: gateway-service:latest
+    ports:
+      - "8000:8000"
+
+  member-service:
+    image: member-service:latest
+
+  payment-service:
+    image: payment-service:latest
+
+  profile-service:
+    image: profile-service:latest
+
+  search-service:
+    image: search-service:latest

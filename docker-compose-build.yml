@@ -1,0 +1,55 @@
+
+services:
+  cartpost-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_cartpost
+    image: cartpost-service:latest
+
+  communication-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_communication
+    image: communication-service:latest
+
+  contract-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_contract
+    image: contract-service:latest
+
+  discovery-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_discovery
+    image: discovery-service:latest
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_gateway
+    image: gateway-service:latest
+
+  member-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_member
+    image: member-service:latest
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_payment
+    image: payment-service:latest
+
+  profile-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_profile
+    image: profile-service:latest
+
+  search-service:
+    build:
+      context: .
+      dockerfile: Dockerfile_search
+    image: search-service:latest

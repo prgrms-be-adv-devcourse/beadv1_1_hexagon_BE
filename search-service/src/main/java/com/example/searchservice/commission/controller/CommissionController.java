@@ -1,14 +1,14 @@
 package com.example.searchservice.commission.controller;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.service.CommissionService;
-import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionControllerSwagger;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ public class CommissionController implements CommissionControllerSwagger {
     private final CommissionService commissionService;
 
     @GetMapping
-    public BaseResponse<Page<CommissionResponseDto>> search(
+    public ResponseDto<Page<CommissionResponseDto>> search(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "all") SearchScope scope,
             @RequestParam(required = false) List<String> tags,
@@ -41,15 +41,15 @@ public class CommissionController implements CommissionControllerSwagger {
 
         result = commissionService.search(query, scope, page, size);
 
-        return BaseResponse.ok(result);
+        return ResponseDto.success(result);
     }
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
-    public BaseResponse<List<String>> suggest(
+    public ResponseDto<List<String>> suggest(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int size) {
 
-        return BaseResponse.ok(commissionService.getSuggestions(query, size));
+        return ResponseDto.success(commissionService.getSuggestions(query, size));
     }
 }

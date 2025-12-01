@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.common.model.util.TestKafkaConfig;
@@ -26,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.hexagon.core.dto.ResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -173,7 +173,7 @@ public class ResumeControllerTest {
         // 결과 검증: 본인 이력서만 조회되었는지 확인
         String responseJson = result.getResponse().getContentAsString();
         ResponseDto<List<ResumeSimpleResponse>> responseDto = objectMapper.readValue(responseJson, new TypeReference<>() {});
-        List<String> returnedCodes = responseDto.getData().stream().map(ResumeSimpleResponse::resumeCode).collect(
+        List<String> returnedCodes = responseDto.data().stream().map(ResumeSimpleResponse::resumeCode).collect(
                 Collectors.toList());
 
         assertThat(returnedCodes).containsExactly(initialResume.getCode());

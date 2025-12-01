@@ -59,7 +59,7 @@ public class ContractController {
 
         ContractDetailResponse detailResponse = contractReadService.findDetailBy(new ContractDetailRequest(xCode, code));
 
-        return ResponseDto.ok(detailResponse);
+        return ResponseDto.success(detailResponse);
     }
 
     @ContractCreateApi
@@ -70,7 +70,7 @@ public class ContractController {
 
         validateCreateRequest(xCode, request);
 
-        return ResponseDto.ok(contractService.requestContract(request));
+        return ResponseDto.success(contractService.requestContract(request));
     }
 
     @ContractCancelApi

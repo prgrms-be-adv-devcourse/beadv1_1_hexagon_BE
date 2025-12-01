@@ -1,8 +1,8 @@
 package com.example.memberservice.member.controller;
 
 
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
 import com.example.memberservice.member.controller.dto.request.MemberUpdateRequest;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
@@ -46,7 +46,6 @@ public class MemberApiController implements MemberApiControllerSwagger {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-
     public ResponseDto<Empty> createMember(@RequestHeader(name = "X-CODE") String memberCode,
         @RequestBody MemberCreateRequest request) {
 

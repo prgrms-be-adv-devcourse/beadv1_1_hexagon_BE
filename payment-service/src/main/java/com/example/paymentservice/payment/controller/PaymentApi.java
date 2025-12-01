@@ -1,6 +1,5 @@
 package com.example.paymentservice.payment.controller;
 
-import com.example.paymentservice.common.dto.ResponseDto;
 import com.example.paymentservice.payment.controller.dto.response.PayRechargeResponse;
 import com.example.paymentservice.payment.controller.dto.response.PaymentGetResponse;
 import com.example.paymentservice.payment.controller.dto.response.PaymentsGetResponse;
@@ -11,6 +10,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;

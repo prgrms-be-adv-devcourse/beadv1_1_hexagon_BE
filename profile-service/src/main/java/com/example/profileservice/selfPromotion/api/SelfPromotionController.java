@@ -1,7 +1,5 @@
 package com.example.profileservice.selfPromotion.api;
 
-import com.example.profileservice.common.model.vo.Empty;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
@@ -9,6 +7,8 @@ import com.example.profileservice.selfPromotion.service.SelfPromotionService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
