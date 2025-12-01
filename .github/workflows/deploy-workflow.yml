@@ -18,33 +18,24 @@ env:
 
 jobs:
   deploy:
-    name: ${{ inputs.service-name }}docker service container 재실행
+    name: 쿠버네티스 배포
     runs-on: self-hosted
 
     steps:
-      - name: 현재 동작 중인 container 삭제
-        run: |
-          echo "Stopping and removing old container..."
-          docker stop ${{ inputs.service-name }} || true
-          docker rm ${{ inputs.service-name }} || true
-          docker image prune -a -f
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      - name: 도커 이미지 PULL 받기
+      - name: Update deployment image
         run: |
-          echo "Full image name setting"
-          echo "${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs['image-tag'] }}"
-          IMAGE=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
-          docker pull $IMAGE
+          kubectl set image deployment.apps/${{ inputs.service-name }} \
+            ${{ inputs.service-name }}=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
 
-      - name: 도커 서비스 컨테이너 실행
+      - name: Wait for rollout
         run: |
-          echo "Full image"
-          IMAGE=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
-          docker run -d --name ${{ inputs.service-name }} --network exp_default $IMAGE
+          kubectl rollout status deployment.apps/${{ inputs.service-name }}
 
-      - name: Verify container status
+      - name: Verify deployment
         run: |
-          echo "배포 상태 체크"
-          docker ps --filter "name=${{ inputs.service-name }}"
+          kubectl get pods -l app=${{ inputs.service-name }}
           
           

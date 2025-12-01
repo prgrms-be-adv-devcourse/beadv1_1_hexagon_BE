@@ -3,7 +3,7 @@ name: member-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/144-1
     paths:
       - 'member-service/**'
 
