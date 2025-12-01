@@ -4,52 +4,52 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_cartpost
-    image: cartpost-service:latest
+    image: hexagon-cartpost-service:latest
 
   communication-service:
     build:
       context: .
       dockerfile: Dockerfile_communication
-    image: communication-service:latest
+    image: hexagon-communication-service:latest
 
   contract-service:
     build:
       context: .
       dockerfile: Dockerfile_contract
-    image: contract-service:latest
+    image: hexagon-contract-service:latest
 
   discovery-service:
     build:
       context: .
       dockerfile: Dockerfile_discovery
-    image: discovery-service:latest
+    image: hexagon-discovery-service:latest
 
   gateway-service:
     build:
       context: .
       dockerfile: Dockerfile_gateway
-    image: gateway-service:latest
+    image: hexagon-gateway-service:latest
 
   member-service:
     build:
       context: .
       dockerfile: Dockerfile_member
-    image: member-service:latest
+    image: hexagon-member-service:latest
 
   payment-service:
     build:
       context: .
       dockerfile: Dockerfile_payment
-    image: payment-service:latest
+    image: hexagon-payment-service:latest
 
   profile-service:
     build:
       context: .
       dockerfile: Dockerfile_profile
-    image: profile-service:latest
+    image: hexagon-profile-service:latest
 
   search-service:
     build:
       context: .
       dockerfile: Dockerfile_search
-    image: search-service:latest
+    image: hexagon-search-service:latest
