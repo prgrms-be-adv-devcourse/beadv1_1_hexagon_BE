@@ -31,7 +31,7 @@ public abstract class ContractMapper {
         ContractInfo contractInfo = new ContractInfo(
                 contractEntity.getClientCode(),
                 contractEntity.getFreelancerCode(),
-                contractEntity.getFreelancerCode(),
+                contractEntity.getCommissionCode(),
                 contractEntity.getStartedAt(),
                 contractEntity.getEndedAt(),
                 contractEntity.getPaymentType(),
