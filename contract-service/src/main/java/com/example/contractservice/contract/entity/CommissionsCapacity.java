@@ -28,7 +28,7 @@ public class CommissionsCapacity {
     @Column(name = "recruited_count", nullable = false)
     private int recruitedCount;
 
-    @Column(name = "selection_capacity", nullable = false)
+    @Column(name = "selection_capacity", nullable = false) // 최대 선정 인원
     private int selectionCapacity;
 
     @Column(name = "selected_count", nullable = false)

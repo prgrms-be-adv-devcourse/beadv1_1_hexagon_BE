@@ -20,7 +20,7 @@ public class ContractStepConfig { // TODO: 실패, 에러 시 리스너 추가
 
     private final ItemReader<ContractEntity> contractInProgressReader;
     private final ItemReader<ContractEntity> contractPaidReader;
-    private final ItemReader<ContractEntity> contractConfirmedReader;
+    private final ItemReader<ContractEntity> contractRequestedReader;
 
     private final ContractStatusWriter contractDoneWriter;
     private final ContractStatusWriter contractInProgressWriter;
@@ -48,10 +48,10 @@ public class ContractStepConfig { // TODO: 실패, 에러 시 리스너 추가
     }
 
     @Bean
-    public Step contractToCancelledBatchStep() { // CONFIRMED -> CANCELLED
+    public Step contractToCancelledBatchStep() { // REQUESTED -> CANCELLED
         return new StepBuilder("contractToCancelledBatchStep", jobRepository)
                 .<ContractEntity, ContractEntity>chunk(chunkSize, transactionManager)
-                .reader(contractConfirmedReader)
+                .reader(contractRequestedReader)
                 .writer(contractCancelledWriter)
                 .build();
     }

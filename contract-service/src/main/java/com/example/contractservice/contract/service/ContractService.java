@@ -11,10 +11,8 @@ import com.example.contractservice.contract.controller.dto.response.ContractCrea
 import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
-import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractRepository;
-import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
@@ -91,28 +89,11 @@ public class ContractService {
     }
 
     @Transactional
-    public ContractInfoResponse confirmContract(ContractConfirmRequest request) { // TODO: 동시성 테스트 필요
-        ContractEntity contractEntity = contractRepository.findByCode(request.contractCode());
-        Contract contract = toDomain(contractEntity);
-
-        validateConfirm(request.xCode(), contract.getInfo());
-        contract.confirm();
-
-        ContractMapper.applyToEntity(contract, contractEntity);
-
-        contractRepository.saveContract(contractEntity);
-
-        applicationEventPublisher.publishEvent(new ContractEvent(contract.getInfo().clientCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.CONFIRMED.name()));
-
-        return ContractInfoResponse.of(contract.getCode(), contract.getInfo().status().name());
-    }
-
-    @Transactional
     public List<ContractInfoResponse> payContracts(ContractPayProcessRequest request) {
-        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(request.contractCodes());
+        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(request.contractCodes()); // 결제할 계약 코드들
         List<Contract> contracts = contractEntities.stream()
                 .map(ContractMapper::toDomain)
-                .toList();
+                .toList(); // 도메인화 // TODO: Repository에서 아예 도메인을 반환하도록 수정
 
         validatePayments(request.xCode(), contracts);
 
@@ -159,18 +140,6 @@ public class ContractService {
         }
     }
 
-    private void validateConfirm(String xCode, ContractInfo info) {
-        isValidMember(info.clientCode(), info.freelancerCode());
-
-        if (!xCode.equals(info.freelancerCode())) {
-            throw new ContractException(NOT_FREELANCER);
-        }
-
-        if (info.status() != ContractStatus.REQUESTED) {
-            throw new ContractException(NOT_REQUESTED_STATUS);
-        }
-    }
-
     /**
      * 1. 로그인 사용자가 모든 계약과 연관되어 있는지 확인
      * 2. 클라이언트인지 확인
@@ -183,11 +152,11 @@ public class ContractService {
             throw new ContractException(INVALID_PAYMENT_MEMBER);
         }
 
-        boolean isAnyNotConfirmed = contracts.stream().anyMatch(contract -> !contract.isConfirmed() // CONFIRMED 상태가 아니거나
-                || contract.getInfo().startedAt().isBefore(Instant.now())); // CONFIRMED인데 현재 시간보다 프로젝트 시작일이 이전이라면(실제로는 CANCELLED 상태)
+        boolean isAnyNotRequested = contracts.stream().anyMatch(contract -> !contract.isRequested() // REQUESTED 상태가 아니거나
+                || contract.getInfo().startedAt().isBefore(Instant.now())); // REQUESTED인데 현재 시간보다 프로젝트 시작일이 이전이라면(실제로는 CANCELLED 상태)
 
-        if (isAnyNotConfirmed) {
-            throw new ContractException(NOT_CONFIRMED_STATUS);
+        if (isAnyNotRequested) {
+            throw new ContractException(NOT_REQUESTED_STATUS);
         }
 
     }

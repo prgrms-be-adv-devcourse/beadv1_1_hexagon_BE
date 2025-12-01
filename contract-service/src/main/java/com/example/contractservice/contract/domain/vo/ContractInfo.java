@@ -15,11 +15,6 @@ public record ContractInfo(
     ContractStatus status
 ) {
 
-    public ContractInfo confirm() {
-        return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
-                unitAmount, ContractStatus.CONFIRMED);
-    }
-
     public ContractInfo pay() {
         return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
                 unitAmount, ContractStatus.PAID);

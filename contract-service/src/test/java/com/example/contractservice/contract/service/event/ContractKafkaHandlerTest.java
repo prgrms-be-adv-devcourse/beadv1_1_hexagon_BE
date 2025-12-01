@@ -39,7 +39,7 @@ class ContractKafkaHandlerTest {
                 .freelancerCode(UUID.randomUUID().toString())
                 .name("이름")
                 .body("내용")
-                .status(ContractStatus.CONFIRMED)
+                .status(ContractStatus.REQUESTED)
                 .startedAt(Instant.now())
                 .endedAt(Instant.now().plusSeconds(10000000))
                 .unitAmount(20000000L)

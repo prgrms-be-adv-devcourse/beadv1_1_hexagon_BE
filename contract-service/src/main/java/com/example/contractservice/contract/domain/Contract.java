@@ -53,20 +53,15 @@ public class Contract {
         return updatedAt;
     }
 
-    public void confirm() {
-        info = info.confirm();
-        updatedAt = Instant.now();
-    }
-
-    public boolean isConfirmed() {
-        return getInfo().status() == ContractStatus.CONFIRMED;
-    }
-
     public boolean canUserPay(String userCode) { // 유저가 클라이언트인지 확인
         return info.clientCode().equals(userCode);
     }
 
     public void pay() {
         this.info = this.info.pay();
+    }
+
+    public boolean isRequested() {
+        return getInfo().status() == ContractStatus.REQUESTED;
     }
 }

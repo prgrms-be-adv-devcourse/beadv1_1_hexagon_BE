@@ -30,7 +30,7 @@ public class SettlementService {
         List<Settlement> settlements = SettlementMapper.toDomains(request);
         settlements.stream()
                 .map(SettlementMapper::toEntity)
-                .forEach(settlementRepository::save);
+                .forEach(settlementRepository::save); // TODO: 레포지토리 인자로 도메인을 받도록 수정
 
         return settlements;
     }

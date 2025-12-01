@@ -4,7 +4,6 @@ import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCancelApi;
-import com.example.contractservice.contract.common.swagger.annotation.ContractConfirmApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCreateApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractByCodeApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractsApi;
@@ -15,7 +14,6 @@ import com.example.contractservice.contract.controller.dto.response.ContractInfo
 import com.example.contractservice.contract.controller.dto.response.ContractListWithCursorResponse;
 import com.example.contractservice.contract.service.ContractReadService;
 import com.example.contractservice.contract.service.ContractService;
-import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
 import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
 import java.time.Duration;
@@ -73,17 +71,6 @@ public class ContractController {
         validateCreateRequest(xCode, request);
 
         return ResponseDto.ok(contractService.requestContract(request));
-    }
-
-    @ContractConfirmApi
-    @PostMapping("/{code}/confirm")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<ContractInfoResponse> confirmContract(@RequestHeader(name = "X-CODE") String xCode,
-            @PathVariable String code) {
-
-        ContractConfirmRequest request = new ContractConfirmRequest(xCode, code);
-
-        return ResponseDto.ok(contractService.confirmContract(request));
     }
 
     @ContractCancelApi
