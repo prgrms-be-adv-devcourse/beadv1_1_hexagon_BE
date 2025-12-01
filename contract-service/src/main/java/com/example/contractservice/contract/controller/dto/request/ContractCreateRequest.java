@@ -1,7 +1,6 @@
 package com.example.contractservice.contract.controller.dto.request;
 
 import com.example.contractservice.contract.common.ContractStatus;
-import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.vo.ContractContent;
 import com.example.contractservice.contract.domain.vo.ContractInfo;
@@ -11,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import org.hexagon.core.vo.PaymentType;
 
 public record ContractCreateRequest(
         @Schema(description = "계약 클라이언트 회원 코드", example = "8172516b-2076-460f-805d-e60cbc0463c7")

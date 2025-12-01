@@ -2,13 +2,13 @@ package com.example.contractservice.contract.service.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractJpaRepository;
 import com.example.contractservice.contract.service.ContractEventService;
 import java.time.Instant;
 import java.util.UUID;
+import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
