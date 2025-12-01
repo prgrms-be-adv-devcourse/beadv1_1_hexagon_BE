@@ -27,15 +27,15 @@ jobs:
 
       - name: Update deployment image
         run: |
-          kubectl set image deployment.apps/${{ inputs.service-name }} \
+          sudo kubectl set image deployment.apps/${{ inputs.service-name }} \
             ${{ inputs.service-name }}=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
 
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment.apps/${{ inputs.service-name }}
+          sudo kubectl rollout status deployment.apps/${{ inputs.service-name }}
 
       - name: Verify deployment
         run: |
-          kubectl get pods -l app=${{ inputs.service-name }}
+          sudo kubectl get pods -l app=${{ inputs.service-name }}
           
           
