@@ -54,6 +54,12 @@ dependencies {
 
     implementation 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Flyway Core
+    implementation 'org.flywaydb:flyway-core'
+
+    // Flyway가 MySQL 드라이버를 쓰기 위한 설정
+    implementation 'org.flywaydb:flyway-mysql'
 }
 
 dependencyManagement {
