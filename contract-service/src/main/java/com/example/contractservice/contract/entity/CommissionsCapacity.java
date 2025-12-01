@@ -34,4 +34,11 @@ public class CommissionsCapacity {
     @Column(name = "selected_count", nullable = false)
     private int selectedCount;
 
+    public void increaseRecruitedCount() {
+        this.recruitedCount++;
+    }
+
+    public void increaseSelectedCount() {
+        this.selectedCount++;
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.contractservice.contract.service;
 
+import static com.example.contractservice.contract.domain.exception.ContractErrorCode.COMMISSION_RECRUIT_FULL;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.INVALID_PAYMENT_MEMBER;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.NOT_REQUESTED_STATUS;
 import static com.example.contractservice.contract.service.mapper.ContractMapper.applyToEntity;
@@ -7,7 +8,9 @@ import static com.example.contractservice.contract.service.mapper.ContractMapper
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
+import com.example.contractservice.contract.entity.CommissionsCapacity;
 import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.repository.CommissionsCapacityRepository;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import com.example.contractservice.contract.service.mapper.ContractSettlementMapper;
@@ -17,6 +20,7 @@ import com.example.contractservice.settlement.service.SettlementService;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
 import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -31,6 +35,7 @@ public class ContractPayService {
     private final DepositService depositService;
     private final SettlementService settlementService;
     private final ContractRepository contractRepository;
+    private final CommissionsCapacityRepository commissionsCapacityRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Value("${admin.member.code}")
@@ -42,6 +47,8 @@ public class ContractPayService {
         String xCode = request.xCode();
 
         validatePayment(xCode, contract);
+
+        increaseRecruitedCount(contract);
 
         transferToAdmin(xCode, contract);
 
@@ -73,6 +80,23 @@ public class ContractPayService {
 
     }
 
+    private void increaseRecruitedCount(Contract contract) {
+        CommissionsCapacity capacity = commissionsCapacityRepository.findByCommissionCode(
+                contract.getInfo().commissionCode());
+
+        if (capacity.getSelectionCapacity() >= capacity.getSelectedCount()) {
+            throw new ContractException(COMMISSION_RECRUIT_FULL);
+        }
+
+        capacity.increaseSelectedCount();
+
+        if (capacity.getSelectionCapacity() == capacity.getSelectedCount()) {
+            applicationEventPublisher.publishEvent(new CommissionOpenCloseEvent(capacity.getCommissionCode(), true)); // 의뢰글 자동 마감 처리
+        }
+
+        commissionsCapacityRepository.saveCapacity(capacity);
+    }
+
     private void changeStatusToPay(Contract contract, ContractEntity entity) {
         contract.pay();
 
@@ -80,6 +104,12 @@ public class ContractPayService {
         contractRepository.saveContract(entity);
     }
 
+    /** 유저가 관리자 예치금으로 송금합니다. 월급/단건 타입에 따라 송금 금액이 결정되고 유저 예치금에서 빠져나가고 <br />
+     * 관리자 예치금으로 입금됩니다.
+     *
+     * @param xCode 로그인 사용자 코드
+     * @param contract 관련 계약
+     */
     private void transferToAdmin(String xCode, Contract contract) {
         Long totalAmount = switch (contract.getInfo().paymentType()) {
             case MONTHLY -> {
