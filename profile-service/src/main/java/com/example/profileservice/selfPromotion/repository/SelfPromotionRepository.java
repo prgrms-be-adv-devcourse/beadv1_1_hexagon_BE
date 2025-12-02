@@ -18,7 +18,4 @@ public interface SelfPromotionRepository extends JpaRepository<SelfPromotionEnti
 
     // 특정 프로모션 코드로 활성 프로모션 단건 조회
     Optional<SelfPromotionEntity> findByCodeAndIsDeletedFalse(String code);
-
-    // 특정 회원의 모든 활성 SelfPromotion 조회 (판매자 등록 취소에 사용)
-    List<SelfPromotionEntity> findAllByMemberCodeAndIsDeletedFalse(String memberCode);
 }

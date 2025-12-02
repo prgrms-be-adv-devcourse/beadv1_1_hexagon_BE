@@ -225,22 +225,22 @@ public class SelfPromotionService {
 
     // 멤버 모듈의 요청을 받아 해당 프리랜서의 모든 활성 Self Promotion을 논리적으로 삭제
     public void deletePromotionsByMemberCode(String memberCode) {
-        log.info("프리랜서 등록 취소 - Self Promotion 일괄 삭제 시작. memberCode: {}", memberCode);
+        log.info("프리랜서 등록 취소 - Self Promotion 삭제 시작. memberCode: {}", memberCode);
 
-        List<SelfPromotionEntity> promotionsToDelete = selfPromotionRepository.findAllByMemberCodeAndIsDeletedFalse(memberCode);
+        // Optional로 조회
+        selfPromotionRepository.findByMemberCodeAndIsDeletedFalseOrderByCreatedAtDesc(memberCode)
+                .ifPresent(promotion -> {
+                    promotion.delete(); // Soft Delete 처리
+                    selfPromotionRepository.save(promotion); // 변경 사항 저장
 
-        promotionsToDelete.forEach(promotion -> {
-            promotion.delete(); // Soft Delete 처리
+                    // 삭제 이벤트 발행
+                    SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotion.getCode());
+                    kafkaProducer.send(selfPromotionTopic, promotion.getCode(), deletedEvent);
 
-            // 개별 삭제 이벤트를 발행하여 Search/AI 모듈이 해당 인덱스를 삭제하도록 알림
-            SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotion.getCode());
-            kafkaProducer.send(selfPromotionTopic, promotion.getCode(), deletedEvent);
-        });
+                    log.info("삭제된 활성 SelfPromotion: {}", promotion.getCode());
+                });
 
-        // 일괄 변경 사항 저장
-        selfPromotionRepository.saveAll(promotionsToDelete);
-
-        log.info("삭제된 활성 SelfPromotion 개수: {}", promotionsToDelete.size());
+        log.info("프리랜서 등록 취소 - Self Promotion 삭제 완료.");
     }
 
     // SelfPromotionService.java 내부에 SelfPromotion VO 변환 헬퍼
