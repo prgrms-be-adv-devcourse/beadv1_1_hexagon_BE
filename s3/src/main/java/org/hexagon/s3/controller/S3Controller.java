@@ -40,7 +40,7 @@ public class S3Controller {
         return new PresignedDownloadListResponse(urls);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public String deleteObject(@RequestParam String key) {
         s3Service.deleteObject(key);
         return key + " deleted";
