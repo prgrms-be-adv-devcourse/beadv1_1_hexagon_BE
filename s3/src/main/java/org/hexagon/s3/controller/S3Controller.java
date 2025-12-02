@@ -9,9 +9,11 @@ import org.hexagon.s3.dto.PresignedDownloadResponse;
 import org.hexagon.s3.dto.PresignedUploadRequest;
 import org.hexagon.s3.dto.PresignedUploadResponse;
 import org.hexagon.s3.service.S3Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,11 +34,15 @@ public class S3Controller {
     }
 
     @PostMapping("/download-urls")
-    public PresignedDownloadListResponse getDownloadUrls(
-            @RequestBody PresignedDownloadListRequest request
-    ) {
+    public PresignedDownloadListResponse getDownloadUrls(@RequestBody PresignedDownloadListRequest request) {
         List<PresignedDownloadResponse> urls =
                 s3Service.createDownloadUrls(request.keys());
         return new PresignedDownloadListResponse(urls);
+    }
+
+    @DeleteMapping("/delete")
+    public String deleteObject(@RequestParam String key) {
+        s3Service.deleteObject(key);
+        return key + " deleted";
     }
 }
