@@ -29,6 +29,9 @@ ext {
 }
 
 dependencies {
+    // AWS S3 의존성
+    implementation 'software.amazon.awssdk:s3:2.39.5'
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
