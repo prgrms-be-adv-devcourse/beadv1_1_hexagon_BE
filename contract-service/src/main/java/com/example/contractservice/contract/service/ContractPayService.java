@@ -84,7 +84,7 @@ public class ContractPayService {
         CommissionsCapacity capacity = commissionsCapacityRepository.findByCommissionCode(
                 contract.getInfo().commissionCode());
 
-        if (capacity.getSelectionCapacity() >= capacity.getSelectedCount()) {
+        if (capacity.getSelectionCapacity() <= capacity.getSelectedCount()) {
             throw new ContractException(COMMISSION_RECRUIT_FULL);
         }
 
