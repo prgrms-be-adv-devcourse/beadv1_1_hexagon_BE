@@ -127,6 +127,7 @@ eureka:
       defaultZone: http://eureka-server:8761/eureka/
   instance:
     instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-member-service
 
 springdoc:
   swagger-ui:
