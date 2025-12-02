@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.s3.dto.PresignedDownloadResponse;
 import org.hexagon.s3.dto.PresignedUploadResponse;
 import org.hexagon.s3.dto.ServiceName;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,4 +66,19 @@ public class S3Service {
         );
     }
 
+    public PresignedDownloadResponse createDownloadUrl(String key) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+
+        return new PresignedDownloadResponse(presignedRequest.url().toString());
+    }
 }
