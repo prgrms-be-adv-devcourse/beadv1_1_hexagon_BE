@@ -99,4 +99,4 @@ batch:
     interval: 0 0 3 15 * ? # 매월 15일 새벽 3시
   contract:
     size: 500
-    interval: 0 * * * * *
+    interval:  0 0 0 * * ?
