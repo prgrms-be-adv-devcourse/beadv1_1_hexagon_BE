@@ -36,7 +36,7 @@ payment:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://hexagon-discovery-service:8761/eureka/
+      defaultZone: http://eureka-server:8761/eureka/
   instance:
     instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
     hostname: hexagon-payment-service
