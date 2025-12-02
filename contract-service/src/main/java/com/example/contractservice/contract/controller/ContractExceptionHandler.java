@@ -2,8 +2,8 @@ package com.example.contractservice.contract.controller;
 
 import static com.example.contractservice.contract.common.ResponseDtoMapper.getErrorResponse;
 
+import com.example.contractservice.common.domain.exception.DomainErrorCode;
 import com.example.contractservice.contract.domain.exception.ContractException;
-import com.example.contractservice.contract.domain.exception.ContractErrorCode;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ public class ContractExceptionHandler {
 
     @ExceptionHandler(ContractException.class)
     public ResponseEntity<ResponseDto<Empty>> handleContractCreateException(ContractException e) {
-        ContractErrorCode errorCode = e.getErrorCode();
+        DomainErrorCode errorCode = e.getErrorCode();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getErrorResponse(errorCode));
     }

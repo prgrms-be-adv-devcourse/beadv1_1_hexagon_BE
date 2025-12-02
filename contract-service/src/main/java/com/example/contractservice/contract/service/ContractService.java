@@ -4,6 +4,7 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 import static com.example.contractservice.contract.service.mapper.ContractMapper.*;
 
 import com.example.contractservice.common.UriConstructor;
+import com.example.contractservice.common.domain.exception.DomainException;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
@@ -90,7 +91,6 @@ public class ContractService {
      * @param request 계약 결제를 위한 정보를 담는 DTO
      * @return 결제에 성공/실패한 계약 정보
      */
-    @Transactional
     public ContractPayResponse payContracts(ContractPayServiceRequest request) {
         ArrayList<ContractInfoResponse> success = new ArrayList<>();
         ArrayList<ContractInfoResponse> fail = new ArrayList<>();
@@ -143,13 +143,13 @@ public class ContractService {
     private void pay(ContractPayProcessRequest request, List<ContractInfoResponse> success, List<ContractInfoResponse> fail) {
         try {
             contractPayService.processPayment(request);
-        } catch (ContractException e) {
+        } catch (DomainException e) {
             log.warn("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: {}", request.contract().getCode(), e.getErrorCode().getMessage());
 
             fail.add(new ContractInfoResponse(request.xCode(), request.contract().getInfo().status().name()));
             return;
         } catch (Exception e) {
-            log.error("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: {}", request.contract().getCode(), e.getMessage());
+            log.error("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: ", request.contract().getCode(), e);
 
             fail.add(new ContractInfoResponse(request.xCode(), request.contract().getInfo().status().name()));
             return;
