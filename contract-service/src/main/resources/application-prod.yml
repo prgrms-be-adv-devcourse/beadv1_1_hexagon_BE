@@ -1,0 +1,102 @@
+server:
+  port: 8083
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-contract-service
+spring:
+  application:
+    name: contract-service
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+  jpa:
+    open-in-view: false #Lazy Loading 사용 시 트랜잭션 종료를 명확하게 관리하기 위해 false
+    hibernate:
+      ddl-auto: validate # 음에는 create로 시작하여 엔티티 확인 후 validate로 변경
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false #쿼리 로그를 보기 쉽게 포맷
+
+  datasource:
+    # TODO: 프로젝트 환경에 맞게 DB URL, Username, Password 수정 필요!!
+    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+  kafka:
+    bootstrap-servers:
+      - kafka:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      acks: all
+
+      properties:
+        delivery.timeout.ms: 120000
+        linger.ms: 0
+        request.timeout.ms: 30000
+        enable.idempotence: true
+        allow.auto.create.topics: false
+
+    consumer:
+      group-id: contract-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring.json.trusted.packages:
+        allow.auto.create.topics: false
+
+kafka:
+  producer:
+    topic:
+      contract:
+        name: contract-topic
+  consumer:
+    topic:
+      cart:
+        name: contract-topic
+      member:
+        name: member-create-topic
+  config:
+    topic-partitions: 1
+    topic-replications: 1
+
+springdoc:
+  swagger-ui:
+    path: /api/contracts/swagger-ui
+  api-docs:
+    path: /api/contracts/v3/api-docs
+
+module:
+  member:
+    application:
+      name: MEMBER-SERVICE
+      path:
+        member-exists: /internal/members/exist
+        member-info: /internal/members
+
+batch:
+  settlement:
+    size: 500
+    settlement-rate: 0.125
+    interval: 0 0 3 15 * ? # 매월 15일 새벽 3시
+  contract:
+    size: 500
+    interval:  0 0 0 * * ?

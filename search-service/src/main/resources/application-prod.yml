@@ -1,0 +1,41 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: search-service
+
+  elasticsearch:
+    uris: http://elasticsearch:9200
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: search-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+topics:
+  tag-events: tag-events
+  selfpromotion-events: selfpromotion-events
+  commission-events: commission-events
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-search-service
+
+springdoc:
+  swagger-ui:
+    path: /api/search/swagger-ui
+  api-docs:
+    path: /api/search/v3/api-docs
