@@ -34,6 +34,23 @@ public class CommissionsCapacity {
     @Column(name = "selected_count", nullable = false)
     private int selectedCount;
 
+    private CommissionsCapacity(String commissionCode, int recruitCapacity, int recruitedCount, int selectionCapacity,
+            int selectedCount) {
+        this.commissionCode = commissionCode;
+        this.recruitCapacity = recruitCapacity;
+        this.recruitedCount = recruitedCount;
+        this.selectionCapacity = selectionCapacity;
+        this.selectedCount = selectedCount;
+    }
+
+    public static CommissionsCapacity createBy(String commissionCode, int recruitCapacity, int selectionCapacity) {
+        return new CommissionsCapacity(commissionCode,
+                recruitCapacity,
+                0,
+                selectionCapacity,
+                0);
+    }
+
     public void increaseRecruitedCount() {
         this.recruitedCount++;
     }
