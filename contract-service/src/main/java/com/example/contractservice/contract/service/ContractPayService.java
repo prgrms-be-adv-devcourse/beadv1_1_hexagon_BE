@@ -48,7 +48,7 @@ public class ContractPayService {
 
         validatePayment(xCode, contract);
 
-        increaseRecruitedCount(contract);
+        increaseSelectedCount(contract);
 
         transferToAdmin(xCode, contract);
 
@@ -80,7 +80,7 @@ public class ContractPayService {
 
     }
 
-    private void increaseRecruitedCount(Contract contract) {
+    private void increaseSelectedCount(Contract contract) {
         CommissionsCapacity capacity = commissionsCapacityRepository.findByCommissionCode(
                 contract.getInfo().commissionCode());
 

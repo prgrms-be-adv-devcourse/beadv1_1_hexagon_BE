@@ -22,11 +22,11 @@ public class CommissionsCapacity {
     @Column(name = "commission_code", nullable = false, unique = true, columnDefinition = "CHAR(36)")
     private String commissionCode;
 
-    @Column(name = "recruit_capacity", nullable = false)
-    private int recruitCapacity;
+    @Column(name = "apply_capacity", nullable = false)
+    private int applyCapacity;
 
-    @Column(name = "recruited_count", nullable = false)
-    private int recruitedCount;
+    @Column(name = "applied_count", nullable = false)
+    private int appliedCount;
 
     @Column(name = "selection_capacity", nullable = false) // 최대 선정 인원
     private int selectionCapacity;
@@ -34,25 +34,25 @@ public class CommissionsCapacity {
     @Column(name = "selected_count", nullable = false)
     private int selectedCount;
 
-    private CommissionsCapacity(String commissionCode, int recruitCapacity, int recruitedCount, int selectionCapacity,
+    private CommissionsCapacity(String commissionCode, int applyCapacity, int appliedCount, int selectionCapacity,
             int selectedCount) {
         this.commissionCode = commissionCode;
-        this.recruitCapacity = recruitCapacity;
-        this.recruitedCount = recruitedCount;
+        this.applyCapacity = applyCapacity;
+        this.appliedCount = appliedCount;
         this.selectionCapacity = selectionCapacity;
         this.selectedCount = selectedCount;
     }
 
-    public static CommissionsCapacity createBy(String commissionCode, int recruitCapacity, int selectionCapacity) {
+    public static CommissionsCapacity createBy(String commissionCode, int applyCapacity, int selectionCapacity) {
         return new CommissionsCapacity(commissionCode,
-                recruitCapacity,
+                applyCapacity,
                 0,
                 selectionCapacity,
                 0);
     }
 
-    public void increaseRecruitedCount() {
-        this.recruitedCount++;
+    public void increaseAppliedCount() {
+        this.appliedCount++;
     }
 
     public void increaseSelectedCount() {
