@@ -81,4 +81,10 @@ public class S3Service {
 
         return new PresignedDownloadResponse(presignedRequest.url().toString());
     }
+
+    public List<PresignedDownloadResponse> createDownloadUrls(List<String> keys) {
+        return keys.stream()
+                .map(this::createDownloadUrl)
+                .toList();
+    }
 }

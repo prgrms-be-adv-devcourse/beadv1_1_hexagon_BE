@@ -1,6 +1,9 @@
 package org.hexagon.s3.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.s3.dto.PresignedDownloadListRequest;
+import org.hexagon.s3.dto.PresignedDownloadListResponse;
 import org.hexagon.s3.dto.PresignedDownloadRequest;
 import org.hexagon.s3.dto.PresignedDownloadResponse;
 import org.hexagon.s3.dto.PresignedUploadRequest;
@@ -26,5 +29,14 @@ public class S3Controller {
     @PostMapping("/download-url")
     public PresignedDownloadResponse getDownloadUrl(@RequestBody PresignedDownloadRequest request) {
         return s3Service.createDownloadUrl(request.key());
+    }
+
+    @PostMapping("/download-urls")
+    public PresignedDownloadListResponse getDownloadUrls(
+            @RequestBody PresignedDownloadListRequest request
+    ) {
+        List<PresignedDownloadResponse> urls =
+                s3Service.createDownloadUrls(request.keys());
+        return new PresignedDownloadListResponse(urls);
     }
 }
