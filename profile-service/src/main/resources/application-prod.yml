@@ -80,6 +80,7 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://eureka-server:8761/eureka/
+      hostname: hexagon-profile-service
 
 springdoc:
   swagger-ui:
