@@ -40,7 +40,7 @@ spring:
             client-secret: ${KAKAO_CLIENT_SECRET}
             scope: account_email #카카오는 이메일을 받아오려면 서비스 검증을 받아야합니다.
             authorization-grant-type: authorization_code
-            redirect-uri: http://${EC2_IP}:8000/login/oauth2/code/kakao
+            redirect-uri: ${EC2_DOMAIN}/login/oauth2/code/kakao
             client-name: Kakao
             client-authentication-method: client_secret_post
           naver:
@@ -48,14 +48,14 @@ spring:
             client-secret: ${NAVER_CLIENT_SECRET}
             scope: email
             authorization-grant-type: authorization_code
-            redirect-uri: http://${EC2_IP}/login/oauth2/code/naver
+            redirect-uri: ${EC2_DOMAIN}/login/oauth2/code/naver
             client-name: Naver
             client-authentication-method: client_secret_post
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email
-            redirect-uri: http://${EC2_IP}/login/oauth2/code/google
+            redirect-uri: ${EC2_DOMAIN}/login/oauth2/code/google
             client-name: Google
 
         provider:
@@ -117,9 +117,9 @@ jwt:
 
 redirect-url:
   login:
-    success: http://${EC2_IP}/login/success
-    need-signup: http://${EC2_IP}/login/need-signup
-    failure: http://${EC2_IP}/login/fail
+    success: ${EC2_DOMAIN}/login/success
+    need-signup: ${EC2_DOMAIN}/login/need-signup
+    failure: ${EC2_DOMAIN}/login/fail
 
 eureka:
   client:
