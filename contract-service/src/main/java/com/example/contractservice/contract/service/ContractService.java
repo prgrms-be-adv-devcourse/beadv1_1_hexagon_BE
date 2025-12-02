@@ -100,7 +100,7 @@ public class ContractService {
                 .map(entity -> new ContractPayProcessRequest(request.xCode(), toDomain(entity), entity))
                 .toList();
 
-        contractPayProcessRequests.forEach(payProcessRequest -> pay(payProcessRequest, fail, success));
+        contractPayProcessRequests.forEach(payProcessRequest -> pay(payProcessRequest, success, fail));
 
         return new ContractPayResponse(success, fail);
     }
@@ -156,6 +156,7 @@ public class ContractService {
         }
 
         success.add(new ContractInfoResponse(request.xCode(), request.contract().getInfo().status().name()));
+        log.info("정상 처리된 계약 코드: {}", request.contractEntity().getCode());
     }
 
 }
