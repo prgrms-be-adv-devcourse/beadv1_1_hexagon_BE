@@ -1,8 +1,10 @@
 package org.hexagon.s3service.service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.s3service.dto.ServiceName;
@@ -72,5 +74,13 @@ public class S3Service {
         PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
 
         return new PresignedDownloadResponse(presignedRequest.url().toString());
+    }
+
+    public PresignedDownloadListResponse createDownloadUrls(List<String> keys) {
+        List<String> urls = keys.stream()
+                .map(key -> createDownloadUrl(key).url())
+                .toList();
+
+        return new PresignedDownloadListResponse(urls);
     }
 }
