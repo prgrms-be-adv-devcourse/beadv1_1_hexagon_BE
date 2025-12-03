@@ -10,16 +10,16 @@ import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
 import com.example.cartpostservice.cart.service.kafka.CartKafkaService;
-import com.example.cartpostservice.common.dto.EmptyResponse;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
-import com.example.cartpostservice.common.model.vo.PaymentType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.vo.PaymentType;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -68,7 +68,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public EmptyResponse deleteCartItems(String xCode, String itemCode) {
+    public Empty deleteCartItems(String xCode, String itemCode) {
 
         CartsEntity cart = cartsRepository.findByMemberCode(xCode).orElseThrow(() -> new BusinessException(
                 CustomStatusCode.NOT_FOUND_MEMBER));
@@ -84,11 +84,11 @@ public class CartServiceImpl implements CartService {
 
         cartKafkaService.deleteProducer(cartItem.getContractCode());
 
-        return EmptyResponse.getInstance();
+        return Empty.getInstance();
     }
 
     @Override
-    public EmptyResponse payCartItems(String xCode, ContractPayRequest requests) {
+    public Empty payCartItems(String xCode, ContractPayRequest requests) {
 
         ResponseDto<List<ContractInfoResponse>> response = contractClient.payContract(xCode, requests);
 
@@ -99,7 +99,7 @@ public class CartServiceImpl implements CartService {
             }
         }
 
-        return EmptyResponse.getInstance();
+        return Empty.getInstance();
     }
 
     private Long calculateTotalAmount(Instant startedAt, Instant endedAt, PaymentType paymentType, String amount) {

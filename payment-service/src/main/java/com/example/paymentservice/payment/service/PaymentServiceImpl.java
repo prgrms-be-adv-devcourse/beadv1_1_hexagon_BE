@@ -1,15 +1,12 @@
 package com.example.paymentservice.payment.service;
 
-import com.example.paymentservice.common.dto.ResponseDto;
 import com.example.paymentservice.payment.controller.dto.request.DepositRechargeRequest;
 import com.example.paymentservice.payment.controller.dto.response.DepositRechargeResponse;
 import com.example.paymentservice.payment.controller.internal.ContractClient;
-import com.example.paymentservice.payment.model.OrderEntity;
 import com.example.paymentservice.payment.model.PaymentEntity;
 import com.example.paymentservice.payment.model.PaymentStatus;
 import com.example.paymentservice.payment.repository.OrderRepository;
 import com.example.paymentservice.payment.repository.PaymentRepository;
-import com.example.paymentservice.payment.service.dto.response.PayRechargeResult;
 import com.example.paymentservice.payment.service.dto.response.PaymentConfirmResponse;
 import com.example.paymentservice.payment.service.dto.response.PaymentGetResult;
 import com.example.paymentservice.payment.service.dto.response.PaymentsGetResult;
@@ -17,10 +14,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Slf4j

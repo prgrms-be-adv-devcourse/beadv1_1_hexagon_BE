@@ -2,8 +2,8 @@ package com.example.memberservice.oauth.controller.swagger;
 
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
-import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.common.web.model.vo.Empty;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;

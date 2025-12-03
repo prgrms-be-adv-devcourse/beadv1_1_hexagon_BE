@@ -1,6 +1,5 @@
 package com.example.communicationservice.controller;
 
-import com.example.communicationservice.common.response.ResponseDto;
 import com.example.communicationservice.controller.api.ChatRoomControllerApi;
 import com.example.communicationservice.controller.dto.request.ChatRoomCreateRequest;
 import com.example.communicationservice.controller.dto.response.ChatMessageListReadResponse;
@@ -10,6 +9,7 @@ import com.example.communicationservice.service.ChatMessageService;
 import com.example.communicationservice.service.ChatRoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;

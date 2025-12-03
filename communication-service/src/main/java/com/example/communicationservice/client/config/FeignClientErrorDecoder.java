@@ -1,7 +1,6 @@
 package com.example.communicationservice.client.config;
 
 import com.example.communicationservice.client.exception.FeignClientException;
-import com.example.communicationservice.common.response.ResponseDto;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -10,6 +9,7 @@ import feign.Response;
 import feign.Util;
 import feign.codec.ErrorDecoder;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class FeignClientErrorDecoder implements ErrorDecoder {
                 try {
                     ResponseDto<?> errorResponse = objectMapper.readValue(body, new TypeReference<>() {});
 
-                    int httpStatusCode = errorResponse.getHttpStatusCode();
+                    int httpStatusCode = errorResponse.httpStatus();
 
                     return switch (httpStatusCode) {
                         case 400 -> new FeignClientException(ResponseDtoStatus.FEIGN_BAD_REQUEST);

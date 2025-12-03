@@ -1,9 +1,9 @@
-package com.example.communicationservice.common.response;
+package org.hexagon.core.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonSerialize(using = EmptySerializer.class)
-public final class Empty {
+@JsonSerialize
+public class Empty {
     private static final Empty INSTANCE = new Empty();
 
     private Empty() {}
@@ -11,5 +11,4 @@ public final class Empty {
     public static Empty getInstance() {
         return INSTANCE;
     }
-
 }

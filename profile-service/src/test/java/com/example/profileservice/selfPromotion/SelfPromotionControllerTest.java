@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.profileservice.common.model.vo.KafkaProducer;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.InternalMemberInfo;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
@@ -29,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -166,9 +166,9 @@ public class SelfPromotionControllerTest {
         ResponseDto<List<SelfPromotionResponse>> responseDto = objectMapper.readValue(responseJson, new TypeReference<>() {});
 
         // 닉네임 검증
-        boolean hasTesterNickname = responseDto.getData().stream()
+        boolean hasTesterNickname = responseDto.data().stream()
                 .anyMatch(p -> p.memberCode().equals(TEST_MEMBER_CODE) && p.memberNickname().equals("테스터닉네임"));
-        boolean hasOtherNickname = responseDto.getData().stream()
+        boolean hasOtherNickname = responseDto.data().stream()
                 .anyMatch(p -> p.memberCode().equals(OTHER_MEMBER_CODE) && p.memberNickname().equals("타인닉네임"));
 
         assertThat(hasTesterNickname).isTrue();
@@ -190,7 +190,7 @@ public class SelfPromotionControllerTest {
         String responseJson = result.getResponse().getContentAsString();
         ResponseDto<List<SelfPromotionResponse>> responseDto = objectMapper.readValue(responseJson, new TypeReference<>() {});
 
-        assertThat(responseDto.getData().get(0).promotionCode()).isEqualTo(initialPromotion.getCode());
+        assertThat(responseDto.data().get(0).promotionCode()).isEqualTo(initialPromotion.getCode());
     }
 
     @Test

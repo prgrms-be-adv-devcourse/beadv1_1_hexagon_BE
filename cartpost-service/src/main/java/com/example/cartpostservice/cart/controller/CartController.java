@@ -1,15 +1,16 @@
 package com.example.cartpostservice.cart.controller;
 
 
+import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
+
 import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import com.example.cartpostservice.cart.service.CartService;
-import com.example.cartpostservice.common.dto.EmptyResponse;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,33 +34,32 @@ public class CartController implements CartApi {
         List<CartItemsGetResponse> cartItemsGetResponses = cartService.getCartItems(xCode);
 
         if (cartItemsGetResponses.isEmpty()) {
-            return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS_NO_DATA, cartItemsGetResponses),
+            return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS_NO_DATA, cartItemsGetResponses),
                     CustomStatusCode.SUCCESS_NO_DATA.getStatus());
         }
 
-        return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, cartItemsGetResponses),
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, cartItemsGetResponses),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 
     @Override
     @DeleteMapping("/items/{item-code}")
-    public ResponseEntity<ResponseDto<EmptyResponse>> deleteCartItem(@RequestHeader(name = "X-CODE") String xCode,
+    public ResponseEntity<ResponseDto<Empty>> deleteCartItem(@RequestHeader(name = "X-CODE") String xCode,
             @PathVariable(name = "item-code") String itemCode) {
 
-        EmptyResponse emptyResponse = cartService.deleteCartItems(xCode, itemCode);
+        Empty emptyResponse = cartService.deleteCartItems(xCode, itemCode);
 
-        return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, emptyResponse),
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, emptyResponse),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 
     @Override
     @GetMapping("/pay/items")
-    public ResponseEntity<ResponseDto<EmptyResponse>> payRequest(String xCode, ContractPayRequest requests) {
+    public ResponseEntity<ResponseDto<Empty>> payRequest(String xCode, ContractPayRequest requests) {
 
-        EmptyResponse emptyResponse = cartService.payCartItems(xCode, requests);
+        Empty emptyResponse = cartService.payCartItems(xCode, requests);
 
-        return new ResponseEntity<>(ResponseDto.success(CustomStatusCode.SUCCESS, emptyResponse),
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, emptyResponse),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 }
-
