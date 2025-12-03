@@ -68,7 +68,8 @@ public class DepositService {
     }
 
     @Transactional
-    public DepositRechargeResponse recharge(DepositRechargeRequest request) { // TODO: 동시성 테스트
+    @OptimisticRetry
+    public DepositRechargeResponse recharge(DepositRechargeRequest request) {
         DepositProcessRequest processRequest = new DepositProcessRequest(request.memberCode(), request.amount(),
                 "예치금 입금");
 
@@ -78,7 +79,7 @@ public class DepositService {
     }
 
     @Transactional
-    @OptimisticRetry(maxAttempts = 4)
+    @OptimisticRetry
     public DepositProcessResponse withdraw(DepositProcessRequest request) {
         DepositEntity depositEntity = process(request, Deposit::withdraw);
 
@@ -87,6 +88,7 @@ public class DepositService {
     }
 
     @Transactional
+    @OptimisticRetry
     public DepositProcessResponse transfer(DepositProcessRequest request) {
         DepositEntity depositEntity = process(request, Deposit::transfer);
 
