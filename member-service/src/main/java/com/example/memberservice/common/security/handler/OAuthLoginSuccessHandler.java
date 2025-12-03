@@ -3,7 +3,6 @@ package com.example.memberservice.common.security.handler;
 
 import com.example.memberservice.auth.token.repository.RefreshTokenRedisRepository;
 import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.redis.service.RedisSingleDataRepository;
 import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.model.dto.CustomOAuth2UserDto;
