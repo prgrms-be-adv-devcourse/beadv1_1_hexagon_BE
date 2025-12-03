@@ -6,7 +6,7 @@ package org.hexagon.s3.dto;
  */
 public record PresignedUploadResponse(
         String key,
-        String parameters
+        String queryString
 ) {
 
 }

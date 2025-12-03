@@ -57,14 +57,11 @@ public class S3Service {
         // key + querystring만 추출
         String keyWithQuery = url.substring(url.indexOf(key));
 
-        String query = keyWithQuery.substring(keyWithQuery.indexOf('?'));
-
-        System.out.println("key = " + key);
-        System.out.println("query = " + query);
+        String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
 
         return new PresignedUploadResponse(
                 key,
-                query
+                queryString
         );
     }
 
