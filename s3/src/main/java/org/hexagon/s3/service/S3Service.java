@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.s3.dto.PresignedDownloadListResponse;
 import org.hexagon.s3.dto.PresignedDownloadResponse;
 import org.hexagon.s3.dto.PresignedUploadResponse;
 import org.hexagon.s3.dto.ServiceName;
@@ -83,10 +84,12 @@ public class S3Service {
         return new PresignedDownloadResponse(presignedRequest.url().toString());
     }
 
-    public List<PresignedDownloadResponse> createDownloadUrls(List<String> keys) {
-        return keys.stream()
-                .map(this::createDownloadUrl)
+    public PresignedDownloadListResponse createDownloadUrls(List<String> keys) {
+        List<String> urls = keys.stream()
+                .map(key -> createDownloadUrl(key).url())
                 .toList();
+
+        return new PresignedDownloadListResponse(urls);
     }
 
     public void deleteObject(String key) {
