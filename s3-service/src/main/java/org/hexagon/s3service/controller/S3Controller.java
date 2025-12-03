@@ -2,6 +2,7 @@ package org.hexagon.s3service.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.s3service.dto.PresignedDownloadListRequest;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
@@ -11,9 +12,11 @@ import org.hexagon.s3service.dto.PresignedUploadRequest;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.s3service.dto.ServiceName;
 import org.hexagon.s3service.service.S3Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -47,5 +50,11 @@ public class S3Controller {
     public ResponseDto<PresignedDownloadListResponse> getDownloadUrls(@RequestBody PresignedDownloadListRequest request) {
         PresignedDownloadListResponse downloadUrls = s3Service.createDownloadUrls(request.keys());
         return ResponseDto.success(downloadUrls);
+    }
+
+    @DeleteMapping
+    public ResponseDto<Empty> deleteObject(@RequestParam String key) {
+        s3Service.deleteObject(key);
+        return ResponseDto.success();
     }
 }
