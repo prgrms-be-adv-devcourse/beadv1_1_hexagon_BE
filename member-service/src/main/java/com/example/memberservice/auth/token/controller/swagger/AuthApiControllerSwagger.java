@@ -1,4 +1,4 @@
-package com.example.memberservice.oauth.controller.swagger;
+package com.example.memberservice.auth.token.controller.swagger;
 
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Tag(name = "OAuth(인증) API", description = "로그아웃, AccessToken 재발급 등")
-public interface OAuthApiControllerSwagger {
+public interface AuthApiControllerSwagger {
 
     @PostMapping("/reissue")
     @Operation(summary = "AccessToken 재발급 Api", description = "RefreshToken을 통해 AccessToken을 재발급합니다.")

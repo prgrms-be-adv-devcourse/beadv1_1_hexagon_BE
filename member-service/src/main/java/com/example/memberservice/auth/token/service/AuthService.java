@@ -1,4 +1,4 @@
-package com.example.memberservice.oauth.service;
+package com.example.memberservice.auth.token.service;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
@@ -8,7 +8,7 @@ import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.jwt.JwtTokenParser;
 import com.example.memberservice.common.security.jwt.JwtTokenValidator;
 import com.example.memberservice.member.repository.MemberJpaRepository;
-import com.example.memberservice.oauth.service.dto.output.TokensOutput;
+import com.example.memberservice.auth.token.service.dto.output.TokensOutput;
 import io.jsonwebtoken.Claims;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthService {
+public class AuthService {
 
     private final RedisSingleDataService redisSingleDataService;
 
