@@ -54,7 +54,7 @@ public class S3Service {
 
         String url = presignedRequest.url().toString();
 
-        // key + querystring만 추출
+        // key + queryString만 추출
         String keyWithQuery = url.substring(url.indexOf(key));
 
         String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
