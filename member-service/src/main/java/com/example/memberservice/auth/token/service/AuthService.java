@@ -1,8 +1,8 @@
 package com.example.memberservice.auth.token.service;
 
+import com.example.memberservice.auth.token.repository.RefreshTokenRedisRepository;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.redis.service.RedisSingleDataService;
 import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.jwt.JwtTokenParser;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final RedisSingleDataService redisSingleDataService;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     private final MemberJpaRepository memberJpaRepository;
 
@@ -37,7 +37,7 @@ public class AuthService {
 
         String newRefreshToken = jwtTokenGenerator.generateRefreshToken(memberCode);
 
-        redisSingleDataService.setSingleData(memberCode, newRefreshToken, jwtProperties.getRefreshTokenTtl());
+        refreshTokenRedisRepository.setSingleData(memberCode, newRefreshToken, jwtProperties.getRefreshTokenTtl());
 
         boolean isSignedUp = memberJpaRepository.existsByCode(memberCode);
 
@@ -51,7 +51,7 @@ public class AuthService {
     public void deleteRefreshTokenToRedis(String refreshToken) {
         String memberCode = getMemberCode(refreshToken);
 
-        redisSingleDataService.deleteSingleData(memberCode);
+        refreshTokenRedisRepository.deleteSingleData(memberCode);
     }
 
     private String getMemberCode(String refreshToken) {
@@ -59,7 +59,7 @@ public class AuthService {
 
         String memberCode = jwtTokenParser.parseMemberCode(claims);
 
-        Optional<String> optionalExistRefreshToken = redisSingleDataService.getSingleData(memberCode);
+        Optional<String> optionalExistRefreshToken = refreshTokenRedisRepository.getSingleData(memberCode);
 
         String existRefreshToken = optionalExistRefreshToken.orElseThrow(
             () -> new BusinessException(ErrorCode.UNAUTHORIZATION));

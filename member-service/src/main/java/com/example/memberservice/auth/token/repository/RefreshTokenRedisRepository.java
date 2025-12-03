@@ -1,7 +1,8 @@
-package com.example.memberservice.common.redis.service;
+package com.example.memberservice.auth.token.repository;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
+import com.example.memberservice.common.redis.service.RedisSingleDataRepository;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -9,19 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-@Service
+@Repository
 @RequiredArgsConstructor
 @Slf4j
-public class RefreshTokenRedisService implements RedisSingleDataService {
+public class RefreshTokenRedisRepository implements RedisSingleDataRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
     private final String REDIS_KEY_PREFIX = "TOKEN:";
 
     @Override
-
     public void setSingleData(String key, Object value, long refreshTokenTTL) {
         Duration duration = Duration.ofMillis(refreshTokenTTL);
 

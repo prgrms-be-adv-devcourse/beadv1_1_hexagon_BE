@@ -4,7 +4,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface RedisSingleDataService {
+public interface RedisSingleDataRepository {
 
 
     void setSingleData(String key, Object value,
