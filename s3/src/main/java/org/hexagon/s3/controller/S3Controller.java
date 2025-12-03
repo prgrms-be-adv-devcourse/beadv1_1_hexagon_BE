@@ -1,5 +1,6 @@
 package org.hexagon.s3.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
@@ -26,7 +27,7 @@ public class S3Controller {
     private final S3Service s3Service;
 
     @PostMapping("/upload-url")
-    public ResponseDto<PresignedUploadResponse> getUploadUrl(@RequestBody PresignedUploadRequest request) {
+    public ResponseDto<PresignedUploadResponse> getUploadUrl(@Valid @RequestBody PresignedUploadRequest request) {
         PresignedUploadResponse response = s3Service.createUploadUrl(
                 request.serviceName(),
                 request.fileName(),
