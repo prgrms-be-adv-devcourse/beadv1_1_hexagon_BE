@@ -5,8 +5,6 @@ import com.example.cartpostservice.commissions.controller.dto.response.Commissio
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
-import com.example.cartpostservice.common.dto.EmptyResponse;
-import com.example.cartpostservice.common.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -14,6 +12,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +69,7 @@ public interface CommissionsApi {
             @ApiResponse(responseCode = "200", description = "삭제 성공"),
             @ApiResponse(responseCode = "404", description = "대상 의뢰글 없음")
     })
-    ResponseEntity<ResponseDto<EmptyResponse>> deleteCommission(
+    ResponseEntity<ResponseDto<Empty>> deleteCommission(
             @RequestHeader("X-CODE") String code,
             @PathVariable String commissionCode
     );
@@ -81,7 +81,7 @@ public interface CommissionsApi {
             @ApiResponse(responseCode = "200", description = "마감 성공"),
             @ApiResponse(responseCode = "404", description = "대상 의뢰글 없음")
     })
-    ResponseEntity<ResponseDto<EmptyResponse>> finishCommission(
+    ResponseEntity<ResponseDto<Empty>> finishCommission(
             @RequestHeader("X-CODE") String code,
             @PathVariable String commissionCode
     );
@@ -113,7 +113,7 @@ public interface CommissionsApi {
             @ApiResponse(responseCode = "404", description = "커미션을 찾을 수 없음"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청")
     })
-    ResponseEntity<ResponseDto<EmptyResponse>> canAccessCommission(
+    ResponseEntity<ResponseDto<Empty>> canAccessCommission(
             @RequestHeader("X-CODE") String code,
             @PathVariable String commissionCode
     );

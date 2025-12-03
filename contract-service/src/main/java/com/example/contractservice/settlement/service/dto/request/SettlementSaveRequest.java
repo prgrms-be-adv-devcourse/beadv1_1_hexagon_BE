@@ -1,7 +1,7 @@
 package com.example.contractservice.settlement.service.dto.request;
 
-import com.example.contractservice.common.PaymentType;
 import java.time.Instant;
+import org.hexagon.core.vo.PaymentType;
 
 public record SettlementSaveRequest(
         String receiverCode,

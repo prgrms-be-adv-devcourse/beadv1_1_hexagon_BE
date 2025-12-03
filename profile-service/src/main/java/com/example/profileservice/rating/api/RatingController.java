@@ -1,11 +1,11 @@
 package com.example.profileservice.rating.api;
 
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.model.dto.response.RatingResponse;
 import com.example.profileservice.rating.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;

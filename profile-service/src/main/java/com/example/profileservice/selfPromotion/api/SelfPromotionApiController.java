@@ -1,7 +1,5 @@
 package com.example.profileservice.selfPromotion.api;
 
-import com.example.profileservice.common.model.vo.Empty;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
@@ -15,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.dto.Empty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;

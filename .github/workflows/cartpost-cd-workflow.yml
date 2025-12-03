@@ -3,7 +3,7 @@ name: cartpost-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'cartpost-service/**'
 
@@ -19,7 +19,7 @@ jobs:
     with:
       service-name: hexagon-cartpost-service
       service-dir: ./cartpost-service
-      file-name: Dockerfile
+      file-name: Dockerfile_cartpost
 
   deploying:
     needs: releasing

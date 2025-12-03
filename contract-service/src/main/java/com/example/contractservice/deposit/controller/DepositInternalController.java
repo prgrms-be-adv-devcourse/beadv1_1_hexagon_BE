@@ -1,10 +1,10 @@
 package com.example.contractservice.deposit.controller;
 
-import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositRechargeResponse;
 import com.example.contractservice.deposit.service.DepositService;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +24,6 @@ public class DepositInternalController {
 
         DepositRechargeResponse rechargeResponse = depositService.recharge(request);
 
-        return ResponseDto.ok(rechargeResponse);
+        return ResponseDto.success(rechargeResponse);
     }
 }

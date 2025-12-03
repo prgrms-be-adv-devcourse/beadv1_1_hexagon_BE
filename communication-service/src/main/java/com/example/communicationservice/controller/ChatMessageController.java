@@ -1,12 +1,14 @@
 package com.example.communicationservice.controller;
 
+import static com.example.communicationservice.common.response.ResponseDtoMapper.getErrorResponse;
+
 import com.example.communicationservice.common.exception.ChatRoomException;
-import com.example.communicationservice.common.response.Empty;
-import com.example.communicationservice.common.response.ResponseDto;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
 import com.example.communicationservice.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -40,7 +42,7 @@ public class ChatMessageController {
     @MessageExceptionHandler(ChatRoomException.class)
     @SendToUser("/queue/errors")
     public ResponseDto<Empty> handleChatRoomException(ChatRoomException ex) {
-        return ResponseDto.error(ex.getStatus());
+        return getErrorResponse(ex.getStatus());
     }
 
 }

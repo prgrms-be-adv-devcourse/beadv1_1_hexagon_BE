@@ -1,6 +1,5 @@
 package com.example.searchservice.saga.mapper;
 
-import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
@@ -14,7 +13,7 @@ public class SelfPromotionMapper {
                 .title(selfPromotion.title())
                 .content(selfPromotion.content())
                 .memberNickname(selfPromotion.memberNickname())
-                .paymentType(PaymentType.valueOf(String.valueOf(selfPromotion.paymentType())))
+                .paymentType(selfPromotion.paymentType())
                 .payAmount(selfPromotion.payAmount())
                 .updatedAt(selfPromotion.updatedAt())
                 .build();
@@ -26,7 +25,7 @@ public class SelfPromotionMapper {
                 .title(createdEvent.title())
                 .content(createdEvent.content())
                 .memberNickname(createdEvent.memberNickname())
-                .paymentType(PaymentType.valueOf(String.valueOf(createdEvent.paymentType())))
+                .paymentType(createdEvent.paymentType())
                 .payAmount(createdEvent.payAmount())
                 .updatedAt(createdEvent.updatedAt())
                 .build();
@@ -38,7 +37,7 @@ public class SelfPromotionMapper {
                 .title(updatedEvent.title())
                 .content(updatedEvent.content())
                 .memberNickname(updatedEvent.memberNickname())
-                .paymentType(PaymentType.valueOf(String.valueOf(updatedEvent.paymentType())))
+                .paymentType(updatedEvent.paymentType())
                 .payAmount(updatedEvent.payAmount())
                 .updatedAt(updatedEvent.updatedAt())
                 .build();

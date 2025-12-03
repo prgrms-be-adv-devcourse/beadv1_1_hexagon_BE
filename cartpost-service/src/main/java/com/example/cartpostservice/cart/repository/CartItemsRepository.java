@@ -12,4 +12,8 @@ public interface CartItemsRepository extends JpaRepository<CartItemsEntity, Stri
     List<CartItemsEntity> findByCartCode(String cartCode);
 
     Optional<CartItemsEntity> findByCode(String itemCode);
+
+    void deleteByContractCode(String code);
+
+    boolean existsByContractCode(String s);
 }

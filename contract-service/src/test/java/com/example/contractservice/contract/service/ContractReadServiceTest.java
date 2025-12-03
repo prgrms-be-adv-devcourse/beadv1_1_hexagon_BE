@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefResponse;
@@ -23,6 +22,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,9 +57,8 @@ class ContractReadServiceTest {
 
             ContractEntity entity = ContractEntity.builder()
                     .code(UUID.randomUUID().toString())
-                    .requestorCode(zeroOrOne % 2 == 0 ? memberCode : opponentCode)
-                    .contractorCode(zeroOrOne % 2 == 0 ? opponentCode : memberCode)
-                    .freelancerCode(opponentCode)
+                    .clientCode(zeroOrOne % 2 == 0 ? memberCode : opponentCode)
+                    .freelancerCode(zeroOrOne % 2 == 0 ? opponentCode : memberCode)
                     .name("이름" + i)
                     .body("내용" + i)
                     .status(ContractStatus.values()[random.nextInt(ContractStatus.values().length)]) // 상태 랜덤 선택
@@ -113,9 +112,8 @@ class ContractReadServiceTest {
 
         ContractEntity entity = ContractEntity.builder()
                 .code(UUID.randomUUID().toString())
-                .requestorCode(memberCode)
-                .contractorCode(opponentCode)
-                .freelancerCode(memberCode)
+                .clientCode(memberCode)
+                .freelancerCode(opponentCode)
                 .name(name)
                 .body(body)
                 .status(done)

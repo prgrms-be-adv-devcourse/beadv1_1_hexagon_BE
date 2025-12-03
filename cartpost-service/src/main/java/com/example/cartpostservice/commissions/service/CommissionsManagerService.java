@@ -5,37 +5,58 @@ import com.example.cartpostservice.commissions.controller.dto.response.Commissio
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.dto.response.InternalMemberInfo;
+import com.example.cartpostservice.commissions.controller.dto.response.MemberInfoOutput;
 import com.example.cartpostservice.commissions.controller.dto.response.MemberResponse;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
 import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
+import com.example.cartpostservice.commissions.service.kafka.CommissionKafkaService;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.events.commission.CommissionCreatedEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CommissionsManagerService {
 
     private final CommissionsService commissionsService;
     private final CommissionsTagService commissionsTagService;
+    private final CommissionKafkaService commissionKafkaService;
     private final MemberClient memberClient;
 
     @Transactional
     public CommissionCreateResponse createCommission(String memberCode, CommissionUpsertRequest request) {
 
-        MemberResponse member = memberClient.getMember(memberCode);
+        List<String> codes = List.of(memberCode);
+
+        // 2. Feign 요청 (GET /internal/members?member-code=)
+        ResponseDto<MemberInfoOutput> response = memberClient.getMemberInfoByCode(codes);
+
+        String nickName = response.data().internalMemberInfos().stream()
+                .filter(info -> info.memberCode().equals(memberCode)) // 혹시 모를 다른 회원 데이터 섞임 방지
+                .findFirst()
+                .map(InternalMemberInfo::nickName) // record 접근자 (getNickName 아님)
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_MEMBER_INFO));
 
         // request에서 온 것을 커미션과 태그 용 리퀘스트로 분리
         CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
@@ -46,7 +67,7 @@ public class CommissionsManagerService {
                 request.unitAmount(),
                 request.startedAt(),
                 request.endedAt(),
-                member.nickName()
+                nickName
         );
 
         // 커미션 서비스에 리퀘스트 데이터를 저장 데이터 받기
@@ -62,6 +83,9 @@ public class CommissionsManagerService {
 
         // 응답 데이터에 commissionscode 전달
         CommissionCreateResponse commissionCreateResponse = new CommissionCreateResponse(commissionsCode);
+
+        // kafka
+        commissionKafkaService.createProducer(commissionsCode,request);
 
         return commissionCreateResponse;
     }
@@ -91,7 +115,16 @@ public class CommissionsManagerService {
     public CommissionUpdateResponse updateCommission(String code, String commissionCode,
             CommissionUpsertRequest request) {
 
-        MemberResponse member = memberClient.getMember(code);
+        List<String> codes = List.of(code);
+
+        // 2. Feign 요청 (GET /internal/members?member-code=)
+        ResponseDto<MemberInfoOutput> response = memberClient.getMemberInfoByCode(codes);
+
+        String nickName = response.data().internalMemberInfos().stream()
+                .filter(info -> info.memberCode().equals(code)) // 혹시 모를 다른 회원 데이터 섞임 방지
+                .findFirst()
+                .map(InternalMemberInfo::nickName) // record 접근자 (getNickName 아님)
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_MEMBER_INFO));
 
         CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
                 code,
@@ -101,7 +134,7 @@ public class CommissionsManagerService {
                 request.unitAmount(),
                 request.startedAt(),
                 request.endedAt(),
-                member.nickName()
+                nickName
         );
 
         TagServiceCommand tagServiceCommand = new TagServiceCommand(
@@ -112,6 +145,9 @@ public class CommissionsManagerService {
         commissionsService.update(commissionsServiceCommand, commissionCode);
         commissionsTagService.update(tagServiceCommand, commissionCode);
 
+        // kafka
+        commissionKafkaService.updateProducer(commissionCode, request);
+
         return new CommissionUpdateResponse(commissionCode);
     }
 
@@ -120,6 +156,9 @@ public class CommissionsManagerService {
 
         commissionsService.delete(code, commissionCode);
         commissionsTagService.delete(code, commissionCode);
+
+        // kafka
+        commissionKafkaService.deleteProducer(commissionCode);
     }
 
     @Transactional
@@ -129,6 +168,13 @@ public class CommissionsManagerService {
         }
 
         commissionsService.closeCommission(commissionCode);
+
+        CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
+        TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
+
+        // kafka
+        commissionKafkaService.finishProducer(commissionCode, tagResult);
+
     }
 
     @Transactional

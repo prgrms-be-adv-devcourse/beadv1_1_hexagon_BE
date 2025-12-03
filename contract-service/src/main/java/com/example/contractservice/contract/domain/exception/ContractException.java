@@ -1,18 +1,10 @@
 package com.example.contractservice.contract.domain.exception;
 
-public class ContractException extends RuntimeException {
-    private final ContractErrorCode errorCode;
+import com.example.contractservice.common.domain.exception.DomainException;
+
+public class ContractException extends DomainException {
 
     public ContractException(ContractErrorCode errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public ContractException(Throwable cause, ContractErrorCode errorCode) {
-        super(cause);
-        this.errorCode = errorCode;
-    }
-
-    public ContractErrorCode getErrorCode() {
-        return errorCode;
+        super(errorCode);
     }
 }

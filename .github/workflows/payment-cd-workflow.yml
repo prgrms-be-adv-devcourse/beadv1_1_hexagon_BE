@@ -3,7 +3,7 @@ name: payment-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/119
+      - main
     paths:
       - 'payment-service/**'
 
@@ -20,7 +20,7 @@ jobs:
     with:
       service-name: hexagon-payment-service
       service-dir: ./payment-service
-      file-name: Dockerfile
+      file-name: Dockerfile_payment
 
   deploying:
     needs: releasing

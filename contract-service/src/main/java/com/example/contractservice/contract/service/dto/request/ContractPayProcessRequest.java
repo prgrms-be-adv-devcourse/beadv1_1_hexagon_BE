@@ -1,10 +1,12 @@
 package com.example.contractservice.contract.service.dto.request;
 
-import java.util.List;
+import com.example.contractservice.contract.domain.Contract;
+import com.example.contractservice.contract.entity.ContractEntity;
 
 public record ContractPayProcessRequest(
         String xCode,
-        List<String> contractCodes
+        Contract contract,
+        ContractEntity contractEntity
 ) {
 
 }

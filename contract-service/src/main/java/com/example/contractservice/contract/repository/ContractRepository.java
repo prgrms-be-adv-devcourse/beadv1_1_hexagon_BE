@@ -40,8 +40,8 @@ public class ContractRepository {
     public List<ContractEntity> findAllBy(String memberCode, Instant cursorDate, String cursorCode, Order order, int limit) {
         QContractEntity qContractEntity = QContractEntity.contractEntity;
 
-        BooleanExpression requestorPredicate = qContractEntity.requestorCode.eq(memberCode); // 요청자에서 SELECT
-        BooleanExpression contractorPredicate = qContractEntity.contractorCode.eq(memberCode); // 계약자에서 SELECT
+        BooleanExpression requestorPredicate = qContractEntity.clientCode.eq(memberCode); // 클라이언트에서 SELECT
+        BooleanExpression contractorPredicate = qContractEntity.freelancerCode.eq(memberCode); // 프리랜서에서 SELECT
 
         // 커서 기반 WHERE
         if (cursorDate != null && cursorCode != null) {

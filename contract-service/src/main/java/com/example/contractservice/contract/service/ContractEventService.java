@@ -16,8 +16,8 @@ public class ContractEventService {
     public void cancelContract(String code) {
         ContractEntity contractEntity = contractRepository.findByCode(code);
 
-        if (contractEntity.getStatus() != ContractStatus.CONFIRMED) {
-            throw new ContractException(ContractErrorCode.NOT_CONFIRMED_STATUS);
+        if (contractEntity.getStatus() != ContractStatus.REQUESTED) {
+            throw new ContractException(ContractErrorCode.NOT_REQUESTED_STATUS);
         }
 
         contractEntity.updateStatus(ContractStatus.CANCELLED);

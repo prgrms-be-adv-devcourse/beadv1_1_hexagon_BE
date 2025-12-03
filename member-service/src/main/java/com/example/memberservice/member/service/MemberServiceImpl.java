@@ -3,7 +3,7 @@ package com.example.memberservice.member.service;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
-import com.example.memberservice.common.web.model.dto.ResponseDto;
+import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
 import com.example.memberservice.member.entity.Members;
 import com.example.memberservice.member.repository.MemberJpaRepository;

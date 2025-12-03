@@ -1,15 +1,15 @@
 package com.example.contractservice.contract.controller;
 
-import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.contract.common.swagger.annotation.ContractPayApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractInternalApi;
 import com.example.contractservice.contract.controller.dto.request.ContractPayRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
-import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
+import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.service.ContractService;
-import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
+import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,12 +29,11 @@ public class ContractInternalController {
     @ContractPayApi
     @PostMapping("/pay")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<List<ContractInfoResponse>> payContract(@RequestHeader(name = "X-CODE") String xCode,
+    public ResponseDto<ContractPayResponse> payContract(@RequestHeader(name = "X-CODE") String xCode,
             @RequestBody ContractPayRequest request) {
+        ContractPayServiceRequest serviceRequest = new ContractPayServiceRequest(xCode, request.codes());
 
-        ContractPayProcessRequest serviceRequest = new ContractPayProcessRequest(xCode, request.codes());
-
-        return ResponseDto.ok(contractService.payContracts(serviceRequest));
+        return ResponseDto.success(contractService.payContracts(serviceRequest));
     }
 
     @GetContractInternalApi
@@ -42,7 +41,7 @@ public class ContractInternalController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<List<ContractBriefWithNicknameResponse>> getBriefInfo(@RequestParam(name = "code") List<String> codes) {
 
-        return ResponseDto.ok(contractService.getBriefInfos(codes));
+        return ResponseDto.success(contractService.getBriefInfos(codes));
     }
 
 }

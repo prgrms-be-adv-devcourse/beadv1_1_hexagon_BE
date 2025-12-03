@@ -76,7 +76,7 @@ class DepositServiceTest {
                 .isInstanceOf(DepositException.class)
                 .satisfies(ex -> {
                     DepositException depositException = (DepositException) ex;
-                    assertEquals(DepositErrorCode.NO_DEPOSIT_ENTITY, depositException.errorCode);
+                    assertEquals(DepositErrorCode.NO_DEPOSIT_ENTITY, depositException.getErrorCode());
                 });
     }
 

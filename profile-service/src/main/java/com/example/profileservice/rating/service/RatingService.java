@@ -4,7 +4,6 @@ import static com.example.profileservice.common.model.vo.ErrorCode.CANNOT_RATE_M
 import static com.example.profileservice.common.model.vo.ErrorCode.RATING_MEMBER_NOT_FOUND;
 
 import com.example.profileservice.common.model.vo.ErrorCode;
-import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
@@ -15,6 +14,7 @@ import com.example.profileservice.rating.repository.RatingRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +47,7 @@ public class RatingService {
         List<String> codesToValidate = List.of(callerCode, receiverCode);
         ResponseDto<MemberExistOutput> response = memberFeignClient.existMemberByCode(codesToValidate);
 
-        if (response.getData().notExists() != null && !response.getData().notExists().isEmpty()) {
+        if (response.data().notExists() != null && !response.data().notExists().isEmpty()) {
             // 유효하지 않은 코드가 하나라도 있다면 에러 발생
             throw new CustomException(ErrorCode.INVALID_MEMBER_CODE);
         }
