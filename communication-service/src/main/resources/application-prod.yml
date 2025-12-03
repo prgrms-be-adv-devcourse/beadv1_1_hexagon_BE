@@ -7,8 +7,9 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://mongodb:27017/chatdb
-
+      uri: mongodb://mongodb:27017/${MONGO_DATABASE}
+      username: ${MONGO_USER}
+      password: ${MONGO_PASSWORD}
 springdoc:
   swagger-ui:
     path: /api/chatrooms/swagger-ui
