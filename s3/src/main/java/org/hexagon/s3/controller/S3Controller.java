@@ -11,6 +11,7 @@ import org.hexagon.s3.dto.PresignedDownloadRequest;
 import org.hexagon.s3.dto.PresignedDownloadResponse;
 import org.hexagon.s3.dto.PresignedUploadRequest;
 import org.hexagon.s3.dto.PresignedUploadResponse;
+import org.hexagon.s3.dto.ServiceName;
 import org.hexagon.s3.service.S3Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,10 @@ public class S3Controller {
 
     @PostMapping("/upload-url")
     public ResponseDto<PresignedUploadResponse> getUploadUrl(@Valid @RequestBody PresignedUploadRequest request) {
+        // CHATS는 외부 API 사용 금지
+        if (request.serviceName() == ServiceName.CHATS) {
+            throw new IllegalArgumentException("CHATS는 외부 API를 사용할 수 없습니다.");
+        }
         PresignedUploadResponse response = s3Service.createUploadUrl(
                 request.serviceName(),
                 request.fileName(),
