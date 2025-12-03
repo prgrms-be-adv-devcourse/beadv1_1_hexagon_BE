@@ -45,6 +45,8 @@ public class SettlementService {
      *
      * @param settlement BEFORE 상태인 정산 도메인
      */
+    @Transactional
+    // @OptimisticRetry // TODO: 상위 어노테이션에 편입되도록 수정
     public void processSettlement(Settlement settlement) {
         settlement.settle(settlementRate);
 
@@ -52,7 +54,7 @@ public class SettlementService {
 
         depositService.transfer(depositProcessRequest); // 정산 대상에 금액 입금
 
-        depositService.withdraw(new DepositProcessRequest(adminMemberCode, settlement.getFee(),
+        depositService.withdraw(new DepositProcessRequest(adminMemberCode, settlement.getSettlementStatusInfo().originalAmount() - settlement.getFee(),
                 StringUtil.format("정산 코드: {}에 대한 정산금 출금", settlement.getCode())));
     }
 
