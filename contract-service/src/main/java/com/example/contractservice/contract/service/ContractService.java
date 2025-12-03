@@ -3,7 +3,7 @@ package com.example.contractservice.contract.service;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
 import static com.example.contractservice.contract.service.mapper.ContractMapper.*;
 
-import com.example.contractservice.common.UriConstructor;
+import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.common.domain.exception.DomainException;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
