@@ -2,6 +2,8 @@ package org.hexagon.s3.controller;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.s3.dto.PresignedDownloadListRequest;
 import org.hexagon.s3.dto.PresignedDownloadListResponse;
 import org.hexagon.s3.dto.PresignedDownloadRequest;
@@ -24,25 +26,30 @@ public class S3Controller {
     private final S3Service s3Service;
 
     @PostMapping("/upload-url")
-    public PresignedUploadResponse getUploadUrl(@RequestBody PresignedUploadRequest request) {
-        return s3Service.createUploadUrl(request.serviceName(), request.fileName(), request.contentType());
+    public ResponseDto<PresignedUploadResponse> getUploadUrl(@RequestBody PresignedUploadRequest request) {
+        PresignedUploadResponse response = s3Service.createUploadUrl(
+                request.serviceName(),
+                request.fileName(),
+                request.contentType()
+        );
+        return ResponseDto.success(response);
     }
 
     @PostMapping("/download-url")
-    public PresignedDownloadResponse getDownloadUrl(@RequestBody PresignedDownloadRequest request) {
-        return s3Service.createDownloadUrl(request.key());
+    public ResponseDto<PresignedDownloadResponse> getDownloadUrl(@RequestBody PresignedDownloadRequest request) {
+        PresignedDownloadResponse downloadUrl = s3Service.createDownloadUrl(request.key());
+        return ResponseDto.success(downloadUrl);
     }
 
     @PostMapping("/download-urls")
-    public PresignedDownloadListResponse getDownloadUrls(@RequestBody PresignedDownloadListRequest request) {
-        List<PresignedDownloadResponse> urls =
-                s3Service.createDownloadUrls(request.keys());
-        return new PresignedDownloadListResponse(urls);
+    public ResponseDto<PresignedDownloadListResponse> getDownloadUrls(@RequestBody PresignedDownloadListRequest request) {
+        PresignedDownloadListResponse downloadUrls = s3Service.createDownloadUrls(request.keys());
+        return ResponseDto.success(downloadUrls);
     }
 
     @DeleteMapping
-    public String deleteObject(@RequestParam String key) {
+    public ResponseDto<Empty> deleteObject(@RequestParam String key) {
         s3Service.deleteObject(key);
-        return key + " deleted";
+        return ResponseDto.success();
     }
 }
