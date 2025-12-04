@@ -4,10 +4,10 @@ import com.example.memberservice.member.model.enums.MemberRole;
 import lombok.Builder;
 
 @Builder
-public record CreateEmailAuthInput(
+public record VerifyEmailAuthInput(
     MemberRole memberRole,
     String memberCode,
-    String to
+    String authCode
 ) {
 
 }

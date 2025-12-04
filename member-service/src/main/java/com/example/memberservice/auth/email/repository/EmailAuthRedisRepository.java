@@ -32,7 +32,7 @@ public class EmailAuthRedisRepository {
 
     public void saveAuthVerification(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
-        redisSingleDataRepository.setSingleData(key, true, verifiedExpirationMinute);
+        redisSingleDataRepository.setSingleData(key, "verify", verifiedExpirationMinute);
     }
 
     public Optional<String> findAuthCodeByMemberCode(MemberRole memberRole, String memberCode) {

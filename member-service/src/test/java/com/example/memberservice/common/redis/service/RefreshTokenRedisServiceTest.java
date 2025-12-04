@@ -25,16 +25,16 @@ class RefreshTokenRedisServiceTest {
         String value = "value123";
 
         //When
-        refreshTokenRedisRepository.setSingleData(key, value,50000);
+        refreshTokenRedisRepository.saveRefreshToken(key, value);
 
         //Then
-        Optional<String> saveData = refreshTokenRedisRepository.getSingleData(key);
+        Optional<String> saveData = refreshTokenRedisRepository.findRefreshTokenByMemberCode(key);
 
         assertEquals("value123", saveData.orElse("FAIL"));
 
-        refreshTokenRedisRepository.deleteSingleData(key);
+        refreshTokenRedisRepository.deleteRefreshTokenByMemberCode(key);
 
-        Optional<String> deletedData = refreshTokenRedisRepository.getSingleData(key);
+        Optional<String> deletedData = refreshTokenRedisRepository.findRefreshTokenByMemberCode(key);
 
         assertEquals("FAIL", deletedData.orElse("FAIL"));
     }

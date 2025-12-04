@@ -24,7 +24,7 @@ public class CustomMailSender {
             message.setFrom(from);
             message.setRecipients(MimeMessage.RecipientType.TO, to);
             message.setSubject(subject);
-            message.setText(body);
+            message.setText(body, "UTF-8", "html");
 
             mailSender.send(message);
         } catch (MailException e) {

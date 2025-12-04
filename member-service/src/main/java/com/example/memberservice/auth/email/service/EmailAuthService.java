@@ -2,10 +2,12 @@ package com.example.memberservice.auth.email.service;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRedisRepository;
 import com.example.memberservice.auth.email.service.model.dto.input.CreateEmailAuthInput;
+import com.example.memberservice.auth.email.service.model.dto.input.VerifyEmailAuthInput;
 import com.example.memberservice.auth.email.util.AuthMailSender;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.member.model.enums.MemberRole;
+import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.MemberService;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -23,10 +25,14 @@ public class EmailAuthService {
 
     private final EmailAuthRedisRepository emailAuthRedisRepository;
 
-    private final MemberService memberService;
+    private final MemberJpaRepository memberJpaRepository;
 
     //이메일 전송
     public void sendAuthMail(CreateEmailAuthInput createEmailAuthInput) {
+
+        memberJpaRepository.findByCode(createEmailAuthInput.memberCode())
+            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
         String authCode = createAuthCode();
 
         MemberRole memberRole = createEmailAuthInput.memberRole();
@@ -39,14 +45,24 @@ public class EmailAuthService {
     }
 
     //이메일 확인
-    public boolean verifyAuthCode(MemberRole memberRole, String memberCode, String code) {
+    public boolean verifyAuthCode(VerifyEmailAuthInput verifyEmailAuthInput) {
+
+        String memberCode = verifyEmailAuthInput.memberCode();
+
+        MemberRole memberRole = verifyEmailAuthInput.memberRole();
+
+        String authCode = verifyEmailAuthInput.authCode();
+
+        memberJpaRepository.findByCode(verifyEmailAuthInput.memberCode())
+            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
         Optional<String> optionalExistAuthCode = emailAuthRedisRepository.findAuthCodeByMemberCode(
-            memberRole, memberCode);
+            verifyEmailAuthInput.memberRole(), verifyEmailAuthInput.memberCode());
 
         String existAuthCode = optionalExistAuthCode.orElseThrow(
             () -> new BusinessException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
-        if (!code.equals(existAuthCode)) {
+        if (!authCode.equals(existAuthCode)) {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
         }
 
