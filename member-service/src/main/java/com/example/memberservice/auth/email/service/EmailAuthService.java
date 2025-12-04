@@ -50,6 +50,12 @@ public class EmailAuthService {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
         }
 
+        //이메일 검증 완료 데이터 추가 이후 최종 상태 변경전 해당 값 확인
+        emailAuthRedisRepository.saveAuthVerification(memberRole, memberCode);
+
+        //이메일 검증 데이터 삭제
+        emailAuthRedisRepository.deleteAuthCode(memberRole, memberCode);
+
         return true;
     }
 

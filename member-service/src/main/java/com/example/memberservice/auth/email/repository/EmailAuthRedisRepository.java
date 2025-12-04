@@ -45,7 +45,6 @@ public class EmailAuthRedisRepository {
         return redisSingleDataRepository.getSingleData(key);
     }
 
-
     public boolean deleteAuthCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
         return redisSingleDataRepository.deleteSingleData(key);
