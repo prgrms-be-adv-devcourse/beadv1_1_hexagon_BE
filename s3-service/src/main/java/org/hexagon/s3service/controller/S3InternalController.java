@@ -3,6 +3,9 @@ package org.hexagon.s3service.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.s3service.dto.PresignedDownloadListResponse;
+import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
+import org.hexagon.s3service.dto.PresignedDownloadRequestByKey;
 import org.hexagon.s3service.dto.PresignedUploadRequest;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.s3service.dto.ServiceName;
@@ -32,4 +35,11 @@ public class S3InternalController {
         );
         return ResponseDto.success(response);
     }
+
+    @PostMapping("/download-url/key")
+    public ResponseDto<PresignedDownloadListResponse> getDownloadUrl(@RequestBody PresignedDownloadRequestByKey request) {
+        PresignedDownloadListResponse downloadUrls = s3Service.createDownloadUrls(request.keys());
+        return ResponseDto.success(downloadUrls);
+    }
+
 }

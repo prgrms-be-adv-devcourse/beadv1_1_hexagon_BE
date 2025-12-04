@@ -74,12 +74,22 @@ public class S3Service {
 
         PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
 
-        return new PresignedDownloadResponse(presignedRequest.url().toString());
+        String url = presignedRequest.url().toString();
+
+        // key + queryString만 추출
+        String keyWithQuery = url.substring(url.indexOf(key));
+
+        String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
+        
+        return new PresignedDownloadResponse(
+                key,
+                queryString
+        );
     }
 
     public PresignedDownloadListResponse createDownloadUrls(List<String> keys) {
-        List<String> urls = keys.stream()
-                .map(key -> createDownloadUrl(key).url())
+        List<PresignedDownloadResponse> urls = keys.stream()
+                .map(this::createDownloadUrl)
                 .toList();
 
         return new PresignedDownloadListResponse(urls);
