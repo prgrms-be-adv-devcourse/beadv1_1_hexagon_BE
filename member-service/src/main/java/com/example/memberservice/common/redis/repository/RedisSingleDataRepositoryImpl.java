@@ -1,36 +1,32 @@
-package com.example.memberservice.auth.email.repository;
+package com.example.memberservice.common.redis.repository;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.redis.model.enums.RedisKeyPrefix;
-import com.example.memberservice.common.redis.repository.RedisSingleDataRepository;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
-public class EmailAuthRedisRepository implements RedisSingleDataRepository {
+@Repository
+@RequiredArgsConstructor
+public class RedisSingleDataRepositoryImpl implements RedisSingleDataRepository{
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private final RedisKeyPrefix redisKeyPrefix = RedisKeyPrefix.EMAIL;
-
     @Override
-    public void setSingleData(String key, Object value, long emailAuthOffset) {
-        Duration duration = Duration.ofMinutes(emailAuthOffset);
+    public void setSingleData(String key, Object value, long offset) {
+        Duration duration = Duration.ofMinutes(offset);
 
-        this.executeOperation(key,() -> valueOperations().set(redisKeyPrefix.build(key), value, duration));
+        this.executeOperation(key,() -> valueOperations().set(key, value, duration));
     }
 
     @Override
     public Optional<String> getSingleData(String key) {
-        Object value = valueOperations().get(redisKeyPrefix.build(key));
+        Object value = valueOperations().get(key);
 
         return Optional.ofNullable(value).map(Object::toString);
     }
@@ -38,7 +34,7 @@ public class EmailAuthRedisRepository implements RedisSingleDataRepository {
     @Override
     public boolean deleteSingleData(String key) {
 
-        Boolean result = redisTemplate.delete(redisKeyPrefix.build(key));
+        Boolean result = redisTemplate.delete(key);
 
         return Boolean.TRUE.equals(result);
     }
@@ -52,7 +48,7 @@ public class EmailAuthRedisRepository implements RedisSingleDataRepository {
             operation.run();
             log.info("redis에 정상 저장하였습니다.");
         } catch (Exception e) {
-            log.error("Redis 저장 실패: key={}, cause={}", redisKeyPrefix.build(key), e.getMessage(), e);
+            log.error("Redis 저장 실패: key={}, cause={}", key, e.getMessage(), e);
             throw new BusinessException(ErrorCode.DATA_SAVE_FAILED);
         }
     }

@@ -1,7 +1,8 @@
 package com.example.memberservice.common.redis.model.enums;
 
 public enum RedisKeyPrefix {
-    EMAIL("EMAIL:"),
+    EMAIL_VERIFICATION_CODE("EMAIL:VERIFICATION:CODE:"),
+    EMAIL_VERIFIED("EMAIL:VERIFIED:"),
     TOKEN("TOKEN:");
 
     private final String prefix;
