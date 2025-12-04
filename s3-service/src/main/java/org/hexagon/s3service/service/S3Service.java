@@ -32,7 +32,7 @@ public class S3Service {
 
     public PresignedUploadResponse createUploadUrl(ServiceName serviceName, String filename, String contentType) {
         String service = serviceName.toLower();
-        String key = service + "/" + UUID.randomUUID().toString() + "-" + filename;
+        String key = service + "/temp/" + UUID.randomUUID().toString() + "-" + filename;
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -80,7 +80,7 @@ public class S3Service {
         String keyWithQuery = url.substring(url.indexOf(key));
 
         String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
-        
+
         return new PresignedDownloadResponse(
                 key,
                 queryString
