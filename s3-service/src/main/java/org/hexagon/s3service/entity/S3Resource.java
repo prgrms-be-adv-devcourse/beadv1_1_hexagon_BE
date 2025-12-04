@@ -11,8 +11,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.hexagon.s3service.entity.vo.FileType;
-import org.hexagon.core.vo.ServiceName;
+import org.hexagon.s3service.vo.FileType;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
