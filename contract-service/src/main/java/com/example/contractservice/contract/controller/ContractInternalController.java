@@ -1,6 +1,8 @@
 package com.example.contractservice.contract.controller;
 
+import com.example.contractservice.contract.common.swagger.annotation.CommissionCapacityUpsertApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractPayApi;
+import com.example.contractservice.contract.common.swagger.annotation.GetCommissionCapacityApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractInternalApi;
 import com.example.contractservice.contract.controller.dto.request.CommissionsCapacityUpsertRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractPayRequest;
@@ -50,6 +52,7 @@ public class ContractInternalController {
         return ResponseDto.success(contractService.getBriefInfos(codes));
     }
 
+    @CommissionCapacityUpsertApi
     @PostMapping("/commissions-capacity")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<Empty> upsertCapacity(@RequestBody CommissionsCapacityUpsertRequest request) {
@@ -60,6 +63,7 @@ public class ContractInternalController {
         return ResponseDto.success();
     }
 
+    @GetCommissionCapacityApi
     @GetMapping("/commissions-capacity/{commission-code}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<CommissionCapacityResponse> getCommissionCapacity(@PathVariable(name = "commission-code") String commissionCode) {

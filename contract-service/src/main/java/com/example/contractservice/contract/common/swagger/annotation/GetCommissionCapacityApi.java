@@ -11,11 +11,10 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Operation(summary = "계약 확정", description = "로그인한 회원이 자신의 계약을 확정")
+@Operation(summary = "의뢰글 수용 인원 조회", description = "특정 의뢰글에 해당하는 최대 지원 인원, 현재 지원 인원, 최대 선정 인원, 현재 선정 인원을 조회")
 @Parameters({
-    @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true),
-    @Parameter(name = "code", description = "확정할 계약 코드", in = ParameterIn.PATH)
+        @Parameter(name = "commission-code", description = "의뢰글 코드", in = ParameterIn.PATH, required = true)
 })
-public @interface ContractConfirmApi {
+public @interface GetCommissionCapacityApi {
 
 }
