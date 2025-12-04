@@ -4,6 +4,7 @@ import com.example.contractservice.contract.common.swagger.annotation.ContractPa
 import com.example.contractservice.contract.common.swagger.annotation.GetContractInternalApi;
 import com.example.contractservice.contract.controller.dto.request.CommissionsCapacityUpsertRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractPayRequest;
+import com.example.contractservice.contract.controller.dto.response.CommissionCapacityResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.service.CommissionsCapacityService;
@@ -15,6 +16,7 @@ import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -56,6 +58,12 @@ public class ContractInternalController {
         commissionsCapacityService.upsertCapacity(request);
 
         return ResponseDto.success();
+    }
+
+    @GetMapping("/commissions-capacity/{commission-code}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<CommissionCapacityResponse> getCommissionCapacity(@PathVariable(name = "commission-code") String commissionCode) {
+        return ResponseDto.success(commissionsCapacityService.getCapacity(commissionCode));
     }
 
     private void validateCapacityUpsertRequest(CommissionsCapacityUpsertRequest request) {

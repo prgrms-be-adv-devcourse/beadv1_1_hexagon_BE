@@ -1,6 +1,7 @@
 package com.example.contractservice.contract.service;
 
 import com.example.contractservice.contract.controller.dto.request.CommissionsCapacityUpsertRequest;
+import com.example.contractservice.contract.controller.dto.response.CommissionCapacityResponse;
 import com.example.contractservice.contract.entity.CommissionsCapacity;
 import com.example.contractservice.contract.repository.CommissionsCapacityRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,4 +19,9 @@ public class CommissionsCapacityService {
         commissionsCapacityRepository.saveCapacity(commissionsCapacity);
     }
 
+    public CommissionCapacityResponse getCapacity(String commissionCode) {
+        CommissionsCapacity capacity = commissionsCapacityRepository.findByCommissionCode(commissionCode);
+
+        return CommissionCapacityResponse.from(capacity);
+    }
 }
