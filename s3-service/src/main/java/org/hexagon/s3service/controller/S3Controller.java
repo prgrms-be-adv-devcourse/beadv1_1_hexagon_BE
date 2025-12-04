@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
-import org.hexagon.s3service.dto.PresignedDownloadListRequest;
+import org.hexagon.s3service.dto.PresignedDownloadRequestByKey;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadRequest;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
@@ -40,17 +40,18 @@ public class S3Controller {
         return ResponseDto.success(response);
     }
 
-    @PostMapping("/download-url")
-    public ResponseDto<PresignedDownloadResponse> getDownloadUrl(@RequestBody PresignedDownloadRequest request) {
-        PresignedDownloadResponse downloadUrl = s3Service.createDownloadUrl(request.key());
-        return ResponseDto.success(downloadUrl);
-    }
+    // TODO: 모든 API 구현 완료 후 주석 삭제
+//    @PostMapping("/download-url")
+//    public ResponseDto<PresignedDownloadResponse> getDownloadUrl(@RequestBody PresignedDownloadRequest request) {
+//        PresignedDownloadResponse downloadUrl = s3Service.createDownloadUrl(request.key());
+//        return ResponseDto.success(downloadUrl);
+//    }
 
-    @PostMapping("/download-urls")
-    public ResponseDto<PresignedDownloadListResponse> getDownloadUrls(@RequestBody PresignedDownloadListRequest request) {
-        PresignedDownloadListResponse downloadUrls = s3Service.createDownloadUrls(request.keys());
-        return ResponseDto.success(downloadUrls);
-    }
+//    @PostMapping("/download-urls")
+//    public ResponseDto<PresignedDownloadListResponse> getDownloadUrls(@RequestBody PresignedDownloadRequestByKey request) {
+//        PresignedDownloadListResponse downloadUrls = s3Service.createDownloadUrls(request.keys());
+//        return ResponseDto.success(downloadUrls);
+//    }
 
     @DeleteMapping
     public ResponseDto<Empty> deleteObject(@RequestParam String key) {
