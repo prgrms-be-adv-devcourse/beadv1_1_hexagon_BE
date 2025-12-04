@@ -30,6 +30,7 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    // 파일을 업로드 하는 시점에(의뢰글, 회원 정보 수정 등은 완료 x) 업로드 Presigned URL 생성
     public PresignedUploadResponse createUploadUrl(ServiceName serviceName, String filename, String contentType) {
         String service = serviceName.toLower();
         String key = service + "/temp/" + UUID.randomUUID().toString() + "-" + filename;
@@ -61,7 +62,18 @@ public class S3Service {
         );
     }
 
-    public PresignedDownloadResponse createDownloadUrl(String key) {
+    // 여러 개의 key에 대해 다운로드 Presigned URL 리스트 생성
+    public PresignedDownloadListResponse createDownloadUrls(List<String> keys) {
+        List<PresignedDownloadResponse> urls = keys.stream()
+                .map(this::createDownloadUrl)
+                .toList();
+
+        return new PresignedDownloadListResponse(urls);
+    }
+
+
+    // 하나의 key에 대해 다운로드 Presigned URL 생성
+    private PresignedDownloadResponse createDownloadUrl(String key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
@@ -85,14 +97,6 @@ public class S3Service {
                 key,
                 queryString
         );
-    }
-
-    public PresignedDownloadListResponse createDownloadUrls(List<String> keys) {
-        List<PresignedDownloadResponse> urls = keys.stream()
-                .map(this::createDownloadUrl)
-                .toList();
-
-        return new PresignedDownloadListResponse(urls);
     }
 
     public void deleteObject(String key) {
