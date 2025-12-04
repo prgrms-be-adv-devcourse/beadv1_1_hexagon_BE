@@ -67,6 +67,9 @@ dependencies {
     //Kafka 관련 의존성
     implementation 'org.springframework.kafka:spring-kafka'
 
+    //이메일 인증 관련 의존성
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '3.0.5'
+
 }
 
 dependencyManagement {
