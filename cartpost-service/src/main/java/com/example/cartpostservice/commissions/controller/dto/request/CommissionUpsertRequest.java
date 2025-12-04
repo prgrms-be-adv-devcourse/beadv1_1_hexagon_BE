@@ -36,8 +36,15 @@ public record CommissionUpsertRequest(
 
         @Schema(description = "태그 코드 리스트", example = "[\"tag-uuid-1\", \"tag-uuid-2\"]")
         @NotNull(message = "tagCode 리스트는 반드시 입력해야 합니다.")
-        List<String> tagCode
+        List<String> tagCode,
 
+        @Schema(description = "고용 예정 인원 수", example = "10")
+        @NotNull(message = "고용 예정 인원 수를 반드시 입력해야 합니다")
+        int plannedHires,
+
+        @Schema(description = "지원 가능 인원 수", example = "50")
+        @NotNull(message = "지원 가능 인원 수를 반드시 입력해야 합니다")
+        int eligibleApplicants
 ) {
 
 }
