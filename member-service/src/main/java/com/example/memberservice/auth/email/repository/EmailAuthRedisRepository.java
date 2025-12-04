@@ -2,7 +2,9 @@ package com.example.memberservice.auth.email.repository;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
+import com.example.memberservice.common.redis.model.enums.RedisKeyPrefix;
 import com.example.memberservice.common.redis.repository.RedisSingleDataRepository;
+import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,44 +20,41 @@ public class EmailAuthRedisRepository implements RedisSingleDataRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private final String REDIS_KEY_PREFIX = "EMAIL:";
+    private final RedisKeyPrefix redisKeyPrefix = RedisKeyPrefix.EMAIL;
 
     @Override
-    public void setSingleData(String key, Object value, long emailAuthTtl) {
+    public void setSingleData(String key, Object value, long emailAuthOffset) {
+        Duration duration = Duration.ofMinutes(emailAuthOffset);
 
+        this.executeOperation(key,() -> valueOperations().set(redisKeyPrefix.build(key), value, duration));
     }
 
     @Override
     public Optional<String> getSingleData(String key) {
-        return Optional.empty();
+        Object value = valueOperations().get(redisKeyPrefix.build(key));
+
+        return Optional.ofNullable(value).map(Object::toString);
     }
 
     @Override
     public boolean deleteSingleData(String key) {
-        return false;
+
+        Boolean result = redisTemplate.delete(redisKeyPrefix.build(key));
+
+        return Boolean.TRUE.equals(result);
     }
 
     private ValueOperations<String, Object> valueOperations() {
         return redisTemplate.opsForValue();
     }
 
-    private ListOperations<String, Object> listOperations() {
-        return redisTemplate.opsForList();
-    }
-
-
-
-    private void executeOperation(Runnable operation) {
+    private void executeOperation(String key, Runnable operation) {
         try {
             operation.run();
             log.info("redis에 정상 저장하였습니다.");
         } catch (Exception e) {
-            log.info("Redis에 정상 저장되지 못했습니다.");
+            log.error("Redis 저장 실패: key={}, cause={}", redisKeyPrefix.build(key), e.getMessage(), e);
             throw new BusinessException(ErrorCode.DATA_SAVE_FAILED);
         }
-    }
-
-    private String buildKey(String key) {
-        return String.format("%s%s", REDIS_KEY_PREFIX, key);
     }
 }
