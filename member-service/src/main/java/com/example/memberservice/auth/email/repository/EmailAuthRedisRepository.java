@@ -8,12 +8,12 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 @Slf4j
-@Service
+@Repository
 @RequiredArgsConstructor
-public class EmailAuthRedisService {
+public class EmailAuthRedisRepository {
 
     private final RedisSingleDataRepository redisSingleDataRepository;
     private final MemberEventProducer memberEventProducer;
@@ -25,12 +25,12 @@ public class EmailAuthRedisService {
     private long verifiedExpirationMinute;
 
 
-    public void createAuthCode(MemberRole memberRole, String memberCode, String authCode) {
+    public void saveAuthCode(MemberRole memberRole, String memberCode, String authCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
         redisSingleDataRepository.setSingleData(key, authCode, authCodeExpirationMinute);
     }
 
-    public void createAuthVerification(MemberRole memberRole, String memberCode) {
+    public void saveAuthVerification(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
         redisSingleDataRepository.setSingleData(key, true, verifiedExpirationMinute);
     }
