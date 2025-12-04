@@ -2,6 +2,7 @@ package org.hexagon.s3service.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
@@ -9,7 +10,9 @@ import org.hexagon.s3service.dto.PresignedDownloadRequestByKey;
 import org.hexagon.s3service.dto.PresignedUploadRequest;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.core.vo.ServiceName;
+import org.hexagon.s3service.dto.StoreKeysRequest;
 import org.hexagon.s3service.service.S3Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,5 +49,10 @@ public class S3InternalController {
     public ResponseDto<PresignedDownloadListResponse> getDownloadUrl(@RequestBody PresignedDownloadRequestByCode request) {
         PresignedDownloadListResponse downloadUrls = new PresignedDownloadListResponse(null);
         return ResponseDto.success(downloadUrls);
+    }
+
+    @PostMapping("/s3-resource")
+    public ResponseDto<Empty> storeKeys(@RequestBody StoreKeysRequest request) {
+        return ResponseDto.success(HttpStatus.CREATED);
     }
 }
