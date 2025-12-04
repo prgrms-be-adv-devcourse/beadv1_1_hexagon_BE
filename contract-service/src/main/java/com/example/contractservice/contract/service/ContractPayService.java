@@ -4,7 +4,9 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.INVALID_PAYMENT_MEMBER;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.NOT_REQUESTED_STATUS;
 import static com.example.contractservice.contract.service.mapper.ContractMapper.applyToEntity;
+import static com.example.contractservice.contract.service.mapper.ContractMapper.toDomain;
 
+import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
@@ -20,6 +22,7 @@ import com.example.contractservice.settlement.service.SettlementService;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
 import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +30,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ContractPayService {
@@ -42,8 +46,11 @@ public class ContractPayService {
     private String adminMemberCode;
 
     @Transactional
+    @OptimisticRetry
     public void processPayment(ContractPayProcessRequest request) {
-        Contract contract = request.contract();
+        log.info("처리의 시작");
+        ContractEntity contractEntity = contractRepository.findByCode(request.contractCode());
+        Contract contract = toDomain(contractEntity);
         String xCode = request.xCode();
 
         validatePayment(xCode, contract);
@@ -52,7 +59,7 @@ public class ContractPayService {
 
         transferToAdmin(xCode, contract);
 
-        changeStatusToPay(contract, request.contractEntity());
+        changeStatusToPay(contract, contractEntity);
 
         saveSettlements(contract);
 

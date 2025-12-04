@@ -92,15 +92,13 @@ public class ContractService {
      * @return 결제에 성공/실패한 계약 정보
      */
     public ContractPayResponse payContracts(ContractPayServiceRequest request) {
-        ArrayList<ContractInfoResponse> success = new ArrayList<>();
-        ArrayList<ContractInfoResponse> fail = new ArrayList<>();
+        List<String> success = new ArrayList<>();
+        List<String> fail = new ArrayList<>();
 
-        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(request.contractCodes()); // 결제할 계약 코드들
-        List<ContractPayProcessRequest> contractPayProcessRequests = contractEntities.stream()
-                .map(entity -> new ContractPayProcessRequest(request.xCode(), toDomain(entity), entity))
-                .toList();
-
-        contractPayProcessRequests.forEach(payProcessRequest -> pay(payProcessRequest, success, fail));
+        request.contractCodes()
+                .stream()
+                .map(contractCode -> new ContractPayProcessRequest(request.xCode(), contractCode))
+                .forEach(payProcessRequest -> pay(payProcessRequest, success, fail));
 
         return new ContractPayResponse(success, fail);
     }
@@ -140,23 +138,22 @@ public class ContractService {
      * @param success 성공한 결제 정보
      * @param fail 실패한 결제 정보
      */
-    private void pay(ContractPayProcessRequest request, List<ContractInfoResponse> success, List<ContractInfoResponse> fail) {
+    private void pay(ContractPayProcessRequest request, List<String> success, List<String> fail) {
         try {
             contractPayService.processPayment(request);
         } catch (DomainException e) {
-            log.warn("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: {}", request.contract().getCode(), e.getErrorCode().getMessage());
+            log.warn("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: {}", request.contractCode(), e.getErrorCode().getMessage());
 
-            fail.add(new ContractInfoResponse(request.xCode(), request.contract().getInfo().status().name()));
+            fail.add(request.contractCode());
             return;
         } catch (Exception e) {
-            log.error("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: ", request.contract().getCode(), e);
+            log.error("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: ", request.contractCode(), e);
 
-            fail.add(new ContractInfoResponse(request.xCode(), request.contract().getInfo().status().name()));
+            fail.add(request.contractCode());
             return;
         }
 
-        success.add(new ContractInfoResponse(request.xCode(), request.contract().getInfo().status().name()));
-        log.info("정상 처리된 계약 코드: {}", request.contractEntity().getCode());
+        success.add(request.contractCode());
     }
 
 }
