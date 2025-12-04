@@ -46,13 +46,13 @@ public class ContractPayService {
         Contract contract = request.contract();
         String xCode = request.xCode();
 
-        validatePayment(xCode, contract);
+        validatePaymentUser(xCode, contract);
 
         increaseSelectedCount(contract);
 
-        transferToAdmin(xCode, contract);
+        wireTransferToAdmin(xCode, contract);
 
-        changeStatusToPay(contract, request.contractEntity());
+        changeContractStatusToPay(contract, request.contractEntity());
 
         saveSettlements(contract);
 
@@ -64,7 +64,7 @@ public class ContractPayService {
      * 1. 로그인 사용자가 모든 계약과 연관되어 있는지 확인
      * 2. 클라이언트인지 확인
      */
-    private void validatePayment(String xCode, Contract contract) {
+    private void validatePaymentUser(String xCode, Contract contract) {
         boolean isValidUser = contract.canUserPay(xCode); // 로그인 유저가 (계약에 관여) && 클라이언트
 
         if (!isValidUser) {
@@ -97,7 +97,7 @@ public class ContractPayService {
         commissionsCapacityRepository.saveCapacity(capacity);
     }
 
-    private void changeStatusToPay(Contract contract, ContractEntity entity) {
+    private void changeContractStatusToPay(Contract contract, ContractEntity entity) {
         contract.pay();
 
         applyToEntity(contract, entity);
@@ -110,7 +110,7 @@ public class ContractPayService {
      * @param xCode 로그인 사용자 코드
      * @param contract 관련 계약
      */
-    private void transferToAdmin(String xCode, Contract contract) {
+    private void wireTransferToAdmin(String xCode, Contract contract) {
         Long totalAmount = switch (contract.getInfo().paymentType()) {
             case MONTHLY -> {
                 long projectDays = Duration.between(contract.getInfo().startedAt(), contract.getInfo().endedAt()).toDays();
