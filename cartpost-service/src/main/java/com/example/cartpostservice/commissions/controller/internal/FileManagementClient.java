@@ -1,6 +1,8 @@
 package com.example.cartpostservice.commissions.controller.internal;
 
+import com.example.cartpostservice.commissions.controller.dto.request.internal.DownloadFileComponentRequest;
 import com.example.cartpostservice.commissions.controller.dto.request.internal.FilesRequestDto;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.DownloadFileComponentResponse;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -14,4 +16,6 @@ public interface FileManagementClient {
     ResponseDto<Empty> registerFileStatus(@RequestBody FilesRequestDto filesRequestDto);
 
 
+    @PostMapping("/download-url/code")
+    ResponseDto<DownloadFileComponentResponse> getDownloadFileComponent(@RequestBody DownloadFileComponentRequest downloadFileComponentRequest);
 }
