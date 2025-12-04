@@ -1,0 +1,21 @@
+package com.example.contractservice.contract.service;
+
+import com.example.contractservice.contract.controller.dto.request.CommissionsCapacityUpsertRequest;
+import com.example.contractservice.contract.entity.CommissionsCapacity;
+import com.example.contractservice.contract.repository.CommissionsCapacityRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class CommissionsCapacityService {
+    private final CommissionsCapacityRepository commissionsCapacityRepository;
+
+    public void upsertCapacity(CommissionsCapacityUpsertRequest request) {
+        CommissionsCapacity commissionsCapacity = CommissionsCapacity.createBy(request.commissionCode(),
+                request.applyCapacity(), request.selectedCapacity());
+
+        commissionsCapacityRepository.saveCapacity(commissionsCapacity);
+    }
+
+}
