@@ -1,7 +1,8 @@
 package org.hexagon.s3service.dto;
 
 public record PresignedDownloadResponse(
-        String url
+        String key,
+        String queryString
 ) {
 
 }

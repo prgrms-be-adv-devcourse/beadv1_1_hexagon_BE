@@ -3,7 +3,7 @@ package org.hexagon.s3service.dto;
 import java.util.List;
 
 public record PresignedDownloadListResponse(
-        List<String> urls
+        List<PresignedDownloadResponse> urls
 ) {
 
 }
