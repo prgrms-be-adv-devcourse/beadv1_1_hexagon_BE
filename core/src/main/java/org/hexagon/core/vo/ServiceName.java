@@ -1,4 +1,4 @@
-package org.hexagon.s3service.vo;
+package org.hexagon.core.vo;
 
 public enum ServiceName {
     MEMBERS,

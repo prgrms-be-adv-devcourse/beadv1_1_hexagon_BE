@@ -12,7 +12,7 @@ import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.hexagon.s3service.entity.vo.FileType;
-import org.hexagon.s3service.vo.ServiceName;
+import org.hexagon.core.vo.ServiceName;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

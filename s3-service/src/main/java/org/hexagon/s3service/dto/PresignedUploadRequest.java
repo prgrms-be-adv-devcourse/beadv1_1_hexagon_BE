@@ -1,7 +1,7 @@
 package org.hexagon.s3service.dto;
 
 import jakarta.validation.constraints.Pattern;
-import org.hexagon.s3service.vo.ServiceName;
+import org.hexagon.core.vo.ServiceName;
 
 public record PresignedUploadRequest(
         ServiceName serviceName,

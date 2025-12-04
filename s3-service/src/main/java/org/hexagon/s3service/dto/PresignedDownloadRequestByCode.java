@@ -1,6 +1,6 @@
 package org.hexagon.s3service.dto;
 
-import org.hexagon.s3service.vo.ServiceName;
+import org.hexagon.core.vo.ServiceName;
 
 public record PresignedDownloadRequestByCode(
         ServiceName serviceName,
