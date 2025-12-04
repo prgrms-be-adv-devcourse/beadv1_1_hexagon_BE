@@ -13,8 +13,8 @@ public class CommissionsCapacityService {
     private final CommissionsCapacityRepository commissionsCapacityRepository;
 
     public void upsertCapacity(CommissionsCapacityUpsertRequest request) {
-        CommissionsCapacity commissionsCapacity = CommissionsCapacity.createBy(request.commissionCode(),
-                request.applyCapacity(), request.selectedCapacity());
+        CommissionsCapacity commissionsCapacity = commissionsCapacityRepository.findByCommissionCodeOrCreate(
+                request.commissionCode(), request.applyCapacity(), request.selectionCapacity());
 
         commissionsCapacityRepository.saveCapacity(commissionsCapacity);
     }

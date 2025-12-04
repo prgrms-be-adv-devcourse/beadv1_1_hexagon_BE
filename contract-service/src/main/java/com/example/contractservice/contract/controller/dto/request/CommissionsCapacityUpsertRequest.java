@@ -14,7 +14,7 @@ public record CommissionsCapacityUpsertRequest(
         Integer applyCapacity,
         @Schema(description = "최대 선정 인원 수", example = "5")
         @Size(min = 1, max = 1000, message = "최대 선정 인원 수는 1명 이상, 1000명 이하여야만 합니다.")
-        Integer selectedCapacity
+        Integer selectionCapacity
 ) {
 
 }
