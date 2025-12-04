@@ -6,7 +6,7 @@ import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.s3service.dto.PresignedUploadRequest;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
-import org.hexagon.s3service.dto.ServiceName;
+import org.hexagon.s3service.vo.ServiceName;
 import org.hexagon.s3service.service.S3Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;

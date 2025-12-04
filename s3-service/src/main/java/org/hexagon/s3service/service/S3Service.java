@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
-import org.hexagon.s3service.dto.ServiceName;
+import org.hexagon.s3service.vo.ServiceName;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;

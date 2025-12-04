@@ -1,4 +1,4 @@
-package org.hexagon.s3service.dto;
+package org.hexagon.s3service.vo;
 
 public enum ServiceName {
     MEMBERS,
