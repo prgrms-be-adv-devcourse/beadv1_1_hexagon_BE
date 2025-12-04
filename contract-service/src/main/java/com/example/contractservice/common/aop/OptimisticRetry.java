@@ -24,8 +24,8 @@ public @interface OptimisticRetry {
     @AliasFor("value")
     int maxAttempts() default 3;
 
-    int delay() default 300; // millisecond
+    int delay() default 200; // millisecond
 
-    int jitter() default 150; // millisecond
+    int jitter() default 200; // millisecond
 
 }

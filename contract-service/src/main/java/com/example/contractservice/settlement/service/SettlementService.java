@@ -1,5 +1,6 @@
 package com.example.contractservice.settlement.service;
 
+import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.common.util.StringUtil;
 import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
@@ -46,7 +47,7 @@ public class SettlementService {
      * @param settlement BEFORE 상태인 정산 도메인
      */
     @Transactional
-    // @OptimisticRetry // TODO: 상위 어노테이션에 편입되도록 수정
+    @OptimisticRetry
     public void processSettlement(Settlement settlement) {
         settlement.settle(settlementRate);
 

@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +96,6 @@ class SettlementServiceTest {
 
     @Test
     @DisplayName("같은 대상 예치금에 정산을 동시에 처리할 수 있다.")
-    @Disabled("현재는 정산을 동시에 처리하는 로직이 없으며, 어노테이션 로직의 문제로 동시에 처리될 수 없는 상황이라 비활성화")
     void success_process_settlement_given_concurrent_request() throws Exception {
         // given
         String memberCode = "memberCode";
