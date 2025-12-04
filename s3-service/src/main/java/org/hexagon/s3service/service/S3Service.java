@@ -8,6 +8,7 @@ import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.core.vo.ServiceName;
+import org.hexagon.s3service.vo.FileType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -93,9 +94,12 @@ public class S3Service {
 
         String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
 
+        FileType fileType = FileType.fromKey(key);
+
         return new PresignedDownloadResponse(
                 key,
-                queryString
+                queryString,
+                fileType
         );
     }
 
