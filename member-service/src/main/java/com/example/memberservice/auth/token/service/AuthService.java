@@ -23,8 +23,6 @@ public class AuthService {
 
     private final MemberJpaRepository memberJpaRepository;
 
-    private final JwtProperties jwtProperties;
-
     private final JwtTokenValidator jwtTokenValidator;
 
     private final JwtTokenGenerator jwtTokenGenerator;
@@ -37,7 +35,7 @@ public class AuthService {
 
         String newRefreshToken = jwtTokenGenerator.generateRefreshToken(memberCode);
 
-        refreshTokenRedisRepository.setSingleData(memberCode, newRefreshToken, jwtProperties.getRefreshTokenTtl());
+        refreshTokenRedisRepository.saveRefreshToken(memberCode, newRefreshToken);
 
         boolean isSignedUp = memberJpaRepository.existsByCode(memberCode);
 
@@ -51,7 +49,7 @@ public class AuthService {
     public void deleteRefreshTokenToRedis(String refreshToken) {
         String memberCode = getMemberCode(refreshToken);
 
-        refreshTokenRedisRepository.deleteSingleData(memberCode);
+        refreshTokenRedisRepository.deleteRefreshTokenByMemberCode(memberCode);
     }
 
     private String getMemberCode(String refreshToken) {
@@ -59,7 +57,7 @@ public class AuthService {
 
         String memberCode = jwtTokenParser.parseMemberCode(claims);
 
-        Optional<String> optionalExistRefreshToken = refreshTokenRedisRepository.getSingleData(memberCode);
+        Optional<String> optionalExistRefreshToken = refreshTokenRedisRepository.findRefreshTokenByMemberCode(memberCode);
 
         String existRefreshToken = optionalExistRefreshToken.orElseThrow(
             () -> new BusinessException(ErrorCode.UNAUTHORIZATION));

@@ -59,7 +59,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
         log.info("TOKEN:%s".formatted(memberCode));
         try {
-            refreshTokenRedisRepository.setSingleData(memberCode, refreshToken, jwtProperties.getRefreshTokenTtl());
+            refreshTokenRedisRepository.saveRefreshToken(memberCode, refreshToken);
 
         } catch (BusinessException e) {
             oAuthLoginFailureHandler.onAuthenticationFailure(request, response,
