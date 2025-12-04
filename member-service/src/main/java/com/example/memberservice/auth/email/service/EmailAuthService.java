@@ -4,6 +4,7 @@ import com.example.memberservice.auth.email.repository.EmailAuthRedisService;
 import com.example.memberservice.auth.email.util.AuthMailSender;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
+import com.example.memberservice.member.model.enums.MemberRole;
 import com.example.memberservice.member.service.MemberService;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateWorkStateInput;
 import java.util.Optional;
@@ -25,67 +26,59 @@ public class EmailAuthService {
 
     private final MemberService memberService;
 
-    @Value("${mail.auth-code-expiration-minute}")
-    private long mailOffset;
-
     //이메일 전송
     public void sendAuthMailToFreelancer(String memberCode, String to) {
-        String code = createCode();
+        String authCode = createAuthCode();
 
-        authMailSender.sendFreelancerAuthCode(to, code);
+        authMailSender.sendFreelancerAuthCode(to, authCode);
 
-        emailAuthRedisService.createFreelancerAuthCode(buildFreelancerKey(memberCode), code, mailOffset);
+        emailAuthRedisService.createAuthCode(MemberRole.FREELANCER, memberCode, authCode);
     }
 
     public void sendAuthMailToClient(String memberCode, String to) {
-        String code = createCode();
+        String authCode = createAuthCode();
 
-        authMailSender.sendClientAuthCode(to, code);
+        authMailSender.sendClientAuthCode(to, authCode);
 
-        emailAuthRedisService.createClientAuthCode(buildClientKey(memberCode), code, mailOffset);
+        emailAuthRedisService.createAuthCode(MemberRole.CLIENT, memberCode, authCode);
     }
 
     //이메일 확인
     public boolean verifyFreelancerAuthCode(String memberCode, String code) {
-        String existAuthCode = emailAuthRedisService.findFreelancerAuthCodeByMemberCode(buildFreelancerKey(memberCode));
+        Optional<String> optionalExistAuthCode = emailAuthRedisService.findAuthCodeByMemberCode(
+            MemberRole.FREELANCER, memberCode);
+
+        String existAuthCode = optionalExistAuthCode.orElseThrow(
+            () -> new BusinessException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
         if (!code.equals(existAuthCode)) {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
         }
 
-
         return true;
     }
 
     public boolean verifyClientAuthCode(String memberCode, String code) {
-        Optional<String> OptionalExistAuthCode = emailAuthRedisService.findClientAuthCodeByMemberCode(
-            buildClientKey(memberCode));
+        Optional<String> optionalExistAuthCode = emailAuthRedisService.findAuthCodeByMemberCode(
+            MemberRole.CLIENT, memberCode);
 
-        String existAuthCode = OptionalExistAuthCode.orElseThrow(() -> new BusinessException(
+        String existAuthCode = optionalExistAuthCode.orElseThrow(() -> new BusinessException(
             ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
         if (!code.equals(existAuthCode)) {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
         }
 
-        //이 후 멤버 롤이 추가 되면 이것을 호출
-        memberService.updateMemberWorkState(new MemberUpdateWorkStateInput(memberCode));
+        emailAuthRedisService.createAuthVerification(MemberRole.CLIENT, memberCode);
 
         return true;
     }
 
     //private
-    private String createCode() {
+    private String createAuthCode() {
         int code = ThreadLocalRandom.current().nextInt(100000, 1000000);
         return String.valueOf(code);
     }
 
-    //private
-    private String buildFreelancerKey(String memberCode) {
-        return "FREELANCER:" + memberCode;
-    }
 
-    private String buildClientKey(String memberCode) {
-        return "CLIENT:" + memberCode;
-    }
 }
