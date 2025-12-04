@@ -42,4 +42,9 @@ public class S3InternalController {
         return ResponseDto.success(downloadUrls);
     }
 
+    @PostMapping("/download-url/code")
+    public ResponseDto<PresignedDownloadListResponse> getDownloadUrl(@RequestBody PresignedDownloadRequestByCode request) {
+        PresignedDownloadListResponse downloadUrls = new PresignedDownloadListResponse(null);
+        return ResponseDto.success(downloadUrls);
+    }
 }
