@@ -23,10 +23,6 @@ public class S3Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "service_name")
-    private ServiceName serviceName;
-
     @Column
     private String code;
 
