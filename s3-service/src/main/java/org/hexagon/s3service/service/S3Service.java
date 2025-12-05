@@ -112,6 +112,12 @@ public class S3Service {
         return new PresignedDownloadListResponse(urls);
     }
 
+    // code에 해당하는 파일들의 다운로드 Presigned URL 리스트 생성
+    public PresignedDownloadListResponse createDownloadUrls(String code) {
+        List<String> keys = s3ResourceRepository.findKeysByCode(code);
+        return createDownloadUrls(keys);
+    }
+
     // 하나의 key에 대해 다운로드 Presigned URL 생성
     private PresignedDownloadResponse createDownloadUrl(String key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
