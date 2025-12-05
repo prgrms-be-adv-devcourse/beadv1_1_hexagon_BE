@@ -24,6 +24,11 @@ public abstract class DepositHistoryMapper {
     public static DepositHistory toDomain(DepositHistoryEntity historyEntity) {
         DepositChange depositChange = new DepositChange(historyEntity.getChangeAmount(), historyEntity.getResultAmount());
 
-        return new DepositHistory(historyEntity.getDepositCode(), historyEntity.getContractCode(), depositChange, historyEntity.getSummary());
+        return new DepositHistory(historyEntity.getCode(),
+                historyEntity.getDepositCode(),
+                historyEntity.getContractCode(),
+                depositChange,
+                historyEntity.getSummary(),
+                historyEntity.getCreatedAt());
     }
 }
