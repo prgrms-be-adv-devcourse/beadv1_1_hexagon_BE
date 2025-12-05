@@ -31,7 +31,7 @@ public class S3InternalController {
         if (request.serviceName() != ServiceName.CHATS) {
             throw new IllegalArgumentException("internal API는 CHATS만 허용됩니다.");
         }
-        PresignedUploadResponse response = s3Service.createUploadUrl(
+        PresignedUploadResponse response = s3Service.createUploadUrlForChats(
                 request.serviceName(),
                 request.fileName(),
                 request.contentType()

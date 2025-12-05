@@ -68,6 +68,38 @@ public class S3Service {
         );
     }
 
+    // 채팅에서 파일 업로드할 때 Presigned URL 생성
+    public PresignedUploadResponse createUploadUrlForChats(ServiceName serviceName, String filename, String contentType) {
+        String service = serviceName.toLower();
+        String key = service + "/" + UUID.randomUUID().toString() + "-" + filename;
+
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(contentType)
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(objectRequest)
+                .build();
+
+        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+
+        // 전체 url = (버킷, region 정보) + key + queryString
+        String url = presignedRequest.url().toString();
+
+        // key + queryString만 추출
+        String keyWithQuery = url.substring(url.indexOf(key));
+
+        String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
+
+        return new PresignedUploadResponse(
+                key,
+                queryString
+        );
+    }
+
     // 여러 개의 key에 대해 다운로드 Presigned URL 리스트 생성
     public PresignedDownloadListResponse createDownloadUrls(List<String> keys) {
         List<PresignedDownloadResponse> urls = keys.stream()
