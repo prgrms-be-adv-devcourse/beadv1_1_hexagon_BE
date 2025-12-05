@@ -71,7 +71,7 @@ public class ContractInternalController {
     }
 
     private void validateCapacityUpsertRequest(CommissionsCapacityUpsertRequest request) {
-        if (request.applyCapacity() < request.selectedCapacity()) {
+        if (request.applyCapacity() < request.selectionCapacity()) {
             throw new IllegalArgumentException("최대 선정 인원이 최대 지원 인원보다 많을 수 없습니다.");
         }
     }
