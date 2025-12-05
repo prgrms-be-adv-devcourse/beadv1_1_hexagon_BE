@@ -194,20 +194,19 @@ public class S3Service {
         // 최종적으로 유지되어야 할 key들
         Set<String> finalKeys = new HashSet<>();
 
-        for(String key : updatedKeys) {
+        for (String key : updatedKeys) {
             // 새롭게 추가된 key
-            if(key.contains("/temp/")) {
+            if (key.contains("/temp/")) {
                 String destKey = moveFromTemp(key);
                 saveResource(code, destKey);
                 finalKeys.add(destKey);
-            }
-            else {
+            } else {
                 finalKeys.add(key);
             }
         }
 
-        for(String oldKey : currentKeys) {
-            if(!finalKeys.contains(oldKey)) {
+        for (String oldKey : currentKeys) {
+            if (!finalKeys.contains(oldKey)) {
                 deleteObject(oldKey);
                 s3ResourceRepository.deleteByKey(oldKey);
             }
