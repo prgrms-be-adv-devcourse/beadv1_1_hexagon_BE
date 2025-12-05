@@ -19,4 +19,19 @@ public record ContractInfo(
         return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
                 unitAmount, ContractStatus.PAID);
     }
+
+    public ContractInfo cancel() {
+        return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
+                unitAmount, ContractStatus.CANCELLED);
+    }
+
+    public ContractInfo done() {
+        return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
+                unitAmount, ContractStatus.DONE);
+    }
+
+    public ContractInfo progress() {
+        return new ContractInfo(clientCode, freelancerCode, commissionCode, startedAt, endedAt, paymentType,
+                unitAmount, ContractStatus.IN_PROGRESS);
+    }
 }

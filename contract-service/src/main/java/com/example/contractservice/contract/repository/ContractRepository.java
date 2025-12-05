@@ -1,11 +1,16 @@
 package com.example.contractservice.contract.repository;
 
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
+import static com.example.contractservice.contract.service.mapper.ContractMapper.applyToEntity;
+import static com.example.contractservice.contract.service.mapper.ContractMapper.toDomain;
+import static com.example.contractservice.contract.service.mapper.ContractMapper.toEntity;
 
 import com.example.contractservice.contract.common.Order;
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.entity.QContractEntity;
+import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,6 +18,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Repository;
@@ -24,20 +30,37 @@ public class ContractRepository {
     private final ContractJpaRepository contractJpaRepository;
     private final JPAQueryFactory queryFactory;
 
-    public ContractEntity saveContract(ContractEntity contractEntity) {
-        return contractJpaRepository.save(contractEntity);
+    /** 도메인에 해당하는 엔티티를 Repository에 저장합니다. 이미 엔티티로 존재한다면 그 값을 수정합니다.
+     *
+     * @param contract 저장/수정할 계약 도메인 인스턴스
+     * @return 저장/수정된 계약 도메인 인스턴스
+     */
+    public Contract saveContract(Contract contract) {
+        Optional<ContractEntity> optionalEntity = contractJpaRepository.findByCode(contract.getCode());
+
+        if (optionalEntity.isPresent()) { // 이미 존재
+            ContractEntity contractEntity = optionalEntity.get();
+            applyToEntity(contract, contractEntity);
+            return toDomain(contractJpaRepository.save(contractEntity));
+        }
+
+        return toDomain(contractJpaRepository.save(toEntity(contract)));
     }
 
-    public ContractEntity findByCode(String code) {
-        return contractJpaRepository.findByCode(code)
+    public Contract findByCode(String code) {
+        ContractEntity contractEntity = contractJpaRepository.findByCode(code)
                 .orElseThrow(() -> new ContractException(NO_CONTRACT));
+
+        return toDomain(contractEntity);
     }
 
-    public List<ContractEntity> findAllByCodes(List<String> codes) {
-        return contractJpaRepository.findAllByCodes(codes);
+    public List<Contract> findAllByCodes(List<String> codes) {
+        return contractJpaRepository.findAllByCodes(codes).stream()
+                .map(ContractMapper::toDomain)
+                .toList();
     }
 
-    public List<ContractEntity> findAllBy(String memberCode, Instant cursorDate, String cursorCode, Order order, int limit) {
+    public List<Contract> findAllBy(String memberCode, Instant cursorDate, String cursorCode, Order order, int limit) {
         QContractEntity qContractEntity = QContractEntity.contractEntity;
 
         BooleanExpression requestorPredicate = qContractEntity.clientCode.eq(memberCode); // 클라이언트에서 SELECT
@@ -60,7 +83,9 @@ public class ContractRepository {
         List<ContractEntity> contractorFetch = fetch(qContractEntity, contractorPredicate, orderSpecifiers, limit);
 
         // 둘을 UNION ALL
-        return unionAndSort(requestorFetch, contractorFetch, order, limit);
+        return unionAndSort(requestorFetch, contractorFetch, order, limit).stream()
+                .map(ContractMapper::toDomain)
+                .toList();
     }
 
     private List<ContractEntity> fetch(QContractEntity qContractEntity, BooleanExpression predicate, OrderSpecifier<?>[] orderSpecifiers, int limit) {

@@ -5,8 +5,9 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractListWithCursorResponse;
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
-import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
@@ -32,16 +33,16 @@ public class ContractReadService {
     private final RestTemplate restTemplate;
 
     public ContractListWithCursorResponse findAllBy(ContractReadCursorRequest request) {
-        List<ContractEntity> contractEntities = contractRepository.findAllBy(request.memberCode(), request.cursor(),
+        List<Contract> contracts = contractRepository.findAllBy(request.memberCode(), request.cursor(),
                 request.cursorCode(), request.order(), PAGE_SIZE);
 
-        return ContractListWithCursorResponse.of(contractEntities, PAGE_SIZE);
+        return ContractListWithCursorResponse.of(contracts, PAGE_SIZE);
     }
 
     public ContractDetailResponse findDetailBy(ContractDetailRequest request) {
-        ContractEntity contractEntity = contractRepository.findByCode(request.contractCode());
+        Contract contract = contractRepository.findByCode(request.contractCode());
 
-        validateMember(request.memberCode(), contractEntity);
+        validateMember(request.memberCode(), contract);
 
         URI memberInfoUrl = uriConstructor.createMemberInfoUrl(Collections.singletonList(request.memberCode()));
         List<MemberInfo> memberInfos = Optional.ofNullable(
@@ -55,14 +56,16 @@ public class ContractReadService {
         MemberInfo firstMember = memberInfos.get(0);
         MemberInfo secondMember = memberInfos.get(1);
 
-        String clientName = firstMember.code().equals(contractEntity.getClientCode()) ? firstMember.name() : secondMember.name();
-        String freelancerCode = firstMember.code().equals(contractEntity.getFreelancerCode()) ? secondMember.name() : firstMember.name();
+        String clientName = firstMember.code().equals(contract.getInfo().clientCode()) ? firstMember.name() : secondMember.name();
+        String freelancerCode = firstMember.code().equals(contract.getInfo().freelancerCode()) ? secondMember.name() : firstMember.name();
 
-        return ContractDetailResponse.of(contractEntity, clientName, freelancerCode);
+        return ContractDetailResponse.of(contract, clientName, freelancerCode);
     }
 
-    private void validateMember(String memberCode, ContractEntity contractEntity) {
-        if (contractEntity.getClientCode().equals(memberCode) || contractEntity.getFreelancerCode().equals(memberCode)) { // 요청자/계약자 중 하나에 속한다면 valid
+    private void validateMember(String memberCode, Contract contract) {
+        ContractInfo contractInfo = contract.getInfo();
+
+        if (contractInfo.clientCode().equals(memberCode) || contractInfo.freelancerCode().equals(memberCode)) { // 클라이언트/프리랜서 중 하나에 속한다면 valid
             return;
         }
 

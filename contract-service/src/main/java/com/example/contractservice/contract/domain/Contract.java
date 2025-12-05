@@ -1,6 +1,7 @@
 package com.example.contractservice.contract.domain;
 
-import com.example.contractservice.contract.common.ContractStatus;
+import static com.example.contractservice.contract.common.ContractStatus.*;
+
 import com.example.contractservice.contract.domain.vo.ContractContent;
 import com.example.contractservice.contract.domain.vo.ContractInfo;
 import java.time.Instant;
@@ -62,6 +63,22 @@ public class Contract {
     }
 
     public boolean isRequested() {
-        return getInfo().status() == ContractStatus.REQUESTED;
+        return info.status() == REQUESTED;
+    }
+
+    public boolean isPaid() {
+        return info.status() == PAID && info.startedAt().isAfter(Instant.now());
+    }
+
+    public void cancel() {
+        this.info = this.info.cancel();
+    }
+
+    public void done() {
+        this.info = this.info.done();
+    }
+
+    public void progress() {
+        this.info = this.info.progress();
     }
 }

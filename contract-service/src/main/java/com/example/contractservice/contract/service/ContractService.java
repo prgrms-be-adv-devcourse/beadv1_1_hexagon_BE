@@ -1,18 +1,15 @@
 package com.example.contractservice.contract.service;
 
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
-import static com.example.contractservice.contract.service.mapper.ContractMapper.*;
 
 import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.common.domain.exception.DomainException;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
-import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
-import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
@@ -45,16 +42,16 @@ public class ContractService {
     private final ContractPayService contractPayService;
 
     public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
-        // 코드를 기반으로 모든 ContractEntity를 한 번에 조회
-        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(codes);
+        // 코드를 기반으로 모든 Contract를 한 번에 조회
+        List<Contract> contracts = contractRepository.findAllByCodes(codes);
 
-        if (contractEntities.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
+        if (contracts.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
             return Collections.emptyList();
         }
 
         // 계약 목록에서 클라이언트, 프리랜서 code 수집
-        Set<String> memberCodes = contractEntities.stream()
-                .flatMap(entity -> Stream.of(entity.getClientCode(), entity.getFreelancerCode()))
+        Set<String> memberCodes = contracts.stream()
+                .flatMap(contract -> Stream.of(contract.getInfo().clientCode(), contract.getInfo().freelancerCode()))
                 .collect(Collectors.toSet());
 
         // member 모듈로부터 정보 가져오기
@@ -65,8 +62,8 @@ public class ContractService {
         Map<String, String> membersByCode = memberInfos.stream()
                 .collect(Collectors.toMap(MemberInfo::code, MemberInfo::name)); // code별로 info 분류
 
-        return contractEntities.stream()
-                .map(contractEntity -> convertToBriefResponse(contractEntity, membersByCode))
+        return contracts.stream()
+                .map(contract -> convertToBriefResponse(contract, membersByCode))
                 .toList();
     }
 
@@ -76,7 +73,7 @@ public class ContractService {
 
         Contract createdContract = request.toContract();
 
-        ContractEntity contractEntity = contractRepository.saveContract(toEntity(createdContract));
+        Contract contractEntity = contractRepository.saveContract(createdContract);
 
         return ContractCreateResponse.of(contractEntity.getCode());
     }
@@ -104,11 +101,12 @@ public class ContractService {
     }
 
     private ContractBriefWithNicknameResponse convertToBriefResponse(ContractEntity contractEntity,
+    private ContractBriefWithNicknameResponse convertToBriefResponse(Contract contract,
             Map<String, String> membersByCode) {
         return ContractBriefWithNicknameResponse.of(
-                contractEntity,
-                membersByCode.get(contractEntity.getClientCode()),
-                membersByCode.get(contractEntity.getFreelancerCode())
+                contract,
+                membersByCode.get(contract.getInfo().clientCode()),
+                membersByCode.get(contract.getInfo().freelancerCode())
         );
     }
 

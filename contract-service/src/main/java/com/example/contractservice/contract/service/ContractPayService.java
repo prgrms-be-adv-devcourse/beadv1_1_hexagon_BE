@@ -3,15 +3,12 @@ package com.example.contractservice.contract.service;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.COMMISSION_RECRUIT_FULL;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.INVALID_PAYMENT_MEMBER;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.NOT_REQUESTED_STATUS;
-import static com.example.contractservice.contract.service.mapper.ContractMapper.applyToEntity;
-import static com.example.contractservice.contract.service.mapper.ContractMapper.toDomain;
 
 import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.CommissionsCapacity;
-import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.CommissionsCapacityRepository;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
@@ -49,8 +46,7 @@ public class ContractPayService {
     @OptimisticRetry
     public void processPayment(ContractPayProcessRequest request) {
         log.info("처리의 시작");
-        ContractEntity contractEntity = contractRepository.findByCode(request.contractCode());
-        Contract contract = toDomain(contractEntity);
+        Contract contract = contractRepository.findByCode(request.contractCode());
         String xCode = request.xCode();
 
         validatePaymentUser(xCode, contract);
@@ -59,7 +55,7 @@ public class ContractPayService {
 
         wireTransferToAdmin(xCode, contract);
 
-        changeContractStatusToPay(contract, contractEntity);
+        changeContractStatusToPay(contract);
 
         saveSettlements(contract);
 
@@ -104,11 +100,10 @@ public class ContractPayService {
         commissionsCapacityRepository.saveCapacity(capacity);
     }
 
-    private void changeContractStatusToPay(Contract contract, ContractEntity entity) {
+    private void changeContractStatusToPay(Contract contract) {
         contract.pay();
 
-        applyToEntity(contract, entity);
-        contractRepository.saveContract(entity);
+        contractRepository.saveContract(contract);
     }
 
     /** 유저가 관리자 예치금으로 송금합니다. 월급/단건 타입에 따라 송금 금액이 결정되고 유저 예치금에서 빠져나가고 <br />
