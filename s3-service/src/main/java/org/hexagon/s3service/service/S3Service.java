@@ -1,8 +1,11 @@
 package org.hexagon.s3service.service;
 
+import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
@@ -190,5 +193,37 @@ public class S3Service {
                 .build();
 
         return s3ResourceRepository.save(resource);
+    }
+
+    @Transactional
+    public void syncAttachments(String code, List<String> updatedKeys) {
+        // 현재 DB에 있는 key 리스트
+        List<String> currentKeys = s3ResourceRepository.findKeysByCode(code);
+
+        if (updatedKeys == null) {
+            updatedKeys = List.of();
+        }
+
+        // 최종적으로 유지되어야 할 key들
+        Set<String> finalKeys = new HashSet<>();
+
+        for(String key : updatedKeys) {
+            // 새롭게 추가된 key
+            if(key.contains("/temp/")) {
+                String destKey = moveFromTemp(key);
+                saveResource(code, destKey);
+                finalKeys.add(destKey);
+            }
+            else {
+                finalKeys.add(key);
+            }
+        }
+
+        for(String oldKey : currentKeys) {
+            if(!finalKeys.contains(oldKey)) {
+                deleteObject(oldKey);
+                s3ResourceRepository.deleteByKey(oldKey);
+            }
+        }
     }
 }

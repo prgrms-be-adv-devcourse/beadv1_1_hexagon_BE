@@ -13,7 +13,9 @@ import org.hexagon.core.vo.ServiceName;
 import org.hexagon.s3service.dto.StoreKeysRequest;
 import org.hexagon.s3service.service.S3Service;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,6 +56,12 @@ public class S3InternalController {
     @PostMapping("/s3-resource")
     public ResponseDto<Empty> storeKeys(@RequestBody StoreKeysRequest request) {
         s3Service.saveResources(request.code(), request.keys());
+        return ResponseDto.success(HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/s3-resource")
+    public ResponseDto<Empty> updateKeys(@RequestBody StoreKeysRequest request) {
+        s3Service.syncAttachments(request.code(), request.keys());
         return ResponseDto.success(HttpStatus.CREATED);
     }
 }
