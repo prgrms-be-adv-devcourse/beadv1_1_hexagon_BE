@@ -4,19 +4,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.example.contractservice.common.TestConfig;
 import com.example.contractservice.contract.common.ContractStatus;
+import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.entity.CommissionsCapacity;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.CommissionsCapacityJpaRepository;
 import com.example.contractservice.contract.repository.ContractJpaRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
+import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.repository.DepositJpaRepository;
+import com.example.contractservice.settlement.entity.SettlementEntity;
+import com.example.contractservice.settlement.repository.SettlementJpaRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +39,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest
 @Import(TestConfig.class)
 class ContractServiceTest {
+    @Autowired
+    SettlementJpaRepository settlementJpaRepository;
     @Autowired
     DepositJpaRepository depositJpaRepository;
     @Autowired
@@ -58,6 +66,7 @@ class ContractServiceTest {
     void tearDown() {
         contractJpaRepository.deleteAllInBatch();
         depositJpaRepository.deleteAllInBatch();
+        settlementJpaRepository.deleteAllInBatch();
     }
 
     @Test
@@ -120,4 +129,60 @@ class ContractServiceTest {
         assertEquals(unitAmount * normalLimit, adminDeposit.getAmount());
     }
 
+    @Test
+    @DisplayName("PAID인 계약을 성공적으로 취소(환불)할 수 있다")
+    void success_cancel_contract_given_normal_paid_contract() {
+        // given
+        String clientCode = UUID.randomUUID().toString();
+        String freelancerCode = UUID.randomUUID().toString();
+
+        long unitAmount = 500_000L;
+        int contractsNum = 2;
+
+        DepositEntity clientDepositEntity = DepositEntity.createBy(clientCode);
+        clientDepositEntity.updateInfo(unitAmount * contractsNum);
+        depositJpaRepository.save(clientDepositEntity);
+
+        List<Contract> contracts = IntStream.range(0, contractsNum)
+                .mapToObj(i ->
+                        contractJpaRepository.save(ContractEntity.builder()
+                                .name("name" + i)
+                                .unitAmount(unitAmount)
+                                .code(UUID.randomUUID().toString())
+                                .commissionCode(UUID.randomUUID().toString())
+                                .startedAt(Instant.now().plus(1, ChronoUnit.DAYS))
+                                .endedAt(Instant.now().plus(3, ChronoUnit.DAYS))
+                                .status(ContractStatus.REQUESTED)
+                                .clientCode(clientCode)
+                                .freelancerCode(freelancerCode)
+                                .body("body" + i)
+                                .paymentType(PaymentType.PER_JOB)
+                                .build()))
+                .map(ContractMapper::toDomain)
+                .toList(); // 결제 전 계약 생성
+
+        contracts.stream()
+                .map(contract -> contract.getInfo().commissionCode())
+                .forEach(commissionCode -> commissionsCapacityJpaRepository.save(
+                        CommissionsCapacity.createBy(commissionCode, 5, 3))); // 의뢰글 수용 인원 생성
+
+        contractService.payContracts(new ContractPayServiceRequest(clientCode, contracts.stream().map(Contract::getCode).toList())); // 계약 결제 처리
+
+        // when
+        List<ContractCancelRequest> requests = List.of(
+                new ContractCancelRequest(clientCode, contracts.get(0).getCode()), // 클라이언트가 취소하는 경우
+                new ContractCancelRequest(freelancerCode, contracts.get(1).getCode()) // 프리랜서가 취소하는 경우
+        );
+
+        requests.forEach(contractService::cancelContract);
+
+        // then
+        DepositEntity adminDeposit = depositJpaRepository.findByMemberCode(adminMemberCode).get();
+        DepositEntity clientDeposit = depositJpaRepository.findByMemberCode(clientCode).get();
+        List<SettlementEntity> allSettlements = settlementJpaRepository.findAll();
+
+        assertEquals(0L, adminDeposit.getAmount());
+        assertEquals(unitAmount * contractsNum, clientDeposit.getAmount());
+        assertEquals(0, allSettlements.size());
+    }
 }
