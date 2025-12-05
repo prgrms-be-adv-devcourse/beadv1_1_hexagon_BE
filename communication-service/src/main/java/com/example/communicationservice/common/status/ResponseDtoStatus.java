@@ -17,6 +17,15 @@ public enum ResponseDtoStatus {
     CHATROOM_NOT_FOUND(1004, "채팅방이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     CHATROOM_FORBIDDEN(1005, "해당 채팅방에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
 
+    // 채팅 메시지 관련 실패
+    TEXT_MISSING(1100, "텍스트 메시지가 비어있습니다.", HttpStatus.BAD_REQUEST),
+    TOO_LONG_TEXT(1101, "텍스트 메시지가 길이 제한을 초과했습니다.", HttpStatus.BAD_REQUEST),
+    FILE_MISSING(1102, "파일이 필요합니다.", HttpStatus.BAD_REQUEST),
+    MESSAGE_TYPE_MISSING(1103, "메시지 타입이 필요합니다.", HttpStatus.BAD_REQUEST),
+    FILE_NOT_ALLOWED(1104, "텍스트 메시지에는 파일이 포함될 수 없습니다.", HttpStatus.BAD_REQUEST),
+    FILE_KEY_MISSING(1105, "파일 key가 필요합니다.", HttpStatus.BAD_REQUEST),
+    TEXT_NOT_ALLOWED(1106, "파일 메시지에는 텍스트가 포함될 수 없습니다.", HttpStatus.BAD_REQUEST),
+
     // 유효성 검사 실패
     VALIDATION_FAILED(40000, "유효하지 않은 입력입니다.", HttpStatus.BAD_REQUEST),
 
