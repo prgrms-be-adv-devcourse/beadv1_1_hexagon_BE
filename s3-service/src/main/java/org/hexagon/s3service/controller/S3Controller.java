@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.s3service.controller.swagger.S3ControllerSwagger;
 import org.hexagon.s3service.dto.PresignedUploadRequest;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.core.vo.ServiceName;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/s3")
-public class S3Controller {
+public class S3Controller implements S3ControllerSwagger {
 
     private final S3Service s3Service;
 

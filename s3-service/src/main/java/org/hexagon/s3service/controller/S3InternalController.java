@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.s3service.controller.swagger.S3ControllerSwagger;
+import org.hexagon.s3service.controller.swagger.S3InternalControllerSwagger;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
 import org.hexagon.s3service.dto.PresignedDownloadRequestByKey;
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/s3")
-public class S3InternalController {
+public class S3InternalController implements S3InternalControllerSwagger {
 
     private final S3Service s3Service;
 
