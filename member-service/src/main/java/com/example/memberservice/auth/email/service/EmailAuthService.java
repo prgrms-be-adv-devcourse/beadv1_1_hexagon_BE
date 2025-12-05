@@ -30,14 +30,14 @@ public class EmailAuthService {
     //이메일 전송
     public void sendAuthMail(CreateEmailAuthInput createEmailAuthInput) {
 
-        memberJpaRepository.findByCode(createEmailAuthInput.memberCode())
-            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
-
-        String authCode = createAuthCode();
-
         MemberRole memberRole = createEmailAuthInput.memberRole();
         String memberCode = createEmailAuthInput.memberCode();
         String to = createEmailAuthInput.to();
+
+        memberJpaRepository.findByCode(memberCode)
+            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        String authCode = createAuthCode();
 
         authMailSender.sendAuthCode(memberRole, to, authCode);
 

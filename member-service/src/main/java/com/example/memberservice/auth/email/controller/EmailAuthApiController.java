@@ -1,6 +1,7 @@
 package com.example.memberservice.auth.email.controller;
 
 import com.example.memberservice.auth.email.controller.model.dto.CreateEmailAuthRequest;
+import com.example.memberservice.auth.email.controller.swagger.EmailAuthApiControllerSwagger;
 import com.example.memberservice.auth.email.service.EmailAuthService;
 import com.example.memberservice.auth.email.service.model.dto.input.CreateEmailAuthInput;
 import com.example.memberservice.auth.email.service.model.dto.input.VerifyEmailAuthInput;
@@ -8,7 +9,6 @@ import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.member.model.enums.MemberRole;
 import jakarta.validation.Valid;
-import java.lang.reflect.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth/email")
 @RequiredArgsConstructor
-public class EmailAuthController {
+public class EmailAuthApiController implements EmailAuthApiControllerSwagger {
 
     private final EmailAuthService emailAuthService;
 
