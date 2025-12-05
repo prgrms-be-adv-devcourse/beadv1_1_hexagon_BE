@@ -53,6 +53,7 @@ public class S3InternalController {
 
     @PostMapping("/s3-resource")
     public ResponseDto<Empty> storeKeys(@RequestBody StoreKeysRequest request) {
+        s3Service.saveResources(request.code(), request.keys());
         return ResponseDto.success(HttpStatus.CREATED);
     }
 }
