@@ -144,7 +144,7 @@ class DepositServiceTest {
 
         int withdrawCnt = 3;
         long withdrawAmount = 5_000L;
-        DepositProcessRequest request = new DepositProcessRequest(memberCode, withdrawAmount, "");
+        DepositProcessRequest request = new DepositProcessRequest(memberCode, null, withdrawAmount, "");
 
         CyclicBarrier barrier = new CyclicBarrier(withdrawCnt); // 태스크 동시 시작용
         ExecutorService executorService = Executors.newFixedThreadPool(3); // 3개 커널 스레드 할당

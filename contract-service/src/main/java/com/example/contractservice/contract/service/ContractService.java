@@ -4,6 +4,7 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 
 import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.common.domain.exception.DomainException;
+import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
@@ -40,6 +41,7 @@ public class ContractService {
     private final RestTemplate restTemplate;
     private final UriConstructor uriConstructor;
     private final ContractPayService contractPayService;
+    private final ContractCancelService contractCancelService;
 
     public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
         // 코드를 기반으로 모든 Contract를 한 번에 조회
@@ -100,7 +102,20 @@ public class ContractService {
         return new ContractPayResponse(success, fail);
     }
 
-    private ContractBriefWithNicknameResponse convertToBriefResponse(ContractEntity contractEntity,
+    public void cancelContract(ContractCancelRequest request) {
+        Contract contract = contractRepository.findByCode(request.contractCode());
+
+        validateCancelRequest(request.xCode(), contract);
+
+        contractCancelService.processCancel(contract);
+    }
+
+    private void validateCancelRequest(String xCode, Contract contract) {
+        if (!contract.isRelatedWith(xCode)) {
+            throw new ContractException(MEMBER_NOT_RELATED);
+        }
+    }
+
     private ContractBriefWithNicknameResponse convertToBriefResponse(Contract contract,
             Map<String, String> membersByCode) {
         return ContractBriefWithNicknameResponse.of(

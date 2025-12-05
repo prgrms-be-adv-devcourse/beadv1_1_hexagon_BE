@@ -1,6 +1,7 @@
 package com.example.contractservice.deposit.repository;
 
 import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.NO_DEPOSIT_ENTITY;
+import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.NO_HISTORY_ENTITY;
 
 import com.example.contractservice.deposit.domain.Deposit;
 import com.example.contractservice.deposit.domain.DepositHistory;
@@ -53,7 +54,7 @@ public class DepositRepository {
         return depositJpaRepository.existsByMemberCode(memberCode);
     }
 
-    public List<DepositHistory> findAllBy(String depositCode, Instant cursorDate, String cursorCode, int limit) {
+    public List<DepositHistory> findAllHistoriesBy(String depositCode, Instant cursorDate, String cursorCode, int limit) {
         QDepositHistoryEntity history = QDepositHistoryEntity.depositHistoryEntity;
 
         BooleanExpression predicate = history.depositCode.eq(depositCode);
@@ -74,5 +75,13 @@ public class DepositRepository {
                 .stream()
                 .map(DepositHistoryMapper::toDomain)
                 .toList();
+    }
+
+    public DepositHistory findHistoryBy(String clientCode, String contractCode) {
+        Deposit clientDeposit = findDepositByMemberCode(clientCode);
+        DepositHistoryEntity depositHistoryEntity = depositHistoryJpaRepository.findByDepositAndContract(
+                clientDeposit.getCode(), contractCode).orElseThrow(() -> new DepositException(NO_HISTORY_ENTITY));
+
+        return DepositHistoryMapper.toDomain(depositHistoryEntity);
     }
 }

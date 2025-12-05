@@ -81,4 +81,8 @@ public class Contract {
     public void progress() {
         this.info = this.info.progress();
     }
+
+    public boolean isRelatedWith(String memberCode) {
+        return info.clientCode().equals(memberCode) || info.freelancerCode().equals(memberCode);
+    }
 }

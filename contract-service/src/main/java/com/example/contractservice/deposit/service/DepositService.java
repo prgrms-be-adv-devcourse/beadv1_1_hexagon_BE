@@ -5,6 +5,7 @@ import static com.example.contractservice.deposit.domain.exception.DepositErrorC
 import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
+import com.example.contractservice.deposit.controller.dto.response.DepositHistoryInfo;
 import com.example.contractservice.deposit.controller.dto.response.DepositInfoResponse;
 import com.example.contractservice.deposit.controller.dto.response.DepositRechargeResponse;
 import com.example.contractservice.deposit.domain.Deposit;
@@ -39,10 +40,19 @@ public class DepositService {
     public DepositHistoryCursorResponse getDepositHistories(DepositHistoryCursorRequest request) {
         Deposit deposit = depositRepository.findDepositByMemberCode(request.memberCode());
 
-        List<DepositHistory> contracts = depositRepository.findAllBy(deposit.getCode(), request.cursorDate(),
+        List<DepositHistory> contracts = depositRepository.findAllHistoriesBy(deposit.getCode(), request.cursorDate(),
                 request.cursorCode(), PAGE_SIZE);
 
         return DepositHistoryCursorResponse.of(contracts, PAGE_SIZE);
+    }
+
+    public DepositHistoryInfo getDepositHistoryForRefund(String clientCode, String contractCode) {
+        DepositHistory history = depositRepository.findHistoryBy(clientCode, contractCode);
+
+        return new DepositHistoryInfo(history.getCreatedAt(),
+                history.getDepositChange().changeAmount(),
+                history.getDepositChange().resultAmount(),
+                history.getSummary());
     }
 
     /** 회원가입한 사용자에 대한 예치금 엔티티를 생성합니다.
@@ -65,7 +75,7 @@ public class DepositService {
     @Transactional
     @OptimisticRetry
     public DepositRechargeResponse recharge(DepositRechargeRequest request) {
-        DepositProcessRequest processRequest = new DepositProcessRequest(request.memberCode(), request.amount(),
+        DepositProcessRequest processRequest = new DepositProcessRequest(request.memberCode(), null, request.amount(),
                 "예치금 입금");
 
         DepositProcessResponse processResponse = transfer(processRequest);
@@ -113,7 +123,7 @@ public class DepositService {
 
     private void saveHistory(DepositProcessRequest request, Deposit deposit, Long changeAmount) {
         DepositChange depositChange = new DepositChange(changeAmount, deposit.getAmount());
-        DepositHistory depositHistory = new DepositHistory(deposit.getCode(), depositChange, request.summary());
+        DepositHistory depositHistory = new DepositHistory(deposit.getCode(), request.contractCode(), depositChange, request.summary());
 
         depositRepository.saveDepositHistory(depositHistory);
     }

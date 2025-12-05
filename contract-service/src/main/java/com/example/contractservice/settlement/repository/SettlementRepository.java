@@ -17,4 +17,8 @@ public class SettlementRepository {
     public void saveAll(List<SettlementEntity> settlementEntities) {
         settlementJpaRepository.saveAll(settlementEntities);
     }
+
+    public void hardDeleteAllBy(String contractCode) {
+        settlementJpaRepository.deleteByContractCode(contractCode);
+    }
 }
