@@ -14,6 +14,7 @@ import com.example.contractservice.contract.repository.ContractJpaRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.deposit.entity.DepositEntity;
+import com.example.contractservice.deposit.repository.DepositHistoryJpaRepository;
 import com.example.contractservice.deposit.repository.DepositJpaRepository;
 import com.example.contractservice.settlement.entity.SettlementEntity;
 import com.example.contractservice.settlement.repository.SettlementJpaRepository;
@@ -56,6 +57,8 @@ class ContractServiceTest {
 
     @Value("${admin.member.code}")
     String adminMemberCode;
+    @Autowired
+    private DepositHistoryJpaRepository depositHistoryJpaRepository;
 
     @BeforeEach
     void setUp() {
@@ -67,6 +70,7 @@ class ContractServiceTest {
         contractJpaRepository.deleteAllInBatch();
         depositJpaRepository.deleteAllInBatch();
         settlementJpaRepository.deleteAllInBatch();
+        depositHistoryJpaRepository.deleteAllInBatch();
     }
 
     @Test
