@@ -17,4 +17,8 @@ public abstract class DepositMapper {
     public static void applyToEntity(Deposit deposit, DepositEntity depositEntity) {
         depositEntity.updateInfo(deposit.getAmount());
     }
+
+    public static DepositEntity toEntity(Deposit deposit) {
+        return DepositEntity.createBy(deposit.getMemberCode());
+    }
 }
