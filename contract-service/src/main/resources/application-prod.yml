@@ -60,7 +60,8 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
       properties:
-        spring.json.trusted.packages:
+        spring.json.trusted.packages: org.hexagon.core.*
+        spring.json.use.type.headers: true
         allow.auto.create.topics: false
 
 kafka:
