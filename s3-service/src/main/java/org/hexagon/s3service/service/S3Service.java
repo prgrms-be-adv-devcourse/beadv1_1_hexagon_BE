@@ -10,6 +10,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
+import org.hexagon.s3service.dto.PresignedUploadRequest;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.core.vo.ServiceName;
 import org.hexagon.s3service.entity.S3Resource;
@@ -44,31 +45,7 @@ public class S3Service {
         String service = serviceName.toLower();
         String key = service + "/temp/" + UUID.randomUUID().toString() + "-" + filename;
 
-        PutObjectRequest objectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .contentType(contentType)
-                .build();
-
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .putObjectRequest(objectRequest)
-                .build();
-
-        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-
-        // 전체 url = (버킷, region 정보) + key + queryString
-        String url = presignedRequest.url().toString();
-
-        // key + queryString만 추출
-        String keyWithQuery = url.substring(url.indexOf(key));
-
-        String queryString = keyWithQuery.substring(keyWithQuery.indexOf('?'));
-
-        return new PresignedUploadResponse(
-                key,
-                queryString
-        );
+        return getPresignedUploadResponse(key, contentType);
     }
 
     // 채팅에서 파일 업로드할 때 Presigned URL 생성
@@ -76,6 +53,10 @@ public class S3Service {
         String service = serviceName.toLower();
         String key = service + "/" + UUID.randomUUID().toString() + "-" + filename;
 
+        return getPresignedUploadResponse(key, contentType);
+    }
+
+    private PresignedUploadResponse getPresignedUploadResponse(String key, String contentType) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
