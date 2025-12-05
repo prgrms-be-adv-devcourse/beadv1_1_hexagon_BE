@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @StepScope
-public class SettlementDataReader extends JpaCursorItemReader<SettlementEntity> {
+public class SettlementDataReader extends JpaCursorItemReader<SettlementEntity> { // TODO: Settlement로 변경
 
     private static final long MONTH_INTERVAL = 1L;
 

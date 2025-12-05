@@ -12,17 +12,15 @@ import org.springframework.stereotype.Component;
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class SettlementDataProcessor implements ItemProcessor<SettlementEntity, SettlementEntity> {
+public class SettlementDataProcessor implements ItemProcessor<SettlementEntity, Settlement> {
     private final SettlementService settlementService;
 
     @Override
-    public SettlementEntity process(SettlementEntity settlementEntity) {
+    public Settlement process(SettlementEntity settlementEntity) {
         Settlement settlement = SettlementMapper.toDomain(settlementEntity);
 
         settlementService.processSettlement(settlement);
 
-        SettlementMapper.applyToEntity(settlement, settlementEntity);
-
-        return settlementEntity;
+        return settlement;
     }
 }
