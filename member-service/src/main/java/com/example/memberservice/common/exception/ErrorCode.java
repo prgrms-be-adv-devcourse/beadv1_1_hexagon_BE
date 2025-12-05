@@ -7,10 +7,10 @@ public enum ErrorCode {
 
     //400
     VALIDATION_FAILED(2000, HttpStatus.BAD_REQUEST, "유효성 검증 실패"),
-
     EMAIL_VERIFICATION_CODE_MISMATCH(2001, HttpStatus.BAD_REQUEST,"이메일 인증에 실패했습니다."),
+    NOT_CONTAINS_MEMBER_CODE(2002, HttpStatus.BAD_REQUEST, "검색하고자 하는 MemberCode는 반드시 포함되어야합니다."),
+    EMAIL_VERIFICATION_BAD_ROLE_REQUEST(2003, HttpStatus.BAD_REQUEST,"Email 인증은 Freelancer 혹은 Client에 대해서만 가능합니다."),
 
-    NOT_CONTAINS_MEMBER_CODE(2001, HttpStatus.BAD_REQUEST, "검색하고자 하는 MemberCode는 반드시 포함되어야합니다."),
     //401
     FAIL_LOGIN(2200, HttpStatus.UNAUTHORIZED, "로그인에 실패하였습니다."),
     UNAUTHORIZATION(2201, HttpStatus.UNAUTHORIZED, "인증되지 않은 요청입니다."),
