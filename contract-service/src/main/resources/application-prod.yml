@@ -12,8 +12,8 @@ spring:
   application:
     name: contract-service
 
-  jackson:
-    property-naming-strategy: SNAKE_CASE
+  # jackson:
+  #   property-naming-strategy: SNAKE_CASE
 
   jpa:
     open-in-view: false #Lazy Loading 사용 시 트랜잭션 종료를 명확하게 관리하기 위해 false
