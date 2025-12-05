@@ -61,7 +61,7 @@ public class S3CleanUpService {
 
             ListObjectsV2Response listResponse = s3Client.listObjectsV2(reqestBuilder.build());
 
-            // 1) 오래된 객체만 수집
+            // 1) EXPIRATION이 지난 객체만 수집
             List<ObjectIdentifier> deleteTargets = listResponse.contents().stream()
                     .filter(obj -> obj.lastModified().isBefore(threshold))
                     .map(obj -> ObjectIdentifier.builder().key(obj.key()).build())
