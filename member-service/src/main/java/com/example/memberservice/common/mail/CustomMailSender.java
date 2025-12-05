@@ -19,7 +19,7 @@ public class CustomMailSender {
 
     private final JavaMailSender mailSender;
 
-//    @Async
+    @Async
     public void send(String from, String to, String subject, String body) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

@@ -29,6 +29,8 @@ dependencies {
     // 유레카 서비스 등록 관련 의존성
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     //lombok
     implementation 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

@@ -7,11 +7,13 @@ import com.example.memberservice.auth.email.service.model.dto.input.VerifyEmailA
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.member.model.enums.MemberRole;
+import jakarta.validation.Valid;
 import java.lang.reflect.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/auth/email")
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class EmailAuthController {
     public ResponseDto<Empty> sendEmailAuthCode(
         @PathVariable MemberRole role,
         @RequestHeader(name = "X-CODE") String memberCode,
-        @RequestBody CreateEmailAuthRequest request) {
+        @RequestBody @Valid CreateEmailAuthRequest request) {
 
         log.info("memberCode: {}, role: {}, email: {}", memberCode, role, request.email());
         long start = System.currentTimeMillis();
