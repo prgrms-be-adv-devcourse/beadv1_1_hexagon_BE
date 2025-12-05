@@ -121,10 +121,10 @@ public class ContractPayService {
             case PER_JOB -> contract.getInfo().unitAmount();
         };
 
-        DepositProcessRequest depositProcessRequest = new DepositProcessRequest(xCode, totalAmount, PAYMENT_COMMENT);
+        DepositProcessRequest depositProcessRequest = new DepositProcessRequest(xCode, contract.getCode(), totalAmount, PAYMENT_COMMENT);
         depositService.withdraw(depositProcessRequest);
 
-        DepositProcessRequest adminDepositProcessRequest = new DepositProcessRequest(adminMemberCode, totalAmount, "계약 결제 금액 수금");
+        DepositProcessRequest adminDepositProcessRequest = new DepositProcessRequest(adminMemberCode, contract.getCode(), totalAmount, "계약 결제 금액 수금");
         depositService.transfer(adminDepositProcessRequest); // 관리자 예치금으로 입금
     }
 

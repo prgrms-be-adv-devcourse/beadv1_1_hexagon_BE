@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "commissions_capacity")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CommissionsCapacity {
+public class CommissionsCapacity { // TODO: 도메인 엔티티 분리
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

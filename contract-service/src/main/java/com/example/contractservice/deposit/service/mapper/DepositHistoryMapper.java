@@ -14,6 +14,7 @@ public abstract class DepositHistoryMapper {
         return DepositHistoryEntity.builder()
                 .code(depositHistory.getCode())
                 .depositCode(depositHistory.getDepositCode())
+                .contractCode(depositHistory.getContractCode())
                 .changeAmount(depositChange.changeAmount())
                 .resultAmount(depositChange.resultAmount())
                 .summary(depositHistory.getSummary())
@@ -23,6 +24,6 @@ public abstract class DepositHistoryMapper {
     public static DepositHistory toDomain(DepositHistoryEntity historyEntity) {
         DepositChange depositChange = new DepositChange(historyEntity.getChangeAmount(), historyEntity.getResultAmount());
 
-        return new DepositHistory(historyEntity.getCode(), depositChange, historyEntity.getSummary());
+        return new DepositHistory(historyEntity.getDepositCode(), historyEntity.getContractCode(), depositChange, historyEntity.getSummary());
     }
 }
