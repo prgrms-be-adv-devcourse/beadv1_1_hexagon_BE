@@ -33,15 +33,15 @@ public class ContractCancelService {
     @Transactional
     public void processCancel(Contract contract) {
 
-        if (!contract.isRequested() || !contract.isPaid()) {
+        if (!(contract.isRequested() || contract.isPaid())) {
             throw new ContractException(CANCEL_NOT_AVAILABLE);
         }
-
-        contract.cancel();
 
         if (contract.isPaid()) {
             rollbackPaidContract(contract);
         }
+
+        contract.cancel();
 
         contractRepository.saveContract(contract);
     }
