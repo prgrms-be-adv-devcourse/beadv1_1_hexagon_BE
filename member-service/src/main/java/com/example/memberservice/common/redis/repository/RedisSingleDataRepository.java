@@ -1,14 +1,13 @@
-package com.example.memberservice.common.redis.service;
+package com.example.memberservice.common.redis.repository;
 
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-@Service
-public interface RedisSingleDataService {
+@Repository
+public interface RedisSingleDataRepository {
 
-
-    void setSingleData(String key, Object value,
-        long refreshTokenTtl); // Redis 단일 데이터 값을 등록/수정합니다. 이때 단일값은 JWT 설정에 따라 지정
+    void setSingleData(String key, Object value, long offset); // Redis 단일 데이터 값을 등록/수정합니다.
 
     Optional<String> getSingleData(String key); // Redis 키를 기반으로 단일 데이터의 값을 조회합니다.
 

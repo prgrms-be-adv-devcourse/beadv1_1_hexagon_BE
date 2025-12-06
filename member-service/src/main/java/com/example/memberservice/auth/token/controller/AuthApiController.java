@@ -1,4 +1,4 @@
-package com.example.memberservice.oauth.controller;
+package com.example.memberservice.auth.token.controller;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
@@ -6,9 +6,9 @@ import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.web.CookieGenerator;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
-import com.example.memberservice.oauth.controller.swagger.OAuthApiControllerSwagger;
-import com.example.memberservice.oauth.service.OAuthService;
-import com.example.memberservice.oauth.service.dto.output.TokensOutput;
+import com.example.memberservice.auth.token.controller.swagger.AuthApiControllerSwagger;
+import com.example.memberservice.auth.token.service.AuthService;
+import com.example.memberservice.auth.token.service.dto.output.TokensOutput;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class OAuthApiController implements OAuthApiControllerSwagger {
+public class AuthApiController implements AuthApiControllerSwagger {
 
-    private final OAuthService oAuthService;
+    private final AuthService authService;
 
     private final JwtProperties jwtProperties;
 
@@ -40,7 +40,7 @@ public class OAuthApiController implements OAuthApiControllerSwagger {
             throw new BusinessException(ErrorCode.UNAUTHORIZATION);
         }
 
-        TokensOutput output = oAuthService.reissueAccessTokenByRefreshToken(refreshToken);
+        TokensOutput output = authService.reissueAccessTokenByRefreshToken(refreshToken);
 
         httpServletResponse.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + output.accessToken());
         httpServletResponse.setHeader(HttpHeaders.SET_COOKIE,
@@ -56,7 +56,7 @@ public class OAuthApiController implements OAuthApiControllerSwagger {
     public ResponseDto<Empty> logoutMemberByRefreshToken(
         @CookieValue("refresh-token") String refreshToken) {
 
-        oAuthService.deleteRefreshTokenToRedis(refreshToken);
+        authService.deleteRefreshTokenToRedis(refreshToken);
 
         return ResponseDto.success();
     }

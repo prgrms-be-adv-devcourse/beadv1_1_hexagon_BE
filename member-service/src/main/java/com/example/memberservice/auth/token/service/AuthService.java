@@ -1,14 +1,14 @@
-package com.example.memberservice.oauth.service;
+package com.example.memberservice.auth.token.service;
 
+import com.example.memberservice.auth.token.repository.RefreshTokenRedisRepository;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.redis.service.RedisSingleDataService;
 import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.jwt.JwtTokenParser;
 import com.example.memberservice.common.security.jwt.JwtTokenValidator;
 import com.example.memberservice.member.repository.MemberJpaRepository;
-import com.example.memberservice.oauth.service.dto.output.TokensOutput;
+import com.example.memberservice.auth.token.service.dto.output.TokensOutput;
 import io.jsonwebtoken.Claims;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthService {
+public class AuthService {
 
-    private final RedisSingleDataService redisSingleDataService;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     private final MemberJpaRepository memberJpaRepository;
-
-    private final JwtProperties jwtProperties;
 
     private final JwtTokenValidator jwtTokenValidator;
 
@@ -37,7 +35,7 @@ public class OAuthService {
 
         String newRefreshToken = jwtTokenGenerator.generateRefreshToken(memberCode);
 
-        redisSingleDataService.setSingleData(memberCode, newRefreshToken, jwtProperties.getRefreshTokenTtl());
+        refreshTokenRedisRepository.saveRefreshToken(memberCode, newRefreshToken);
 
         boolean isSignedUp = memberJpaRepository.existsByCode(memberCode);
 
@@ -51,7 +49,7 @@ public class OAuthService {
     public void deleteRefreshTokenToRedis(String refreshToken) {
         String memberCode = getMemberCode(refreshToken);
 
-        redisSingleDataService.deleteSingleData(memberCode);
+        refreshTokenRedisRepository.deleteRefreshTokenByMemberCode(memberCode);
     }
 
     private String getMemberCode(String refreshToken) {
@@ -59,7 +57,7 @@ public class OAuthService {
 
         String memberCode = jwtTokenParser.parseMemberCode(claims);
 
-        Optional<String> optionalExistRefreshToken = redisSingleDataService.getSingleData(memberCode);
+        Optional<String> optionalExistRefreshToken = refreshTokenRedisRepository.findRefreshTokenByMemberCode(memberCode);
 
         String existRefreshToken = optionalExistRefreshToken.orElseThrow(
             () -> new BusinessException(ErrorCode.UNAUTHORIZATION));

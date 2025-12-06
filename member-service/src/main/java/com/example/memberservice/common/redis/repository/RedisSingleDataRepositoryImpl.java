@@ -1,4 +1,4 @@
-package com.example.memberservice.common.redis.service;
+package com.example.memberservice.common.redis.repository;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
@@ -6,32 +6,27 @@ import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
-public class RefreshTokenRedisService implements RedisSingleDataService {
+@Repository
+@RequiredArgsConstructor
+public class RedisSingleDataRepositoryImpl implements RedisSingleDataRepository{
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private final String REDIS_KEY_PREFIX = "TOKEN:";
-
     @Override
+    public void setSingleData(String key, Object value, long offset) {
+        Duration duration = Duration.ofMinutes(offset);
 
-    public void setSingleData(String key, Object value, long refreshTokenTTL) {
-        Duration duration = Duration.ofMillis(refreshTokenTTL);
-
-        this.executeOperation(() -> valueOperations().set(buildKey(key), value, duration));
+        this.executeOperation(key,() -> valueOperations().set(key, value, duration));
     }
 
     @Override
     public Optional<String> getSingleData(String key) {
-
-        Object value = valueOperations().get(buildKey(key));
+        Object value = valueOperations().get(key);
 
         return Optional.ofNullable(value).map(Object::toString);
     }
@@ -39,7 +34,7 @@ public class RefreshTokenRedisService implements RedisSingleDataService {
     @Override
     public boolean deleteSingleData(String key) {
 
-        Boolean result = redisTemplate.delete(buildKey(key));
+        Boolean result = redisTemplate.delete(key);
 
         return Boolean.TRUE.equals(result);
     }
@@ -48,23 +43,13 @@ public class RefreshTokenRedisService implements RedisSingleDataService {
         return redisTemplate.opsForValue();
     }
 
-    private ListOperations<String, Object> listOperations() {
-        return redisTemplate.opsForList();
-    }
-
-
-
-    private void executeOperation(Runnable operation) {
+    private void executeOperation(String key, Runnable operation) {
         try {
             operation.run();
             log.info("redis에 정상 저장하였습니다.");
         } catch (Exception e) {
-            log.info("Redis에 정상 저장되지 못했습니다.");
+            log.error("Redis 저장 실패: key={}, cause={}", key, e.getMessage(), e);
             throw new BusinessException(ErrorCode.DATA_SAVE_FAILED);
         }
-    }
-
-    private String buildKey(String key) {
-        return String.format("%s%s", REDIS_KEY_PREFIX, key);
     }
 }
