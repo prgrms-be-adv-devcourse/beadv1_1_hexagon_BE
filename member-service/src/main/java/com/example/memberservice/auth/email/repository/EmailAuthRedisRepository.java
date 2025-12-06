@@ -1,8 +1,10 @@
 package com.example.memberservice.auth.email.repository;
 
+import com.example.memberservice.common.exception.BusinessException;
+import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberEventProducer;
 import com.example.memberservice.common.redis.model.enums.RedisKeyPrefix;
-import com.example.memberservice.common.redis.repository.RedisSingleDataRepository;
+import com.example.memberservice.common.redis.repository.KeyValueRepository;
 import com.example.memberservice.member.model.enums.MemberRole;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class EmailAuthRedisRepository {
 
-    private final RedisSingleDataRepository redisSingleDataRepository;
+    private final KeyValueRepository keyValueRepository;
     private final MemberEventProducer memberEventProducer;
 
     @Value("${mail.ttl.auth-code}")
@@ -27,36 +29,50 @@ public class EmailAuthRedisRepository {
 
     public void saveAuthCode(MemberRole memberRole, String memberCode, String authCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
-        redisSingleDataRepository.setSingleData(key, authCode, authCodeExpirationMinute);
+        keyValueRepository.setSingleData(key, authCode, authCodeExpirationMinute);
     }
 
     public void saveAuthVerification(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
-        redisSingleDataRepository.setSingleData(key, "verify", verifiedExpirationMinute);
+        keyValueRepository.setSingleData(key, "verify", verifiedExpirationMinute);
     }
 
     public Optional<String> findAuthCodeByMemberCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
-        return redisSingleDataRepository.getSingleData(key);
+        return keyValueRepository.getSingleData(key);
     }
 
     public Optional<String> findVerificationByMemberCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
-        return redisSingleDataRepository.getSingleData(key);
+        return keyValueRepository.getSingleData(key);
     }
 
     public boolean deleteAuthCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
-        return redisSingleDataRepository.deleteSingleData(key);
+        return keyValueRepository.deleteSingleData(key);
     }
 
     public boolean deleteVerified(MemberRole role, String memberCode) {
         String key = buildKey(role, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
-        return redisSingleDataRepository.deleteSingleData(key);
+        return keyValueRepository.deleteSingleData(key);
+    }
+
+    public Long incrementRetryCount(String memberCode) {
+        String key = buildKey(memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
+        return keyValueRepository.incrementKey(key);
+    }
+
+    public boolean deleteRetryCount(String memberCode) {
+        String key = buildKey(memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
+        return keyValueRepository.deleteSingleData(key);
     }
 
     private String buildKey(MemberRole memberRole, String memberCode,
         RedisKeyPrefix redisKeyPrefix) {
         return redisKeyPrefix.build(String.format("%s:%s", memberRole.toString(), memberCode));
+    }
+
+    private String buildKey(String memberCode, RedisKeyPrefix redisKeyPrefix) {
+        return redisKeyPrefix.build(memberCode);
     }
 }

@@ -21,8 +21,11 @@ public enum ErrorCode {
     NO_HANDLER(2402, HttpStatus.NOT_FOUND, "요청하신 리소스를 찾을 수 없습니다."),
     EMAIL_VERIFICATION_NOT_FOUND(2403,HttpStatus.NOT_FOUND,"이메일 인증 요청이 되지 않았습니다. 이메일 요청을 진행해주세요."),
     //409 Conflict
-    MEMBER_ALREADY_EXISTS(2490, HttpStatus.CONFLICT, "이미 회원가입을 진행한 멤버입니다."),
-    NICKNAME_ALREADY_EXISTS(2491, HttpStatus.CONFLICT, "이미 회원가입을 진행한 멤버입니다."),
+    MEMBER_ALREADY_EXISTS(2450, HttpStatus.CONFLICT, "이미 회원가입을 진행한 멤버입니다."),
+    NICKNAME_ALREADY_EXISTS(2451, HttpStatus.CONFLICT, "이미 회원가입을 진행한 멤버입니다."),
+
+    //429Too Many Requests
+    EMAIL_VERIFICATION_EXCEEDED(2480, HttpStatus.TOO_MANY_REQUESTS,"인증 요청 가능 횟수를 초과하였습니다. 인증 코드를 재요청해주세요."),
 
     //500
     INTERNAL_SERVER_ERROR(2500, HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 오류가 발생했습니다."),
