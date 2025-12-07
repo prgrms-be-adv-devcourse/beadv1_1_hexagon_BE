@@ -1,6 +1,7 @@
 package com.example.cartpostservice.commissions.service;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpsertRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.dto.request.internal.TotalPeopleInfoRequestDto;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
@@ -32,7 +33,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @Slf4j
@@ -46,7 +46,7 @@ public class CommissionsManagerService {
     private final ContractClient contractClient;
 
     @Transactional
-    public CommissionCreateResponse createCommission(String memberCode, CommissionUpsertRequest request) {
+    public CommissionCreateResponse createCommission(String memberCode, CommissionCreateRequest request) {
 
         String nickName = "";
         try{
@@ -98,18 +98,7 @@ public class CommissionsManagerService {
         // 응답 데이터에 commissionscode 전달
         CommissionCreateResponse commissionCreateResponse = new CommissionCreateResponse(commissionsCode);
 
-
-        TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionsCode, request.plannedHires(), request.eligibleApplicants());
-        ResponseDto<Empty> contractClientResponse = contractClient.upsertNumberOfPeople(totalPeopleInfoRequestDto);
-
-        if(contractClientResponse == null ){
-            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
-        }
-
-        if(contractClientResponse.httpStatus() != 201){
-            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, contractClientResponse.message());
-        }
-
+        sendContractInfo(commissionsCode, request.plannedHires(), request.eligibleApplicants());
 
         // kafka
         commissionKafkaService.createProducer(commissionsCode,request);
@@ -154,40 +143,38 @@ public class CommissionsManagerService {
 
     @Transactional
     public CommissionUpdateResponse updateCommission(String code, String commissionCode,
-            CommissionUpsertRequest request) {
+            CommissionUpdateRequest request) {
 
-        List<String> codes = List.of(code);
-
-        // 2. Feign 요청 (GET /internal/members?member-code=)
-        ResponseDto<MemberInfoOutput> response = memberClient.getMemberInfoByCode(codes);
-
-        String nickName = response.data().internalMemberInfos().stream()
-                .filter(info -> info.memberCode().equals(code)) // 혹시 모를 다른 회원 데이터 섞임 방지
-                .findFirst()
-                .map(InternalMemberInfo::nickName) // record 접근자 (getNickName 아님)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_MEMBER_INFO));
+        CommissionsServiceResult commissionReadResult = commissionsService.read(commissionCode);
+        TagServiceResult tagReadResult = commissionsTagService.read(commissionCode);
 
         CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
                 code,
-                request.title(),
-                request.content(),
-                request.paymentType(),
-                request.unitAmount(),
-                request.startedAt(),
-                request.endedAt(),
-                nickName
+                getOrDefault(request.title(), commissionReadResult.title()),
+                getOrDefault(request.content(), commissionReadResult.content()),
+                getOrDefault(request.paymentType(), commissionReadResult.paymentType()),
+                getOrDefault(request.unitAmount(), commissionReadResult.unitAmount()),
+                getOrDefault(request.startedAt(), commissionReadResult.startedAt()),
+                getOrDefault(request.endedAt(), commissionReadResult.endedAt()),
+                commissionReadResult.writerName()
         );
 
         TagServiceCommand tagServiceCommand = new TagServiceCommand(
                 commissionCode,
-                request.tagCode()
+                getOrDefault(request.tagCode(), tagReadResult.tagCodes())
         );
 
         commissionsService.update(commissionsServiceCommand, commissionCode);
         commissionsTagService.update(tagServiceCommand, commissionCode);
 
+
+        if(request.plannedHires() != null || request.eligibleApplicants() != null){
+            sendContractInfo(commissionCode,  request.plannedHires(), request.eligibleApplicants());
+        }
+
+
         // kafka
-        commissionKafkaService.updateProducer(commissionCode, request);
+        //commissionKafkaService.updateProducer(commissionCode, request);
 
         return new CommissionUpdateResponse(commissionCode);
     }
@@ -267,5 +254,22 @@ public class CommissionsManagerService {
         if (!commissionsService.isOwner(code, commissionCode)) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
+    }
+
+    private void sendContractInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
+        TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionCode, plannedHires, eligibleApplicants);
+        ResponseDto<Empty> contractClientResponse = contractClient.upsertNumberOfPeople(totalPeopleInfoRequestDto);
+
+        if(contractClientResponse == null ){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+        }
+
+        if(contractClientResponse.httpStatus() != 201){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, contractClientResponse.message());
+        }
+    }
+
+    private <T> T getOrDefault(T newValue, T oldValue) {
+        return newValue != null ? newValue : oldValue;
     }
 }
