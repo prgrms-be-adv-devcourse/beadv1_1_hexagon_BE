@@ -22,7 +22,15 @@ public record CommissionElementReadResponse(
 
         String writerName,
 
-        List<String> tagCode
+        List<String> tagCode,
+
+        int plannedHires,
+
+        int selectedCount,
+
+        int eligibleApplicants,
+
+        int appliedCount
 ) {
 
 }
