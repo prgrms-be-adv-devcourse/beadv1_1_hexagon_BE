@@ -18,9 +18,28 @@ public class GlobalExceptionHandler {
         log.warn("handleBusinessException: {}", ex.getMessage());
 
         CustomStatusCode customStatusCode = ex.getCustomStatusCode();
-        ResponseDto response = getErrorResponse(customStatusCode);
+        ResponseDto<Empty> response = getErrorResponse(customStatusCode);
 
         return new ResponseEntity<>(response, customStatusCode.getStatus());
+    }
+
+    @ExceptionHandler(ExternalServerException.class)
+    public ResponseEntity<ResponseDto<Empty>> handleExternalServerException(ExternalServerException ex) {
+        log.warn("Feign Network Error : {}", ex.getMessage());
+
+        CustomStatusCode errorCode = CustomStatusCode.EXTERNAL_SERVER_ERROR;
+
+        return new ResponseEntity<>(getErrorResponse(errorCode) , errorCode.getStatus());
+
+    }
+
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ResponseDto<Empty>> handleGeneralException(Exception ex) {
+        log.error("handleGeneralException: {}", ex.getMessage(), ex);
+
+        CustomStatusCode errorCode = CustomStatusCode.INTERNAL_SERVER_ERROR;
+
+        return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
     }
 
     //    @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -38,13 +57,4 @@ public class GlobalExceptionHandler {
 //    }
 //
 //
-//    @ExceptionHandler(Exception.class)
-//    protected ResponseEntity<ResponseDto<EmptyDto>> handleGeneralException(Exception ex) {
-//        log.error("handleGeneralException: {}", ex.getMessage(), ex); // 스택 트레이스 로깅
-//
-//        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
-//        ResponseDto response = ResponseDto.of(errorCode);
-//
-//        return new ResponseEntity<>(response, errorCode.getStatus());
-//    }
 }
