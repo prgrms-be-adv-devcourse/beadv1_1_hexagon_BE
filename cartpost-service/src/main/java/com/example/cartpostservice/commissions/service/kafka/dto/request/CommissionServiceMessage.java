@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.hexagon.core.vo.PaymentType;
 
-public record CommissionCreateMessage(
+public record CommissionServiceMessage(
         String code,
         String title,
         String content,

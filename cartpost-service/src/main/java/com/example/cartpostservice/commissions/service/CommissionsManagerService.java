@@ -17,7 +17,7 @@ import com.example.cartpostservice.commissions.service.dto.request.TagServiceCom
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
 import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
 import com.example.cartpostservice.commissions.service.kafka.CommissionKafkaService;
-import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionCreateMessage;
+import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExternalServerException;
@@ -86,37 +86,37 @@ public class CommissionsManagerService {
         );
 
         // 커미션 서비스에 리퀘스트 데이터를 저장 데이터 받기
-        String commissionsCode = commissionsService.create(commissionsServiceCommand);
+        String commissionCode = commissionsService.create(commissionsServiceCommand);
 
         // 태그 서비스에 리퀘스트 데이터 저장
         TagServiceCommand tagServiceCommand = new TagServiceCommand(
-                commissionsCode,
+                commissionCode,
                 request.tagCode()
         );
 
         commissionsTagService.create(tagServiceCommand);
 
         // 응답 데이터에 commissionscode 전달
-        CommissionCreateResponse commissionCreateResponse = new CommissionCreateResponse(commissionsCode);
+        CommissionCreateResponse commissionCreateResponse = new CommissionCreateResponse(commissionCode);
 
-        sendContractInfo(commissionsCode, request.plannedHires(), request.eligibleApplicants());
+        sendContractInfo(commissionCode, request.plannedHires(), request.eligibleApplicants());
 
         // kafka
-        CommissionsServiceResult commissionResult = commissionsService.read(commissionsCode);
-        CommissionCreateMessage createMessage = new CommissionCreateMessage(
-                    commissionsCode,
-                    commissionResult.title(),
-                    commissionResult.content(),
-                    commissionResult.memberCode(),
-                    commissionResult.writerName(),
-                    request.tagCode(),
-                    commissionResult.startedAt(),
-                    commissionResult.endedAt(),
-                    commissionResult.paymentType(),
-                    Long.parseLong(commissionResult.unitAmount()),
-                    commissionResult.isOpen(),
-                    commissionResult.updatedAt()
-                );
+        CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
+        CommissionServiceMessage createMessage = new CommissionServiceMessage(
+                commissionCode,
+                commissionResult.title(),
+                commissionResult.content(),
+                commissionResult.memberCode(),
+                commissionResult.writerName(),
+                request.tagCode(),
+                commissionResult.startedAt(),
+                commissionResult.endedAt(),
+                commissionResult.paymentType(),
+                Long.parseLong(commissionResult.unitAmount()),
+                commissionResult.isOpen(),
+                commissionResult.updatedAt()
+        );
 
 
         commissionKafkaService.createProducer(createMessage);
@@ -192,7 +192,22 @@ public class CommissionsManagerService {
 
 
         // kafka
-        //commissionKafkaService.updateProducer(commissionCode, request);
+        CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
+        CommissionServiceMessage updateMessage = new CommissionServiceMessage(
+                commissionCode,
+                commissionResult.title(),
+                commissionResult.content(),
+                commissionResult.memberCode(),
+                commissionResult.writerName(),
+                request.tagCode(),
+                commissionResult.startedAt(),
+                commissionResult.endedAt(),
+                commissionResult.paymentType(),
+                Long.parseLong(commissionResult.unitAmount()),
+                commissionResult.isOpen(),
+                commissionResult.updatedAt()
+        );
+        commissionKafkaService.updateProducer(updateMessage);
 
         return new CommissionUpdateResponse(commissionCode);
     }

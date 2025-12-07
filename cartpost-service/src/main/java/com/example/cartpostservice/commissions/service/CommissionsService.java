@@ -33,8 +33,6 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 .writerName(requestDto.writerName())
                 .build();
 
-        CommissionsEntity commissions1 = CommissionsEntity.builder().build();
-
         CommissionsEntity saved = commissionsRepository.save(commissions);
 
         return saved.getCode();
@@ -56,7 +54,8 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 commission.getStartedAt(),
                 commission.getEndedAt(),
                 commission.isOpen(),
-                commission.getWriterName()
+                commission.getWriterName(),
+                commission.getUpdatedAt()
         );
 
         return result;
@@ -85,8 +84,9 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 commissionsServiceCommand.startedAt(),
                 commissionsServiceCommand.endedAt(),
                 commissionsServiceCommand.writerName()
-        );s
+        );
 
+        // 자동 반영
         //CommissionsEntity saved = commissionsRepository.save(foundEntity);
     }
 
@@ -113,7 +113,8 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                         commission.getStartedAt(),
                         commission.getEndedAt(),
                         commission.isOpen(),
-                        commission.getWriterName()
+                        commission.getWriterName(),
+                        commission.getUpdatedAt()
                 )
         );
     }
