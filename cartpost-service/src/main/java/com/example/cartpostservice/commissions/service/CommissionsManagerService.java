@@ -8,6 +8,7 @@ import com.example.cartpostservice.commissions.controller.dto.response.Commissio
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.InternalMemberInfo;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.PeopleInfoResponseDto;
 import com.example.cartpostservice.commissions.controller.internal.ContractClient;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
@@ -122,7 +123,19 @@ public class CommissionsManagerService {
         CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
         TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
 
-        CommissionElementReadResponse response = new CommissionElementReadResponse(
+        ResponseDto<PeopleInfoResponseDto> applicantsResponse = contractClient.getNumberOfPeople(commissionResult.code());
+
+        if(applicantsResponse == null ){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+        }
+
+        if(applicantsResponse.httpStatus() != 200){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, applicantsResponse.message());
+        }
+
+        PeopleInfoResponseDto peopleInfo = applicantsResponse.data();
+
+        return new CommissionElementReadResponse(
                 commissionResult.title(),
                 commissionResult.content(),
                 commissionResult.paymentType(),
@@ -131,10 +144,12 @@ public class CommissionsManagerService {
                 commissionResult.endedAt(),
                 commissionResult.isOpen(),
                 commissionResult.writerName(),
-                tagResult.tagCodes()
+                tagResult.tagCodes(),
+                peopleInfo.applyCapacity(),
+                peopleInfo.appliedCount(),
+                peopleInfo.selectionCapacity(),
+                peopleInfo.selectedCount()
         );
-
-        return response;
     }
 
     @Transactional
