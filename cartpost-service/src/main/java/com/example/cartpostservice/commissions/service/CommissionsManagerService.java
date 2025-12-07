@@ -17,6 +17,7 @@ import com.example.cartpostservice.commissions.service.dto.request.TagServiceCom
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
 import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
 import com.example.cartpostservice.commissions.service.kafka.CommissionKafkaService;
+import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionCreateMessage;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExternalServerException;
@@ -101,7 +102,24 @@ public class CommissionsManagerService {
         sendContractInfo(commissionsCode, request.plannedHires(), request.eligibleApplicants());
 
         // kafka
-        commissionKafkaService.createProducer(commissionsCode,request);
+        CommissionsServiceResult commissionResult = commissionsService.read(commissionsCode);
+        CommissionCreateMessage createMessage = new CommissionCreateMessage(
+                    commissionsCode,
+                    commissionResult.title(),
+                    commissionResult.content(),
+                    commissionResult.memberCode(),
+                    commissionResult.writerName(),
+                    request.tagCode(),
+                    commissionResult.startedAt(),
+                    commissionResult.endedAt(),
+                    commissionResult.paymentType(),
+                    Long.parseLong(commissionResult.unitAmount()),
+                    commissionResult.isOpen(),
+                    commissionResult.updatedAt()
+                );
+
+
+        commissionKafkaService.createProducer(createMessage);
 
         return commissionCreateResponse;
     }
