@@ -7,7 +7,6 @@ import com.example.cartpostservice.commissions.service.dto.response.CommissionsS
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +43,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
         CommissionsEntity commission = commissionsRepository.findByCode(commissionsCode)
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION));
 
-        CommissionsServiceResult result = new CommissionsServiceResult(
+        return new CommissionsServiceResult(
                 commission.getCode(),
                 commission.getMemberCode(),
                 commission.getTitle(),
@@ -57,8 +56,6 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 commission.getWriterName(),
                 commission.getUpdatedAt()
         );
-
-        return result;
     }
 
     @Override

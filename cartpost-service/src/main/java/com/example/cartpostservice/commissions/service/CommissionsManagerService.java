@@ -193,13 +193,14 @@ public class CommissionsManagerService {
 
         // kafka
         CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
+        TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
         CommissionServiceMessage updateMessage = new CommissionServiceMessage(
                 commissionCode,
                 commissionResult.title(),
                 commissionResult.content(),
                 commissionResult.memberCode(),
                 commissionResult.writerName(),
-                request.tagCode(),
+                tagResult.tagCodes(),
                 commissionResult.startedAt(),
                 commissionResult.endedAt(),
                 commissionResult.paymentType(),
@@ -233,8 +234,23 @@ public class CommissionsManagerService {
         CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
         TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
 
+        CommissionServiceMessage finishMessage = new CommissionServiceMessage(
+                commissionCode,
+                commissionResult.title(),
+                commissionResult.content(),
+                commissionResult.memberCode(),
+                commissionResult.writerName(),
+                tagResult.tagCodes(),
+                commissionResult.startedAt(),
+                commissionResult.endedAt(),
+                commissionResult.paymentType(),
+                Long.parseLong(commissionResult.unitAmount()),
+                commissionResult.isOpen(),
+                commissionResult.updatedAt()
+        );
+
         // kafka
-        commissionKafkaService.finishProducer(commissionCode, tagResult);
+        commissionKafkaService.finishProducer(finishMessage);
 
     }
 
