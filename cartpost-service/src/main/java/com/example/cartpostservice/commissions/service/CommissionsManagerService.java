@@ -1,13 +1,14 @@
 package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpsertRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.internal.TotalPeopleInfoRequestDto;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.InternalMemberInfo;
-import com.example.cartpostservice.commissions.controller.dto.response.MemberInfoOutput;
-import com.example.cartpostservice.commissions.controller.dto.response.MemberResponse;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.InternalMemberInfo;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
+import com.example.cartpostservice.commissions.controller.internal.ContractClient;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
@@ -16,23 +17,21 @@ import com.example.cartpostservice.commissions.service.dto.response.TagServiceRe
 import com.example.cartpostservice.commissions.service.kafka.CommissionKafkaService;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
+import com.example.cartpostservice.common.exception.ExternalServerException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
-import org.hexagon.core.events.commission.CommissionCreatedEvent;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @Slf4j
@@ -43,20 +42,34 @@ public class CommissionsManagerService {
     private final CommissionsTagService commissionsTagService;
     private final CommissionKafkaService commissionKafkaService;
     private final MemberClient memberClient;
+    private final ContractClient contractClient;
 
     @Transactional
     public CommissionCreateResponse createCommission(String memberCode, CommissionUpsertRequest request) {
 
-        List<String> codes = List.of(memberCode);
+        String nickName = "";
+        try{
+            List<String> codes = List.of(memberCode);
 
-        // 2. Feign 요청 (GET /internal/members?member-code=)
-        ResponseDto<MemberInfoOutput> response = memberClient.getMemberInfoByCode(codes);
+            ResponseDto<MemberInfoOutput> memberClientResponse = memberClient.getMemberInfoByCode(codes);
 
-        String nickName = response.data().internalMemberInfos().stream()
-                .filter(info -> info.memberCode().equals(memberCode)) // 혹시 모를 다른 회원 데이터 섞임 방지
-                .findFirst()
-                .map(InternalMemberInfo::nickName) // record 접근자 (getNickName 아님)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_MEMBER_INFO));
+            if(memberClientResponse == null){
+                throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+            }
+
+            nickName = memberClientResponse.data().internalMemberInfos().stream()
+                    .filter(info -> info.memberCode().equals(memberCode)) // 혹시 모를 다른 회원 데이터 섞임 방지
+                    .findFirst()
+                    .map(InternalMemberInfo::nickName) // record 접근자
+                    .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_MEMBER_INFO));
+
+        } catch (Exception e) {
+            log.error("[MemberService 연동 실패] 기본값으로 저장합니다. 추후 동기화 필요. 대상: {}, 원인: {}",
+                    memberCode, e.getMessage(), e);
+
+            // 2. 사용자용 처리: 서비스를 멈추지 않고 기본값 할당
+            nickName = "사용자";
+        }
 
         // request에서 온 것을 커미션과 태그 용 리퀘스트로 분리
         CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
@@ -83,6 +96,19 @@ public class CommissionsManagerService {
 
         // 응답 데이터에 commissionscode 전달
         CommissionCreateResponse commissionCreateResponse = new CommissionCreateResponse(commissionsCode);
+
+
+        TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionsCode, request.plannedHires(), request.eligibleApplicants());
+        ResponseDto<Empty> contractClientResponse = contractClient.upsertNumberOfPeople(totalPeopleInfoRequestDto);
+
+        if(contractClientResponse == null ){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+        }
+
+        if(contractClientResponse.httpStatus() != 201){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, contractClientResponse.message());
+        }
+
 
         // kafka
         commissionKafkaService.createProducer(commissionsCode,request);
