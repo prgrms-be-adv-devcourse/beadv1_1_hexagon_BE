@@ -1,6 +1,7 @@
 package com.example.cartpostservice.commissions.controller;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpsertRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
@@ -34,7 +35,7 @@ public interface CommissionsApi {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code,
-            CommissionUpsertRequest commissionUpsertRequest);
+            CommissionCreateRequest commissionCreateRequest);
 
     @Operation(summary = "의뢰글 조회", description = "의뢰글 코드를 기준으로 의뢰글을 조회합니다.")
     @Parameter(name = "commissionsCode", description = "의뢰글 코드", required = true)
@@ -57,7 +58,7 @@ public interface CommissionsApi {
     ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(
             @RequestHeader("X-CODE") String code,
             @PathVariable String commissionCode,
-            @RequestBody CommissionUpsertRequest commissionUpsertRequest
+            @RequestBody CommissionUpdateRequest commissionUpdateRequest
     );
 
     @Operation(summary = "의뢰글 삭제", description = "X-CODE 헤더와 의뢰글 코드를 기준으로 의뢰글을 삭제합니다.")

@@ -2,7 +2,8 @@ package com.example.cartpostservice.commissions.controller;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpsertRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
@@ -36,9 +37,9 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @PostMapping
     public ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code,
-            @Valid @RequestBody CommissionUpsertRequest commissionUpsertRequest) {
+            @Valid @RequestBody CommissionCreateRequest commissionCreateRequest) {
 
-        CommissionCreateResponse response = commissionsManagerService.createCommission(code, commissionUpsertRequest);
+        CommissionCreateResponse response = commissionsManagerService.createCommission(code, commissionCreateRequest);
         CustomStatusCode createdStatus = CustomStatusCode.CREATED;
 
         return new ResponseEntity<>(getSuccessResponse(createdStatus, response),
@@ -61,11 +62,11 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(
             @RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode,
-            @Valid @RequestBody CommissionUpsertRequest commissionUpsertRequest
+            @RequestBody CommissionUpdateRequest commissionUpdateRequest
     ) {
 
         CommissionUpdateResponse response = commissionsManagerService.updateCommission(code, commissionCode,
-                commissionUpsertRequest);
+                commissionUpdateRequest);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
                 CustomStatusCode.SUCCESS.getStatus());
