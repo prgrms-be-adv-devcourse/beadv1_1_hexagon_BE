@@ -40,11 +40,11 @@ public record CommissionUpsertRequest(
 
         @Schema(description = "고용 예정 인원 수", example = "10")
         @NotNull(message = "고용 예정 인원 수를 반드시 입력해야 합니다")
-        int plannedHires,
+        Integer plannedHires,
 
         @Schema(description = "지원 가능 인원 수", example = "50")
         @NotNull(message = "지원 가능 인원 수를 반드시 입력해야 합니다")
-        int eligibleApplicants
+        Integer eligibleApplicants
 ) {
 
 }
