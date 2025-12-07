@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,8 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 .endedAt(requestDto.endedAt())
                 .writerName(requestDto.writerName())
                 .build();
+
+        CommissionsEntity commissions1 = CommissionsEntity.builder().build();
 
         CommissionsEntity saved = commissionsRepository.save(commissions);
 
@@ -60,29 +63,31 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     }
 
     @Override
-    public void update(CommissionsServiceCommand requestDto, String commissionsCode) {
-        List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(requestDto.memberCode());
+    @Transactional
+    public void update(CommissionsServiceCommand commissionsServiceCommand, String commissionsCode) {
+        List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(commissionsServiceCommand.memberCode());
         if (commissions.isEmpty()) {
             throw new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION);
         }
-        boolean owned = commissions.stream().anyMatch(entity -> entity.getCode().equals(commissionsCode));
 
-        if (!owned) {
-            throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
-        }
+        CommissionsEntity foundEntity = commissions.stream()
+                .filter(entity -> entity.getCode().equals(commissionsCode))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
 
-        CommissionsEntity commission = CommissionsEntity.builder()
-                .memberCode(requestDto.memberCode())
-                .title(requestDto.title())
-                .content(requestDto.content())
-                .paymentType(requestDto.paymentType())
-                .unitAmount(requestDto.unitAmount())
-                .startedAt(requestDto.startedAt())
-                .endedAt(requestDto.endedAt())
-                .writerName(requestDto.writerName())
-                .build();
 
-        CommissionsEntity saved = commissionsRepository.save(commission);
+        foundEntity.update(
+                commissionsServiceCommand.memberCode(),
+                commissionsServiceCommand.title(),
+                commissionsServiceCommand.content(),
+                commissionsServiceCommand.paymentType(),
+                commissionsServiceCommand.unitAmount(),
+                commissionsServiceCommand.startedAt(),
+                commissionsServiceCommand.endedAt(),
+                commissionsServiceCommand.writerName()
+        );s
+
+        //CommissionsEntity saved = commissionsRepository.save(foundEntity);
     }
 
     @Override
