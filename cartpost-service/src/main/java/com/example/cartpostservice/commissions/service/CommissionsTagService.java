@@ -4,10 +4,8 @@ import com.example.cartpostservice.commissions.model.CommissionsTagEntity;
 import com.example.cartpostservice.commissions.repository.CommissionsTagRepository;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -37,15 +35,13 @@ public class CommissionsTagService implements CrudService<TagServiceCommand, Tag
         List<CommissionsTagEntity> tags = commissionsTagRepository.findByCommissionCode(commissionCode);
 
         List<String> tagCodes = tags.stream()
-                .map(entity -> entity.getTagCode())
+                .map(CommissionsTagEntity::getTagCode)
                 .toList();
 
-        TagServiceResult result = new TagServiceResult(
+        return new TagServiceResult(
                 commissionCode,
                 tagCodes
         );
-
-        return result;
     }
 
     @Override

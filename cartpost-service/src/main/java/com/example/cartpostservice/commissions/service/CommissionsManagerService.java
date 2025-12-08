@@ -56,7 +56,7 @@ public class CommissionsManagerService {
     @Transactional
     public CommissionCreateResponse createCommission(String memberCode, CommissionCreateRequest request) {
 
-        String nickName = "";
+        String nickName;
         try {
             List<String> codes = List.of(memberCode);
 
