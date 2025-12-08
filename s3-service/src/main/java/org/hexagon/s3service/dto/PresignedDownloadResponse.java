@@ -1,6 +1,6 @@
 package org.hexagon.s3service.dto;
 
-import org.hexagon.s3service.vo.FileType;
+import org.hexagon.core.vo.FileType;
 
 public record PresignedDownloadResponse(
         String key,

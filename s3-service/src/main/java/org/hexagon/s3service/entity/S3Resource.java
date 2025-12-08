@@ -13,7 +13,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import org.hexagon.s3service.vo.FileType;
+import org.hexagon.core.vo.FileType;
 
 @Entity
 @Builder
