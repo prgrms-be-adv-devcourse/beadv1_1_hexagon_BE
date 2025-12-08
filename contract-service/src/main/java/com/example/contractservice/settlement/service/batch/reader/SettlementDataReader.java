@@ -44,7 +44,7 @@ public class SettlementDataReader extends JpaCursorItemReader<SettlementEntity> 
                 .atStartOfDay().toInstant(UTC); // 한 달 전 자정 -> Instant
 
 
-        Map<String, Object> paramMap = Map.of("start", startInstant, "end", endInstant, "status", SettlementStatus.BEFORE.name());
+        Map<String, Object> paramMap = Map.of("start", startInstant, "end", endInstant, "status", SettlementStatus.BEFORE);
         setParameterValues(paramMap);
     }
 }

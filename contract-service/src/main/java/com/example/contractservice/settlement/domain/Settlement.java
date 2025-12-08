@@ -20,9 +20,6 @@ public class Settlement {
 
     private SettlementTimeline settlementTimeline;
 
-    public Settlement(SettlementReference settlementReference, SettlementStatusInfo settlementStatusInfo, SettlementTimeline settlementTimeline) {
-        this(null, settlementReference, settlementStatusInfo, settlementTimeline);
-    }
     public Settlement(String code, SettlementReference settlementReference,
         SettlementStatusInfo settlementStatusInfo, SettlementTimeline settlementTimeline) {
         this.code = (code == null) ? generateCode() : code;
