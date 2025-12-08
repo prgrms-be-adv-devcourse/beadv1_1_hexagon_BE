@@ -2,6 +2,7 @@ package com.example.cartpostservice.common.exception;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getErrorResponse;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
@@ -26,23 +27,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, customStatusCode.getStatus());
     }
 
-    @ExceptionHandler(ExternalServerException.class)
-    public ResponseEntity<ResponseDto<Empty>> handleExternalServerException(ExternalServerException ex) {
+    @ExceptionHandler({FeignException.class, ExternalServerException.class})
+    public ResponseEntity<ResponseDto<Empty>> handleExternalServerException(Exception ex) {
         log.warn("Feign Network Error : {}", ex.getMessage());
 
         CustomStatusCode errorCode = CustomStatusCode.EXTERNAL_SERVER_ERROR;
 
         return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
 
-    }
-
-    @ExceptionHandler(Exception.class)
-    protected ResponseEntity<ResponseDto<Empty>> handleGeneralException(Exception ex) {
-        log.error("handleGeneralException: {}", ex.getMessage(), ex);
-
-        CustomStatusCode errorCode = CustomStatusCode.INTERNAL_SERVER_ERROR;
-
-        return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -57,6 +49,15 @@ public class GlobalExceptionHandler {
         String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : errorCode.getMessage();
 
         return new ResponseEntity<>(getErrorResponse(errorCode, errorMessage), errorCode.getStatus());
+    }
+
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ResponseDto<Empty>> handleGeneralException(Exception ex) {
+        log.error("handleGeneralException: {}", ex.getMessage(), ex);
+
+        CustomStatusCode errorCode = CustomStatusCode.INTERNAL_SERVER_ERROR;
+
+        return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
     }
 
 
