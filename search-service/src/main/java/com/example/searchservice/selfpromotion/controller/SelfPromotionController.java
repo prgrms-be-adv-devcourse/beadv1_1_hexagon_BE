@@ -7,6 +7,7 @@ import com.example.searchservice.selfpromotion.service.SelfPromotionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,12 +27,14 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
     public ResponseDto<Page<SelfPromotionResponseDto>> search(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "all") SearchScope scope,
+            @RequestParam(name = "payment-type", required = false) PaymentType paymentType,
+            @RequestParam(name = "max-pay", required = false) Long maxPay,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         Page<SelfPromotionResponseDto> result;
 
-        result = selfPromotionService.search(query, scope, page, size);
+        result = selfPromotionService.search(query, scope, paymentType, maxPay, page, size);
 
         return ResponseDto.success(result);
     }

@@ -1,18 +1,31 @@
 package com.example.searchservice.selfpromotion.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery.Builder;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
 import co.elastic.clients.elasticsearch.indices.AnalyzeResponse;
 import co.elastic.clients.elasticsearch.indices.analyze.AnalyzeToken;
+import co.elastic.clients.json.JsonData;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.repository.SelfPromotionRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
@@ -22,12 +35,23 @@ import org.springframework.stereotype.Service;
 public class SelfPromotionServiceImpl implements SelfPromotionService {
 
     private final SelfPromotionRepository selfPromotionRepository;
+    private final ElasticsearchOperations elasticsearchOperations;
+
     private final ElasticsearchClient esClient;
 
     @Override
-    public Page<SelfPromotionResponseDto> search(String query, SearchScope scope, int page, int size) {
+    public Page<SelfPromotionResponseDto> search(
+            String query,
+            SearchScope scope,
+            PaymentType paymentType,
+            Long maxPay,
+            int page,
+            int size)
+    {
+        boolean hasQuery = query != null && !query.isEmpty();
+        boolean hasPayFilter = (paymentType != null || maxPay != null);
 
-        if (query == null || query.isBlank()) {
+        if(!hasQuery && !hasPayFilter) {
             PageRequest sortedByUpdatedAt = PageRequest.of(
                     page,
                     size,
@@ -38,13 +62,89 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                     .map(SelfPromotionResponseDto::from);
         }
 
-        PageRequest pageable = PageRequest.of(page, size);
+//        if (query == null || query.isBlank()) {
+//            PageRequest sortedByUpdatedAt = PageRequest.of(
+//                    page,
+//                    size,
+//                    Sort.by(Sort.Direction.DESC, "updatedAt")
+//            );
+//
+//            return selfPromotionRepository.findAll(sortedByUpdatedAt)
+//                    .map(SelfPromotionResponseDto::from);
+//        }
 
-        return switch (scope) {
-            case all       -> selfPromotionRepository.searchAll(query, pageable).map(SelfPromotionResponseDto::from);
-            case title     -> selfPromotionRepository.searchTitle(query, pageable).map(SelfPromotionResponseDto::from);
-            case content   -> selfPromotionRepository.searchContent(query, pageable).map(SelfPromotionResponseDto::from);
-        };
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(q -> q.bool(b -> {
+                    if(hasQuery) {
+                        switch (scope) {
+                            case all -> b.must(
+                                    MultiMatchQuery.of(m -> m
+                                            .query(query)
+                                            .fields("title^2", "content")
+                                            .minimumShouldMatch("70%")
+                                            .fuzziness("1")
+                                    )._toQuery()
+                            );
+                            case title -> b.must(
+                                    MatchQuery.of(m -> m
+                                            .field("title")
+                                            .query(query)
+                                            .minimumShouldMatch("70%")
+                                            .fuzziness("1")
+                                    )._toQuery()
+                            );
+                            case content -> b.must(
+                                    MatchQuery.of(m -> m
+                                            .field("content")
+                                            .query(query)
+                                            .minimumShouldMatch("70%")
+                                            .fuzziness("1")
+                                    )._toQuery()
+                            );
+                        }
+                    }
+
+                    if (paymentType != null) {
+                        b.filter(
+                                TermQuery.of(t -> t
+                                        .field("payment_type")
+                                        .value(paymentType.name())
+                                )._toQuery()
+                        );
+                    }
+
+                    // --- filter : pay_amount >= payAmount ---
+                    if (maxPay != null) {
+                        b.filter(
+                                RangeQuery.of(r -> r
+                                        .number(n -> n
+                                                .field("pay_amount")
+                                                .lte(maxPay.doubleValue())
+                                        )
+                                )._toQuery()
+                        );
+                    }
+
+                    return b;
+                }))
+                .withPageable(pageRequest)
+                .build();
+
+        SearchHits<SelfPromotionDocumentEntity> hits =
+                elasticsearchOperations.search(nativeQuery, SelfPromotionDocumentEntity.class);
+
+        List<SelfPromotionResponseDto> content = hits.getSearchHits().stream()
+                .map(hit -> SelfPromotionResponseDto.from(hit.getContent()))
+                .toList();
+
+        return new PageImpl<>(content, pageRequest, hits.getTotalHits());
+//        return switch (scope) {
+//            case all       -> selfPromotionRepository.searchAll(query, pageRequest).map(SelfPromotionResponseDto::from);
+//            case title     -> selfPromotionRepository.searchTitle(query, pageRequest).map(SelfPromotionResponseDto::from);
+//            case content   -> selfPromotionRepository.searchContent(query, pageRequest).map(SelfPromotionResponseDto::from);
+//        };
     }
 
     @Override
