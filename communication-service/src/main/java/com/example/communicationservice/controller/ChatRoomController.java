@@ -32,10 +32,7 @@ public class ChatRoomController implements ChatRoomControllerApi {
         @Valid @RequestBody ChatRoomCreateRequest request,
         @RequestHeader(name = "X-CODE") String currentMemberCode
     ) {
-        ChatRoomCreateResponse response = chatRoomService.createChatRoom(
-            request.name(), request.memberCodes(),
-            currentMemberCode
-        );
+        ChatRoomCreateResponse response = chatRoomService.createChatRoom(request, currentMemberCode);
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
