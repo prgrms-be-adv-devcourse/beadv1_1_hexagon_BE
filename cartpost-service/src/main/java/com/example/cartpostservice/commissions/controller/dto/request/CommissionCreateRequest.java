@@ -46,7 +46,7 @@ public record CommissionCreateRequest(
         @NotNull(message = "지원 가능 인원 수를 반드시 입력해야 합니다")
         Integer eligibleApplicants,
 
-        @Schema(description = "사용자가 업로드한 이미지")
+        @Schema(description = "사용자가 업로드한 파일들")
         List<String> fileKeys
 ) {
 
