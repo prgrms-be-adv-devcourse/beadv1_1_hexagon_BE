@@ -1,7 +1,7 @@
-package com.example.memberservice.member.entity;
+package com.example.memberservice.member.model.entity;
 
 
-import com.example.memberservice.member.entity.vo.Gender;
+import com.example.memberservice.member.model.enums.Gender;
 
 import com.example.memberservice.common.security.model.vo.Provider;
 import jakarta.persistence.*;

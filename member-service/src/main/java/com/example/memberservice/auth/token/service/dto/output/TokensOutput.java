@@ -1,4 +1,4 @@
-package com.example.memberservice.oauth.service.dto.output;
+package com.example.memberservice.auth.token.service.dto.output;
 
 public record TokensOutput(
     String accessToken,
