@@ -2,6 +2,7 @@ package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.internal.FilesRequestDto;
 import com.example.cartpostservice.commissions.controller.dto.request.internal.TotalPeopleInfoRequestDto;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
@@ -11,6 +12,7 @@ import com.example.cartpostservice.commissions.controller.dto.response.internal.
 import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.PeopleInfoResponseDto;
 import com.example.cartpostservice.commissions.controller.internal.ContractClient;
+import com.example.cartpostservice.commissions.controller.internal.FileManagementClient;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
@@ -45,6 +47,7 @@ public class CommissionsManagerService {
     private final CommissionKafkaService commissionKafkaService;
     private final MemberClient memberClient;
     private final ContractClient contractClient;
+    private final FileManagementClient fileManagementClient;
 
     @Transactional
     public CommissionCreateResponse createCommission(String memberCode, CommissionCreateRequest request) {
@@ -69,7 +72,7 @@ public class CommissionsManagerService {
             log.error("[MemberService 연동 실패] 기본값으로 저장합니다. 추후 동기화 필요. 대상: {}, 원인: {}",
                     memberCode, e.getMessage(), e);
 
-            // 2. 사용자용 처리: 서비스를 멈추지 않고 기본값 할당
+            // 사용자용 처리: 서비스를 멈추지 않고 기본값 할당
             nickName = "사용자";
         }
 
@@ -120,6 +123,16 @@ public class CommissionsManagerService {
 
 
         commissionKafkaService.createProducer(createMessage);
+
+        // s3 모듈에게 파일 저장 요청
+        if(request.fileKeys() != null){
+            FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode,request.fileKeys());
+            ResponseDto<Empty> s3RegisterResponse = fileManagementClient.registerFileStatus(filesRequestDto);
+
+            if(s3RegisterResponse == null){
+                throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+            }
+        }
 
         return commissionCreateResponse;
     }
