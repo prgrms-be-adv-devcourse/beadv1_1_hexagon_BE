@@ -1,9 +1,8 @@
 package com.example.memberservice.auth.token.service;
 
-import com.example.memberservice.auth.token.repository.RefreshTokenRedisRepository;
+import com.example.memberservice.auth.token.repository.RefreshTokenRepository;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.jwt.JwtTokenParser;
 import com.example.memberservice.common.security.jwt.JwtTokenValidator;
@@ -19,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private final MemberJpaRepository memberJpaRepository;
 
@@ -35,7 +34,7 @@ public class AuthService {
 
         String newRefreshToken = jwtTokenGenerator.generateRefreshToken(memberCode);
 
-        refreshTokenRedisRepository.saveRefreshToken(memberCode, newRefreshToken);
+        refreshTokenRepository.saveRefreshToken(memberCode, newRefreshToken);
 
         boolean isSignedUp = memberJpaRepository.existsByCode(memberCode);
 
@@ -49,7 +48,7 @@ public class AuthService {
     public void deleteRefreshTokenToRedis(String refreshToken) {
         String memberCode = getMemberCode(refreshToken);
 
-        refreshTokenRedisRepository.deleteRefreshTokenByMemberCode(memberCode);
+        refreshTokenRepository.deleteRefreshTokenByMemberCode(memberCode);
     }
 
     private String getMemberCode(String refreshToken) {
@@ -57,7 +56,7 @@ public class AuthService {
 
         String memberCode = jwtTokenParser.parseMemberCode(claims);
 
-        Optional<String> optionalExistRefreshToken = refreshTokenRedisRepository.findRefreshTokenByMemberCode(memberCode);
+        Optional<String> optionalExistRefreshToken = refreshTokenRepository.findRefreshTokenByMemberCode(memberCode);
 
         String existRefreshToken = optionalExistRefreshToken.orElseThrow(
             () -> new BusinessException(ErrorCode.UNAUTHORIZATION));

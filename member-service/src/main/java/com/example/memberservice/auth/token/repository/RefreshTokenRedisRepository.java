@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class RefreshTokenRedisRepository {
+public class RefreshTokenRedisRepository implements RefreshTokenRepository{
 
     private final KeyValueRepository keyValueRepository;
 

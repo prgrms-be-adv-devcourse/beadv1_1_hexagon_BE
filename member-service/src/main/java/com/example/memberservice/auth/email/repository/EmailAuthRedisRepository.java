@@ -1,8 +1,5 @@
 package com.example.memberservice.auth.email.repository;
 
-import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.common.kafka.producer.MemberEventProducer;
 import com.example.memberservice.common.redis.model.enums.RedisKeyPrefix;
 import com.example.memberservice.common.redis.repository.KeyValueRepository;
 import com.example.memberservice.member.model.enums.MemberRole;
@@ -15,10 +12,9 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class EmailAuthRedisRepository {
+public class EmailAuthRedisRepository implements EmailAuthRepository{
 
     private final KeyValueRepository keyValueRepository;
-    private final MemberEventProducer memberEventProducer;
 
     @Value("${mail.ttl.auth-code}")
     private long authCodeExpirationMinute;
