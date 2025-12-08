@@ -205,21 +205,21 @@ public class CommissionsManagerService {
 
 
         // kafka
-        CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
-        TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
+        CommissionsServiceResult commissionUpdateResult = commissionsService.read(commissionCode);
+        TagServiceResult tagResult = commissionsTagService.read(commissionUpdateResult.code());
         CommissionServiceMessage updateMessage = new CommissionServiceMessage(
                 commissionCode,
-                commissionResult.title(),
-                commissionResult.content(),
-                commissionResult.memberCode(),
-                commissionResult.writerName(),
+                commissionUpdateResult.title(),
+                commissionUpdateResult.content(),
+                commissionUpdateResult.memberCode(),
+                commissionUpdateResult.writerName(),
                 tagResult.tagCodes(),
-                commissionResult.startedAt(),
-                commissionResult.endedAt(),
-                commissionResult.paymentType(),
-                Long.parseLong(commissionResult.unitAmount()),
-                commissionResult.isOpen(),
-                commissionResult.updatedAt()
+                commissionUpdateResult.startedAt(),
+                commissionUpdateResult.endedAt(),
+                commissionUpdateResult.paymentType(),
+                Long.parseLong(commissionUpdateResult.unitAmount()),
+                commissionUpdateResult.isOpen(),
+                commissionUpdateResult.updatedAt()
         );
         commissionKafkaService.updateProducer(updateMessage);
 
