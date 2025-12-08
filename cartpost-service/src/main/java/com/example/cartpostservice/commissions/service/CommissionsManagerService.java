@@ -2,12 +2,14 @@ package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.dto.request.internal.DownloadFileComponentRequest;
 import com.example.cartpostservice.commissions.controller.dto.request.internal.FilesRequestDto;
 import com.example.cartpostservice.commissions.controller.dto.request.internal.TotalPeopleInfoRequestDto;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.DownloadFileComponentResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.InternalMemberInfo;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.PeopleInfoResponseDto;
@@ -31,11 +33,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.vo.ServiceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @Slf4j
@@ -155,6 +159,9 @@ public class CommissionsManagerService {
 
         PeopleInfoResponseDto peopleInfo = applicantsResponse.data();
 
+        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(ServiceName.COMMISSIONS, commissionCode);
+        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(downloadFileComponentRequest);
+
         return new CommissionElementReadResponse(
                 commissionResult.title(),
                 commissionResult.content(),
@@ -168,7 +175,8 @@ public class CommissionsManagerService {
                 peopleInfo.applyCapacity(),
                 peopleInfo.appliedCount(),
                 peopleInfo.selectionCapacity(),
-                peopleInfo.selectedCount()
+                peopleInfo.selectedCount(),
+                downloadFileComponents.data().urls()
         );
     }
 

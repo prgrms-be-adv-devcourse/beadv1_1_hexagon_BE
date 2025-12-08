@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.controller.dto.response;
 
+import com.example.cartpostservice.commissions.controller.dto.response.internal.PresignedUrlComponent;
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,7 +31,9 @@ public record CommissionElementReadResponse(
 
         int eligibleApplicants,
 
-        int appliedCount
+        int appliedCount,
+
+        List<PresignedUrlComponent> fileUrls
 ) {
 
 }
