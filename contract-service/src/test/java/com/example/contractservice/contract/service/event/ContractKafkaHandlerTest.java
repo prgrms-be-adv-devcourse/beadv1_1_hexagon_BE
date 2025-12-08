@@ -32,15 +32,14 @@ class ContractKafkaHandlerTest {
     void success_status_Change_to_cancelled_given_normal() {
         // given
 
-        String requestorCode = UUID.randomUUID().toString();
+        String clientCode = UUID.randomUUID().toString();
         ContractEntity entity = ContractEntity.builder()
                 .code(UUID.randomUUID().toString())
-                .requestorCode(requestorCode)
-                .contractorCode(UUID.randomUUID().toString())
-                .freelancerCode(requestorCode)
+                .clientCode(clientCode)
+                .freelancerCode(UUID.randomUUID().toString())
                 .name("이름")
                 .body("내용")
-                .status(ContractStatus.CONFIRMED)
+                .status(ContractStatus.REQUESTED)
                 .startedAt(Instant.now())
                 .endedAt(Instant.now().plusSeconds(10000000))
                 .unitAmount(20000000L)

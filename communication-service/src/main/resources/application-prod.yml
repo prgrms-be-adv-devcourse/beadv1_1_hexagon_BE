@@ -1,0 +1,25 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: communication-service
+
+  data:
+    mongodb:
+      uri: mongodb://mongodb:27017/${MONGO_DATABASE}
+      username: ${MONGO_USER}
+      password: ${MONGO_PASSWORD}
+springdoc:
+  swagger-ui:
+    path: /api/chatrooms/swagger-ui
+  api-docs:
+    path: /api/chatrooms/v3/api-docs
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-communication-service

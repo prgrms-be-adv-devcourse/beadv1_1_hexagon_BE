@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @StepScope
-public class ContractConfirmedReader extends JpaCursorItemReader<ContractEntity> { // TODO: 트러블슈팅 문서 보완
+public class ContractRequestedReader extends JpaCursorItemReader<ContractEntity> { // TODO: 트러블슈팅 문서 보완
 
-    public ContractConfirmedReader(EntityManagerFactory emFactory,
+    public ContractRequestedReader(EntityManagerFactory emFactory,
             @Value("#{jobParameters['dateStr']}") String dateStr,
             @Value("${batch.contract.size}") int fetchSize) {
         setEntityManagerFactory(emFactory);
@@ -28,6 +28,6 @@ public class ContractConfirmedReader extends JpaCursorItemReader<ContractEntity>
         setHintValues(Map.of("org.hibernate.fetchSize", fetchSize));
         Instant todayMidnight = Instant.parse(dateStr);
 
-        setParameterValues(Map.of("time", todayMidnight, "status", ContractStatus.CONFIRMED));
+        setParameterValues(Map.of("time", todayMidnight, "status", ContractStatus.REQUESTED));
     }
 }

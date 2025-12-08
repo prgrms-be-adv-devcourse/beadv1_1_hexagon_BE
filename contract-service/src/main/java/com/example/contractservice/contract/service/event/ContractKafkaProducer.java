@@ -3,6 +3,7 @@ package com.example.contractservice.contract.service.event;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
 import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,8 +21,16 @@ public class ContractKafkaProducer implements ContractEventProducer {
     @Value("${kafka.producer.topic.contract.name}")
     private String contractTopicName;
 
+    @Value("${kafka.producer.topic.commission.name}")
+    private String commissionOpenCloseTopicName;
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendEvent(ContractEvent event) {
         return kafkaTemplate.send(contractTopicName, event.contractCode(), event);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public CompletableFuture<SendResult<String, Object>> sendEvent(CommissionOpenCloseEvent event) {
+        return kafkaTemplate.send(commissionOpenCloseTopicName, event.commissionCode(), event);
     }
 }

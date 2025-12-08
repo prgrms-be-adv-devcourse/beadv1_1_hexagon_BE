@@ -57,9 +57,8 @@ class ContractReadServiceTest {
 
             ContractEntity entity = ContractEntity.builder()
                     .code(UUID.randomUUID().toString())
-                    .requestorCode(zeroOrOne % 2 == 0 ? memberCode : opponentCode)
-                    .contractorCode(zeroOrOne % 2 == 0 ? opponentCode : memberCode)
-                    .freelancerCode(opponentCode)
+                    .clientCode(zeroOrOne % 2 == 0 ? memberCode : opponentCode)
+                    .freelancerCode(zeroOrOne % 2 == 0 ? opponentCode : memberCode)
                     .name("이름" + i)
                     .body("내용" + i)
                     .status(ContractStatus.values()[random.nextInt(ContractStatus.values().length)]) // 상태 랜덤 선택
@@ -113,9 +112,8 @@ class ContractReadServiceTest {
 
         ContractEntity entity = ContractEntity.builder()
                 .code(UUID.randomUUID().toString())
-                .requestorCode(memberCode)
-                .contractorCode(opponentCode)
-                .freelancerCode(memberCode)
+                .clientCode(memberCode)
+                .freelancerCode(opponentCode)
                 .name(name)
                 .body(body)
                 .status(done)

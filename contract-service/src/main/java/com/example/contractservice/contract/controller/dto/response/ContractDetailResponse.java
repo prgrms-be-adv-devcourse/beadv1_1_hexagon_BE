@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
 public record ContractDetailResponse(
-    @Schema(description = "계약 요청 회원 이름", example = "계약 요청 회원")
-    String requestorName,
-    @Schema(description = "계약 성립자 회원 이름", example = "계약 성립 회원")
-    String contractorName,
+    @Schema(description = "클라이언트 회원 이름", example = "김회원")
+    String clientName,
+    @Schema(description = "프리랜서 회원 이름", example = "프리랜서")
+    String freelancerName,
     @Schema(description = "계약 생성 일시", example = "2023-08-31T01:07:25.295Z")
     Instant createdAt,
     @Schema(description = "프로젝트 시작일", example = "2023-08-31T01:07:25.295Z")
@@ -27,10 +27,10 @@ public record ContractDetailResponse(
     String body
 ) {
 
-    public static ContractDetailResponse of(ContractEntity contractEntity, String requestorName, String contractorName) {
+    public static ContractDetailResponse of(ContractEntity contractEntity, String clientName, String freelancerName) {
         return new ContractDetailResponse(
-                requestorName,
-                contractorName,
+                clientName,
+                freelancerName,
                 contractEntity.getCreatedAt(),
                 contractEntity.getStartedAt(),
                 contractEntity.getEndedAt(),
