@@ -6,6 +6,7 @@ import com.example.cartpostservice.commissions.controller.dto.response.internal.
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -14,6 +15,10 @@ public interface FileManagementClient {
 
     @PostMapping("/s3-resources")
     ResponseDto<Empty> registerFileStatus(@RequestBody FilesRequestDto filesRequestDto);
+
+
+    @PatchMapping("/s3-resource")
+    public ResponseDto<Empty> updateFileStatus(@RequestBody  FilesRequestDto filesRequestDto);
 
 
     @PostMapping("/download-url/code")
