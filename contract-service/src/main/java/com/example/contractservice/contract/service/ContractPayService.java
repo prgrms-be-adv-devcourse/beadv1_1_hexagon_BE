@@ -48,7 +48,7 @@ public class ContractPayService {
     @Transactional
     @OptimisticRetry
     public void processPayment(ContractPayProcessRequest request) {
-        log.info("처리의 시작");
+        log.info("[결제 처리] 계약 코드: {}, 로그인 유저 코드: {}", request.contractCode(), request.xCode());
         ContractEntity contractEntity = contractRepository.findByCode(request.contractCode());
         Contract contract = toDomain(contractEntity);
         String xCode = request.xCode();
@@ -72,6 +72,8 @@ public class ContractPayService {
      * 2. 클라이언트인지 확인
      */
     private void validatePaymentUser(String xCode, Contract contract) {
+        log.info("[결제 검증] 계약 코드: {}, 로그인 유저 코드: {}", contract.getCode(), xCode);
+
         boolean isValidUser = contract.canUserPay(xCode); // 로그인 유저가 (계약에 관여) && 클라이언트
 
         if (!isValidUser) {
@@ -88,6 +90,8 @@ public class ContractPayService {
     }
 
     private void increaseSelectedCount(Contract contract) {
+        log.info("[결제 시 선정 인원 증가] 계약 코드: {}", contract.getCode());
+
         CommissionsCapacity capacity = commissionsCapacityRepository.findByCommissionCode(
                 contract.getInfo().commissionCode());
 
@@ -105,6 +109,8 @@ public class ContractPayService {
     }
 
     private void changeContractStatusToPay(Contract contract, ContractEntity entity) {
+        log.info("[계약을 결제 상태로 변경] 계약 코드: {}", contract.getCode());
+
         contract.pay();
 
         applyToEntity(contract, entity);
@@ -118,6 +124,8 @@ public class ContractPayService {
      * @param contract 관련 계약
      */
     private void wireTransferToAdmin(String xCode, Contract contract) {
+        log.info("[결제로 관리자에게 송금] 계약 코드: {}, 로그인 유저 코드: {}", contract.getCode(), xCode);
+
         Long totalAmount = switch (contract.getInfo().paymentType()) {
             case MONTHLY -> {
                 long projectDays = Duration.between(contract.getInfo().startedAt(), contract.getInfo().endedAt()).toDays();
@@ -134,6 +142,8 @@ public class ContractPayService {
     }
 
     private void saveSettlements(Contract contract) {
+        log.info("[결제 후 정산 데이터 저장] 계약 코드: {}", contract.getCode());
+
         settlementService.savePaidSettlements(ContractSettlementMapper.toSaveRequest(contract));
     }
 }
