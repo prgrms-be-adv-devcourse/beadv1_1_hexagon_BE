@@ -139,9 +139,9 @@ public class MemberServiceImpl implements MemberService {
     public void updateMemberWorkState(MemberUpdateWorkStateInput input) {
         Members existMember = findMembers(input.memberCode());
 
-        if (existMember.canEnableWork()) {
-            existMember.updateCanWork(true);
-        }
+//        if (existMember.canEnableWork()) {
+//            existMember.updateCanWork(true);
+//        }
 
         Members updatedMember = memberJpaRepository.save(existMember);
     }
