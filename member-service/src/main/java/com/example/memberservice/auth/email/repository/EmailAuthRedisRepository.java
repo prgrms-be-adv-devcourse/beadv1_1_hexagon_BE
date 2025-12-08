@@ -57,13 +57,13 @@ public class EmailAuthRedisRepository {
         return keyValueRepository.deleteSingleData(key);
     }
 
-    public Long incrementRetryCount(String memberCode) {
-        String key = buildKey(memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
+    public Long incrementRetryCount(MemberRole memberRole, String memberCode) {
+        String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
         return keyValueRepository.incrementKey(key, 3);
     }
 
-    public boolean deleteRetryCount(String memberCode) {
-        String key = buildKey(memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
+    public boolean deleteRetryCount(MemberRole memberRole, String memberCode) {
+        String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
         return keyValueRepository.deleteSingleData(key);
     }
 
@@ -72,7 +72,4 @@ public class EmailAuthRedisRepository {
         return redisKeyPrefix.build(String.format("%s:%s", memberRole.toString(), memberCode));
     }
 
-    private String buildKey(String memberCode, RedisKeyPrefix redisKeyPrefix) {
-        return redisKeyPrefix.build(memberCode);
-    }
 }

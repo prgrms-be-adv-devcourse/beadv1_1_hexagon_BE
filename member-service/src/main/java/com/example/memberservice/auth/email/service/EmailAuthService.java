@@ -41,7 +41,7 @@ public class EmailAuthService {
 
         authMailSender.sendAuthCode(memberRole, to, authCode);
 
-        emailAuthRedisRepository.deleteRetryCount(memberCode);
+        emailAuthRedisRepository.deleteRetryCount(memberRole, memberCode);
 
         emailAuthRedisRepository.saveAuthCode(memberRole, memberCode, authCode);
     }
@@ -55,9 +55,9 @@ public class EmailAuthService {
 
         String authCode = verifyEmailAuthInput.authCode();
 
-        Long retryCount = emailAuthRedisRepository.incrementRetryCount(memberCode);
+        Long retryCount = emailAuthRedisRepository.incrementRetryCount(memberRole, memberCode);
 
-        if(retryCount >= 5){
+        if (retryCount > 5) {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_EXCEEDED);
         }
 
