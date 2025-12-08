@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,7 +32,7 @@ public class GlobalExceptionHandler {
 
         CustomStatusCode errorCode = CustomStatusCode.EXTERNAL_SERVER_ERROR;
 
-        return new ResponseEntity<>(getErrorResponse(errorCode) , errorCode.getStatus());
+        return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
 
     }
 
@@ -42,19 +45,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
     }
 
-    //    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    protected ResponseEntity<ResponseDto<List<FieldErrorDetail>>> handleMethodArgumentNotValidException(
-//            MethodArgumentNotValidException ex) {
-//        log.warn("handleMethodArgumentNotValidException: {}", ex.getMessage());
-//
-//        BindingResult bindingResult = ex.getBindingResult();
-//        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
-//
-//        // ResponseDto의 오버로딩된 of() 사용
-//        ResponseDto<List<FieldErrorDetail>> response = ResponseDto.of(errorCode, bindingResult);
-//
-//        return new ResponseEntity<>(response, errorCode.getStatus());
-//    }
-//
-//
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<ResponseDto<Empty>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
+        log.warn("handleMethodArgumentNotValidException: {}", ex.getMessage());
+
+        BindingResult bindingResult = ex.getBindingResult();
+        FieldError fieldError = bindingResult.getFieldError();
+
+        CustomStatusCode errorCode = CustomStatusCode.INVALID_REQUEST_PPARAMETER;
+        String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : errorCode.getMessage();
+
+        return new ResponseEntity<>(getErrorResponse(errorCode, errorMessage), errorCode.getStatus());
+    }
+
+
 }
