@@ -59,7 +59,7 @@ public class EmailAuthRedisRepository {
 
     public Long incrementRetryCount(String memberCode) {
         String key = buildKey(memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
-        return keyValueRepository.incrementKey(key);
+        return keyValueRepository.incrementKey(key, 3);
     }
 
     public boolean deleteRetryCount(String memberCode) {

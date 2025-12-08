@@ -41,6 +41,8 @@ public class EmailAuthService {
 
         authMailSender.sendAuthCode(memberRole, to, authCode);
 
+        emailAuthRedisRepository.deleteRetryCount(memberCode);
+
         emailAuthRedisRepository.saveAuthCode(memberRole, memberCode, authCode);
     }
 
@@ -52,6 +54,12 @@ public class EmailAuthService {
         MemberRole memberRole = verifyEmailAuthInput.memberRole();
 
         String authCode = verifyEmailAuthInput.authCode();
+
+        Long retryCount = emailAuthRedisRepository.incrementRetryCount(memberCode);
+
+        if(retryCount >= 5){
+            throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_EXCEEDED);
+        }
 
         memberJpaRepository.findByCode(verifyEmailAuthInput.memberCode())
             .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
