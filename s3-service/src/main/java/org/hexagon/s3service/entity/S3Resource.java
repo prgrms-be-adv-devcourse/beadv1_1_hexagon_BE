@@ -26,8 +26,8 @@ public class S3Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String code;
+    @Column(name = "service_code")
+    private String serviceCode;
 
     @Column(name = "s3_key")
     private String key;

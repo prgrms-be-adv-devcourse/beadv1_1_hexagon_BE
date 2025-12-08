@@ -94,7 +94,7 @@ public class S3Service {
 
     // code에 해당하는 파일들의 다운로드 Presigned URL 리스트 생성
     public PresignedDownloadListResponse createDownloadUrls(String code) {
-        List<String> keys = s3ResourceRepository.findKeysByCode(code);
+        List<String> keys = s3ResourceRepository.findKeysByServiceCode(code);
         return createDownloadUrls(keys);
     }
 
@@ -172,7 +172,7 @@ public class S3Service {
     private S3Resource saveResource(String code, String key) {
         FileType fileType = FileType.fromKey(key);
         S3Resource resource = S3Resource.builder()
-                .code(code)
+                .serviceCode(code)
                 .key(key)
                 .fileType(fileType)
                 .uploadedAt(Instant.now())
@@ -184,7 +184,7 @@ public class S3Service {
     @Transactional
     public void syncAttachments(String code, List<String> updatedKeys) {
         // 현재 DB에 있는 key 리스트
-        List<String> currentKeys = s3ResourceRepository.findKeysByCode(code);
+        List<String> currentKeys = s3ResourceRepository.findKeysByServiceCode(code);
 
         if (updatedKeys == null) {
             updatedKeys = List.of();
