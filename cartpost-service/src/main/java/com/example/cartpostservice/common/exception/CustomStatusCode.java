@@ -20,7 +20,7 @@ public enum CustomStatusCode {
     INVALID_REQUEST_PPARAMETER(HttpStatus.BAD_REQUEST, 6424, "파리미터 값이 잘못되었습니다"),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6500, "내부 시스템에 오류가 발생했습니다"),
-    NOT_FOUND_MEMBER(HttpStatus.INTERNAL_SERVER_ERROR, 6510, "내부 서버 문제로 장바구니가 없습니다"),
+    NOT_FOUND_CART(HttpStatus.INTERNAL_SERVER_ERROR, 6510, "내부 서버 문제로 장바구니가 없습니다"),
     NOT_FOUND_MEMBER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, 6520, "내부 서버 문제로 사용자 정보가 없습니다"),
     EXTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6530, "외부 시스템과 통신 중 오류가 발생했습니다");
 

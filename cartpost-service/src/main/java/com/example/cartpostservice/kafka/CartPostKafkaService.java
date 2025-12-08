@@ -40,7 +40,7 @@ public class CartPostKafkaService {
     public void addCartItem(ContractEvent event) {
 
         CartsEntity cart = cartsRepository.findByMemberCode(event.memberCode())
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_CART));
 
         List<String> contractCode = List.of(event.contractCode());
         ResponseDto<List<ContractBriefWithNicknameResponse>> response = contractClient.getBriefInfo(contractCode);
