@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "s3-service", path = "/internal/s3", contextId = "commissionFileClinet")
+@FeignClient(name = "s3-service", path = "/internal/s3", contextId = "commissionFileClient")
 public interface FileManagementClient {
 
     @PostMapping("/s3-resources")
