@@ -62,7 +62,7 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(
             @RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode,
-            @RequestBody CommissionUpdateRequest commissionUpdateRequest
+            @Valid @RequestBody CommissionUpdateRequest commissionUpdateRequest
     ) {
 
         CommissionUpdateResponse response = commissionsManagerService.updateCommission(code, commissionCode,
