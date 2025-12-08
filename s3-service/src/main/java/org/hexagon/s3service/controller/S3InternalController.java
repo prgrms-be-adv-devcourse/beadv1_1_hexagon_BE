@@ -1,6 +1,7 @@
 package org.hexagon.s3service.controller;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
@@ -63,7 +64,11 @@ public class S3InternalController implements S3InternalControllerSwagger {
 
     @PatchMapping("/s3-resource")
     public ResponseDto<Empty> updateKeys(@RequestBody StoreKeysRequest request) {
-        s3Service.syncAttachments(request.code(), request.keys());
+        List<String> keys = request.keys();
+        if(keys == null) {
+            keys = List.of();
+        }
+        s3Service.syncAttachments(request.code(), keys);
         return ResponseDto.success(HttpStatus.CREATED);
     }
 }

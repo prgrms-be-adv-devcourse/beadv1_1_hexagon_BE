@@ -186,10 +186,6 @@ public class S3Service {
         // 현재 DB에 있는 key 리스트
         List<String> currentKeys = s3ResourceRepository.findKeysByServiceCode(code);
 
-        if (updatedKeys == null) {
-            updatedKeys = List.of();
-        }
-
         // 최종적으로 유지되어야 할 key들
         Set<String> finalKeys = new HashSet<>();
 
