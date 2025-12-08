@@ -13,6 +13,7 @@ import com.example.cartpostservice.commissions.controller.dto.response.internal.
 import com.example.cartpostservice.commissions.controller.dto.response.internal.InternalMemberInfo;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
 import com.example.cartpostservice.commissions.controller.dto.response.internal.PeopleInfoResponseDto;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.PresignedUrlComponent;
 import com.example.cartpostservice.commissions.controller.internal.ContractClient;
 import com.example.cartpostservice.commissions.controller.internal.FileManagementClient;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
@@ -108,6 +109,16 @@ public class CommissionsManagerService {
 
         sendContractInfo(commissionCode, request.plannedHires(), request.eligibleApplicants());
 
+        // s3 모듈에게 파일 저장 요청
+        if(request.fileKeys() != null){
+            FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode,request.fileKeys());
+            ResponseDto<Empty> s3RegisterResponse = fileManagementClient.registerFileStatus(filesRequestDto);
+
+            if(s3RegisterResponse == null){
+                throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+            }
+        }
+
         // kafka
         CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
         CommissionServiceMessage createMessage = new CommissionServiceMessage(
@@ -127,16 +138,6 @@ public class CommissionsManagerService {
 
 
         commissionKafkaService.createProducer(createMessage);
-
-        // s3 모듈에게 파일 저장 요청
-        if(request.fileKeys() != null){
-            FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode,request.fileKeys());
-            ResponseDto<Empty> s3RegisterResponse = fileManagementClient.registerFileStatus(filesRequestDto);
-
-            if(s3RegisterResponse == null){
-                throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
-            }
-        }
 
         return commissionCreateResponse;
     }
@@ -211,6 +212,21 @@ public class CommissionsManagerService {
             sendContractInfo(commissionCode,  request.plannedHires(), request.eligibleApplicants());
         }
 
+        List<String> updatedKeys = request.fileKeys();
+        if(request.fileKeys() == null){
+            DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(ServiceName.COMMISSIONS, commissionCode);
+            ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(downloadFileComponentRequest);
+            updatedKeys = downloadFileComponents.data().urls().stream()
+                    .map(PresignedUrlComponent::key)
+                    .toList();
+        }
+
+        FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode, updatedKeys);
+        ResponseDto<Empty> updateFileComponents =  fileManagementClient.updateFileStatus(filesRequestDto);
+
+        if(updateFileComponents == null){
+            throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
+        }
 
         // kafka
         CommissionsServiceResult commissionUpdateResult = commissionsService.read(commissionCode);

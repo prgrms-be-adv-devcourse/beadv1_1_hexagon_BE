@@ -31,7 +31,10 @@ public record CommissionUpdateRequest(
         Integer plannedHires,
 
         @Schema(description = "지원 가능 인원 수", example = "50")
-        Integer eligibleApplicants
+        Integer eligibleApplicants,
+
+        @Schema(description = "사용자가 수정을 반영한 전체 파일들")
+        List<String> fileKeys
 ) {
 
 }

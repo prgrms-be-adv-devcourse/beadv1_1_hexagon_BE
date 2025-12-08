@@ -18,7 +18,7 @@ public interface FileManagementClient {
 
 
     @PatchMapping("/s3-resource")
-    public ResponseDto<Empty> updateFileStatus(@RequestBody  FilesRequestDto filesRequestDto);
+    ResponseDto<Empty> updateFileStatus(@RequestBody  FilesRequestDto filesRequestDto);
 
 
     @PostMapping("/download-url/code")
