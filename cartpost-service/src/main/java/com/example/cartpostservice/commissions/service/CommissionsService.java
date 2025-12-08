@@ -61,7 +61,8 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     @Override
     @Transactional
     public void update(CommissionsServiceCommand commissionsServiceCommand, String commissionsCode) {
-        List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(commissionsServiceCommand.memberCode());
+        List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(
+                commissionsServiceCommand.memberCode());
         if (commissions.isEmpty()) {
             throw new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION);
         }
@@ -70,7 +71,6 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 .filter(entity -> entity.getCode().equals(commissionsCode))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
-
 
         foundEntity.update(
                 commissionsServiceCommand.memberCode(),

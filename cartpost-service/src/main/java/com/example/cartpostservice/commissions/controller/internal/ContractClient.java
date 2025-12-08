@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface ContractClient {
 
-    @GetMapping ("/{commission-code}")
+    @GetMapping("/{commission-code}")
     ResponseDto<PeopleInfoResponseDto> getNumberOfPeople(@PathVariable(name = "commission-code") String commissionCode);
 
     @PostMapping()

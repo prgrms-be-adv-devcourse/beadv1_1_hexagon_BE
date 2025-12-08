@@ -40,7 +40,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @Slf4j
@@ -58,12 +57,12 @@ public class CommissionsManagerService {
     public CommissionCreateResponse createCommission(String memberCode, CommissionCreateRequest request) {
 
         String nickName = "";
-        try{
+        try {
             List<String> codes = List.of(memberCode);
 
             ResponseDto<MemberInfoOutput> memberClientResponse = memberClient.getMemberInfoByCode(codes);
 
-            if(memberClientResponse == null){
+            if (memberClientResponse == null) {
                 throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
             }
 
@@ -110,11 +109,11 @@ public class CommissionsManagerService {
         sendContractInfo(commissionCode, request.plannedHires(), request.eligibleApplicants());
 
         // s3 모듈에게 파일 저장 요청
-        if(request.fileKeys() != null){
-            FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode,request.fileKeys());
+        if (request.fileKeys() != null) {
+            FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode, request.fileKeys());
             ResponseDto<Empty> s3RegisterResponse = fileManagementClient.registerFileStatus(filesRequestDto);
 
-            if(s3RegisterResponse == null){
+            if (s3RegisterResponse == null) {
                 throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
             }
         }
@@ -136,7 +135,6 @@ public class CommissionsManagerService {
                 commissionResult.updatedAt()
         );
 
-
         commissionKafkaService.createProducer(createMessage);
 
         return commissionCreateResponse;
@@ -148,20 +146,23 @@ public class CommissionsManagerService {
         CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
         TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
 
-        ResponseDto<PeopleInfoResponseDto> applicantsResponse = contractClient.getNumberOfPeople(commissionResult.code());
+        ResponseDto<PeopleInfoResponseDto> applicantsResponse = contractClient.getNumberOfPeople(
+                commissionResult.code());
 
-        if(applicantsResponse == null ){
+        if (applicantsResponse == null) {
             throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
         }
 
-        if(applicantsResponse.httpStatus() != 200){
+        if (applicantsResponse.httpStatus() != 200) {
             throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, applicantsResponse.message());
         }
 
         PeopleInfoResponseDto peopleInfo = applicantsResponse.data();
 
-        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(ServiceName.COMMISSIONS, commissionCode);
-        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(downloadFileComponentRequest);
+        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(
+                ServiceName.COMMISSIONS, commissionCode);
+        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
+                downloadFileComponentRequest);
 
         return new CommissionElementReadResponse(
                 commissionResult.title(),
@@ -207,24 +208,25 @@ public class CommissionsManagerService {
         commissionsService.update(commissionsServiceCommand, commissionCode);
         commissionsTagService.update(tagServiceCommand, commissionCode);
 
-
-        if(request.plannedHires() != null || request.eligibleApplicants() != null){
-            sendContractInfo(commissionCode,  request.plannedHires(), request.eligibleApplicants());
+        if (request.plannedHires() != null || request.eligibleApplicants() != null) {
+            sendContractInfo(commissionCode, request.plannedHires(), request.eligibleApplicants());
         }
 
         List<String> updatedKeys = request.fileKeys();
-        if(request.fileKeys() == null){
-            DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(ServiceName.COMMISSIONS, commissionCode);
-            ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(downloadFileComponentRequest);
+        if (request.fileKeys() == null) {
+            DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(
+                    ServiceName.COMMISSIONS, commissionCode);
+            ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
+                    downloadFileComponentRequest);
             updatedKeys = downloadFileComponents.data().urls().stream()
                     .map(PresignedUrlComponent::key)
                     .toList();
         }
 
         FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode, updatedKeys);
-        ResponseDto<Empty> updateFileComponents =  fileManagementClient.updateFileStatus(filesRequestDto);
+        ResponseDto<Empty> updateFileComponents = fileManagementClient.updateFileStatus(filesRequestDto);
 
-        if(updateFileComponents == null){
+        if (updateFileComponents == null) {
             throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
         }
 
@@ -343,14 +345,15 @@ public class CommissionsManagerService {
     }
 
     private void sendContractInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
-        TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionCode, plannedHires, eligibleApplicants);
+        TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionCode,
+                plannedHires, eligibleApplicants);
         ResponseDto<Empty> contractClientResponse = contractClient.upsertNumberOfPeople(totalPeopleInfoRequestDto);
 
-        if(contractClientResponse == null ){
+        if (contractClientResponse == null) {
             throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, "응답 없음");
         }
 
-        if(contractClientResponse.httpStatus() != 201){
+        if (contractClientResponse.httpStatus() != 201) {
             throw new ExternalServerException(CustomStatusCode.EXTERNAL_SERVER_ERROR, contractClientResponse.message());
         }
     }

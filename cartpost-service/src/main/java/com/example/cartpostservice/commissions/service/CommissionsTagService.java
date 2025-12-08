@@ -55,20 +55,20 @@ public class CommissionsTagService implements CrudService<TagServiceCommand, Tag
         Set<String> requestedTagCodes = new HashSet<>(requestDto.tagCodes());
 
         List<CommissionsTagEntity> toDeleteTags = savedTags.stream()
-                        .filter(tag -> !requestedTagCodes.contains(tag.getTagCode()))
-                        .toList();
+                .filter(tag -> !requestedTagCodes.contains(tag.getTagCode()))
+                .toList();
 
         Set<String> existingCodes = savedTags.stream()
-                        .map(CommissionsTagEntity::getTagCode)
-                        .collect(Collectors.toSet());
+                .map(CommissionsTagEntity::getTagCode)
+                .collect(Collectors.toSet());
 
         List<CommissionsTagEntity> toSaveTags = requestDto.tagCodes().stream()
-                        .filter(tagCode -> !existingCodes.contains(tagCode))
-                        .map(tagCode -> CommissionsTagEntity.builder()
-                            .commissionCode(commissionCode)
-                            .tagCode(tagCode)
-                            .build())
-                            .toList();
+                .filter(tagCode -> !existingCodes.contains(tagCode))
+                .map(tagCode -> CommissionsTagEntity.builder()
+                        .commissionCode(commissionCode)
+                        .tagCode(tagCode)
+                        .build())
+                .toList();
 
         commissionsTagRepository.deleteAll(toDeleteTags);
         commissionsTagRepository.saveAll(toSaveTags);

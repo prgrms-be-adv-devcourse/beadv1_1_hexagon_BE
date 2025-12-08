@@ -22,7 +22,7 @@ public class CommissionKafkaService {
     private String searchTopicName;
 
     @Transactional
-    public void createProducer(CommissionServiceMessage createMessage){
+    public void createProducer(CommissionServiceMessage createMessage) {
 
         CommissionCreatedEvent commissionCreatedEvent = new CommissionCreatedEvent(
                 createMessage.code(),
