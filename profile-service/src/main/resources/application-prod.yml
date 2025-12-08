@@ -1,0 +1,90 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: profile-service
+
+  datasource:
+    # TODO: 프로젝트 환경에 맞게 DB URL, Username, Password 수정 필요!!
+    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+
+  jpa:
+    open-in-view: false #Lazy Loading 사용 시 트랜잭션 종료를 명확하게 관리하기 위해 false
+    hibernate:
+      ddl-auto: validate # 처음에는 create로 시작하여 엔티티 확인 후 validate로 변경
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true #쿼리 로그를 보기 쉽게 포맷
+
+
+  kafka:
+    bootstrap-servers:
+      - kafka:9092 # Kafka 브로커 주소
+
+    consumer:
+      group-id: profile-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        # JSON 역직렬화 시 신뢰할 패키지 설정
+        spring.json.trusted.packages: "*" # 모든 패키지 허용 (운영 환경에서는 보안을 위해 명시적으로 설정 권장!)
+        allow.auto.create.topics: false
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all # 모든 리더/팔로워가 응답할 때까지 대기
+
+      properties:
+        delivery.timeout.ms: 120000
+        linger.ms: 0
+        request.timeout.ms: 30000
+        enable.idempotence: true # 멱등성 활성화
+        allow.auto.create.topics: false
+
+kafka:
+  topic:
+    contract:
+      name: contract-topic
+    tag-events:
+      name: tag-events
+      self-promotion-events:
+        name: selfpromotion-events
+    # 초기화 이벤트 토픽 추가
+    tag-init-events:
+      name: tag-init-events
+      self-promotion-init-events:
+        name: selfpromotion-init-events
+# --- H2 인메모리 DB 설정 ---
+#datasource:
+#  url: jdbc:h2:mem:profiledb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#  driver-class-name: org.h2.Driver
+#  username: sa
+#  password:
+#
+# H2 콘솔 설정을 통해 웹에서 DB 상태를 확인 가능 (개발 시 편의)
+#h2:
+#  console:
+#    enabled: true
+#    path: /h2-console
+
+eureka:
+  instance:
+    instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-profile-service
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+
+
+springdoc:
+  swagger-ui:
+    path: /api/profiles/swagger-ui
+  api-docs:
+    path: /api/profiles/v3/api-docs
