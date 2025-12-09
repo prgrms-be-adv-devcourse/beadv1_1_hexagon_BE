@@ -16,6 +16,9 @@ public enum ErrorCode {
     FAIL_LOGIN(2200, HttpStatus.UNAUTHORIZED, "로그인에 실패하였습니다."),
     UN_AUTHORIZATION(2201, HttpStatus.UNAUTHORIZED, "인증되지 않은 요청입니다."),
 
+    //403
+    NOT_ALLOW_ROLE_UPDATE(2300,HttpStatus.FORBIDDEN,"외부 API를 통한 상태 업데이트의 경우엔 'CLIENT'만 가능합니다."),
+
     //404
     MEMBER_NOT_FOUND(2400, HttpStatus.NOT_FOUND, "요청하신 사용자를 찾을 수 없습니다."),
     INTERNAL_ILLEGAL_MEMBER_CODE(2401, HttpStatus.NOT_FOUND, "존재하지 않는 멤버 코드가 포함되어 있습니다."),

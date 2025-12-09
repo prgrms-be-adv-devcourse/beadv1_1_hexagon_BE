@@ -1,7 +1,10 @@
 package com.example.memberservice.member.controller;
 
 
+import com.example.memberservice.common.exception.BusinessException;
+import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.member.controller.dto.request.MemberRoleUpdateRequest;
+import com.example.memberservice.member.model.enums.MemberRole;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
@@ -68,6 +71,10 @@ public class MemberApiController implements MemberApiControllerSwagger {
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<Empty> updateMemberRoleState(@RequestHeader("X-CODE") String memberCode,
         @RequestBody MemberRoleUpdateRequest request) {
+
+        if(!request.role().equals(MemberRole.CLIENT)){
+            throw new BusinessException(ErrorCode.NOT_ALLOW_ROLE_UPDATE);
+        }
 
         memberService.updateMemberRoleState(MemberServiceInputMapper.toUpdateMemberRoleStateInput(memberCode, request));
         return ResponseDto.success();
