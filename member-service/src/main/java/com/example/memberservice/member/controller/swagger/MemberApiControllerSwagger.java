@@ -3,6 +3,8 @@ package com.example.memberservice.member.controller.swagger;
 
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
+import com.example.memberservice.member.controller.dto.request.MemberRoleUpdateRequest;
+import org.apache.kafka.common.record.UnalignedMemoryRecords;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
@@ -54,7 +56,7 @@ public interface MemberApiControllerSwagger {
         @Parameter(name = "X-CODE", description = "로그인한 사용자 코드", in = ParameterIn.HEADER, required = true)
     })
     @ApiErrorResponses(exceptions = {ErrorCode.MEMBER_NOT_FOUND})
-    ResponseDto<Empty> updateMemberWorkState(@RequestHeader("X-CODE") String memberCode);
+    ResponseDto<Empty> updateMemberRoleState(@RequestHeader("X-CODE") String memberCode, @RequestBody MemberRoleUpdateRequest request);
 
     @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다.")
     @Parameters({

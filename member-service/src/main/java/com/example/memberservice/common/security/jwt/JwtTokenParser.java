@@ -15,7 +15,7 @@ public class JwtTokenParser {
     public String parseMemberCode(Claims claims) {
         Object memberCode = claims.get(jwtProperties.getMemberCodeClaims());
         if (memberCode == null) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UN_AUTHORIZATION);
         }
         return memberCode.toString();
     }

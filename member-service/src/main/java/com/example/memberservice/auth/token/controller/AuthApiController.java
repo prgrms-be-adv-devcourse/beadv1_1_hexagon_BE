@@ -37,7 +37,7 @@ public class AuthApiController implements AuthApiControllerSwagger {
         @CookieValue(name = "refresh-token", required = false) String refreshToken) {
 
         if (refreshToken == null) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UN_AUTHORIZATION);
         }
 
         TokensOutput output = authService.reissueAccessTokenByRefreshToken(refreshToken);

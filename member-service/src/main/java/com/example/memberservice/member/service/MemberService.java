@@ -31,7 +31,13 @@ public interface MemberService {
     /**
      * 회원 판매자 등록 상태 true로 변경
      */
-    void updateMemberWorkState(MemberUpdateWorkStateInput input);
+    void updateMemberRoleState(MemberUpdateWorkStateInput input);
+
+    /**
+     * 회원 판매자 등록 상태 true로 변경
+     */
+    void deleteMemberRoleState(MemberUpdateWorkStateInput input);
+
 
     /**
      * 회원 삭제

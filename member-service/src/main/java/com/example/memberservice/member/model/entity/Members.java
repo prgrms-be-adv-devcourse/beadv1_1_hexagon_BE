@@ -114,70 +114,70 @@ public class Members {
 //        this.canWork = canWork;
 //    }
 
-    public boolean canRegisterClientState() {
-        return (role.equals(MemberRole.NONE) || role.equals(MemberRole.FREELANCER));
-    }
-
-    public boolean canRegisterFreelancerState() {
-        return (role.equals(MemberRole.NONE) || role.equals(MemberRole.CLIENT));
-    }
-
-    public boolean canDeleteClientState() {
-        return (role.equals(MemberRole.CLIENT) || role.equals(MemberRole.BOTH));
-    }
-
-    public boolean canDeleteFreelancerState() {
-        return (role.equals(MemberRole.FREELANCER) || role.equals(MemberRole.BOTH));
-    }
-
-    public void registerClientState() {
-        if (this.role.equals(MemberRole.FREELANCER)) {
-            this.role = MemberRole.BOTH;
-        } else if (this.role.equals(MemberRole.NONE)) {
-            this.role = MemberRole.CLIENT;
+    public boolean canRegisterRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                return canRegisterClientState();
+            }
+            case FREELANCER -> {
+                return canRegisterFreelancerState();
+            }
+            default -> {
+                return false;
+            }
         }
     }
 
-    public void registerFreelancerState() {
-        if (this.role.equals(MemberRole.CLIENT)) {
-            this.role = MemberRole.BOTH;
-        } else if (this.role.equals(MemberRole.NONE)) {
-            this.role = MemberRole.FREELANCER;
+    public boolean canDeleteRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                return canDeleteClientState();
+            }
+            case FREELANCER -> {
+                return canDeleteFreelancerState();
+            }
+            default -> {
+                return false;
+            }
         }
     }
 
-    public void deleteClientState() {
-        if (this.role.equals(MemberRole.CLIENT)) {
-            this.role = MemberRole.NONE;
-        } else if (this.role.equals(MemberRole.BOTH)) {
-            this.role = MemberRole.FREELANCER;
+    public void registerRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                registerClientState();
+            }
+            case FREELANCER -> {
+                registerFreelancerState();
+            }
         }
     }
 
-    public void deleteFreelancerState() {
-        if (this.role.equals(MemberRole.FREELANCER)) {
-            this.role = MemberRole.NONE;
-        } else if (this.role.equals(MemberRole.BOTH)) {
-            this.role = MemberRole.CLIENT;
+    public void deleteRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                deleteClientState();
+            }
+            case FREELANCER -> {
+                deleteFreelancerState();
+            }
         }
     }
-
 
     // 핸드폰 번호 변경
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-
     // 생년월일 변경
+
     public void updateBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
-
     // 성별 변경
+
     public void updateGender(Gender gender) {
         this.gender = gender;
     }
-
     public void deletedMember() {
         this.isDeleted = true;
     }
@@ -185,5 +185,51 @@ public class Members {
     public void restoreMember() {
         this.isDeleted = false;
     }
+    private boolean canRegisterClientState() {
+        return (role.equals(MemberRole.NONE) || role.equals(MemberRole.FREELANCER));
+    }
 
+    private boolean canRegisterFreelancerState() {
+        return (role.equals(MemberRole.NONE) || role.equals(MemberRole.CLIENT));
+    }
+
+    private boolean canDeleteClientState() {
+        return (role.equals(MemberRole.CLIENT) || role.equals(MemberRole.BOTH));
+    }
+
+    private boolean canDeleteFreelancerState() {
+        return (role.equals(MemberRole.FREELANCER) || role.equals(MemberRole.BOTH));
+    }
+
+    private void registerClientState() {
+        if (this.role.equals(MemberRole.FREELANCER)) {
+            this.role = MemberRole.BOTH;
+        } else if (this.role.equals(MemberRole.NONE)) {
+            this.role = MemberRole.CLIENT;
+        }
+    }
+
+    private void registerFreelancerState() {
+        if (this.role.equals(MemberRole.CLIENT)) {
+            this.role = MemberRole.BOTH;
+        } else if (this.role.equals(MemberRole.NONE)) {
+            this.role = MemberRole.FREELANCER;
+        }
+    }
+
+    private void deleteClientState() {
+        if (this.role.equals(MemberRole.CLIENT)) {
+            this.role = MemberRole.NONE;
+        } else if (this.role.equals(MemberRole.BOTH)) {
+            this.role = MemberRole.FREELANCER;
+        }
+    }
+
+    private void deleteFreelancerState() {
+        if (this.role.equals(MemberRole.FREELANCER)) {
+            this.role = MemberRole.NONE;
+        } else if (this.role.equals(MemberRole.BOTH)) {
+            this.role = MemberRole.CLIENT;
+        }
+    }
 }

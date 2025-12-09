@@ -43,6 +43,14 @@ public class EmailAuthRedisRepository implements EmailAuthRepository{
         return keyValueRepository.getSingleData(key);
     }
 
+    @Override
+    public boolean existVerificationByMemberCode(MemberRole memberRole, String memberCode) {
+        String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
+        Optional<String> optionalObject = keyValueRepository.getSingleData(key);
+
+        return optionalObject.isPresent();
+    }
+
     public boolean deleteAuthCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
         return keyValueRepository.deleteSingleData(key);

@@ -1,6 +1,7 @@
 package com.example.memberservice.member.controller;
 
 
+import com.example.memberservice.member.controller.dto.request.MemberRoleUpdateRequest;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
@@ -65,9 +66,20 @@ public class MemberApiController implements MemberApiControllerSwagger {
 
     @PatchMapping("/state")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Empty> updateMemberWorkState(@RequestHeader("X-CODE") String memberCode) {
+    public ResponseDto<Empty> updateMemberRoleState(@RequestHeader("X-CODE") String memberCode,
+        @RequestBody MemberRoleUpdateRequest request) {
 
-        memberService.updateMemberWorkState(MemberServiceInputMapper.toUpdateMemberWorkStateInput(memberCode));
+        memberService.updateMemberRoleState(MemberServiceInputMapper.toUpdateMemberRoleStateInput(memberCode, request));
+        return ResponseDto.success();
+    }
+
+    @DeleteMapping("/state")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> deleteMemberRoleState(@RequestHeader("X-CODE") String memberCode,
+        @RequestBody MemberRoleUpdateRequest request) {
+
+        memberService.deleteMemberRoleState(MemberServiceInputMapper.toUpdateMemberRoleStateInput(memberCode, request));
+
         return ResponseDto.success();
     }
 

@@ -59,10 +59,10 @@ public class AuthService {
         Optional<String> optionalExistRefreshToken = refreshTokenRepository.findRefreshTokenByMemberCode(memberCode);
 
         String existRefreshToken = optionalExistRefreshToken.orElseThrow(
-            () -> new BusinessException(ErrorCode.UNAUTHORIZATION));
+            () -> new BusinessException(ErrorCode.UN_AUTHORIZATION));
 
         if (!existRefreshToken.equals(refreshToken)) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UN_AUTHORIZATION);
         }
         return memberCode;
     }
