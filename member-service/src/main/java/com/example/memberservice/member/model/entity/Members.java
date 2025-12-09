@@ -27,7 +27,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Members {
 
-    //TODO(이후 common 모듈 생성시 적용)
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -82,6 +82,7 @@ public class Members {
     private String providerId;
 
     @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
     private MemberRole role;
 
     @Builder

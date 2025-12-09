@@ -29,7 +29,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 public class SocialMembers {
 
-    //TODO(이후 common 모듈 생성시 적용)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

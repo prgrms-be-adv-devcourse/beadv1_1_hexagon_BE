@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
+import com.example.memberservice.common.client.ContractServiceClient;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
@@ -75,6 +76,9 @@ class MemberServiceImplTest {
     @MockitoBean
     private EmailAuthRepository emailAuthRepository;
 
+    @MockitoBean
+    private ContractServiceClient contractServiceClient;
+
 //        private final MemberJpaRepository memberJpaRepository;
 //    private final SocialMemberJpaRepository socialMemberJpaRepository;
 //    private final RestTemplate restTemplate;
@@ -92,7 +96,8 @@ class MemberServiceImplTest {
             restTemplate,
             memberKafkaEventProducer,
             requestURIGenerator,
-            emailAuthRepository
+            emailAuthRepository,
+            contractServiceClient
         );
     }
 

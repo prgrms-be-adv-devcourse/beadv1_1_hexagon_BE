@@ -1,6 +1,8 @@
 package com.example.memberservice.member.service;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
+import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.dto.response.ContractStateResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
@@ -27,6 +29,9 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.member.MemberCreatedEvent;
+import org.hexagon.core.events.member.MemberDeletedClientRoleEvent;
+import org.hexagon.core.events.member.MemberDeletedEvent;
+import org.hexagon.core.events.member.MemberDeletedFreelancerRoleEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -56,6 +61,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final EmailAuthRepository emailAuthRepository;
 
+    private final ContractServiceClient contractServiceClient;
 
     //외부 API를 2개나 타기에 Transactional을 해주지 않습니다.
     @Override
@@ -149,13 +155,13 @@ public class MemberServiceImpl implements MemberService {
         Members existMember = findMembers(input.memberCode());
 
         //이메일 인증 내역이 있는지 확인
-        if(!emailAuthRepository.existVerificationByMemberCode(memberRole, memberCode)){
+        if (!emailAuthRepository.existVerificationByMemberCode(memberRole, memberCode)) {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_NEED);
         }
 
         // Register 변경이 불가능한 경우 안하고 넘어가기.
         // Register가 불가능한 경우는 보통 이미 자격이 있거나 admin 이거나라서 상태 변화를 일으키지 않도록.
-        if(!existMember.canRegisterRoleState(memberRole)) {
+        if (!existMember.canRegisterRoleState(memberRole)) {
             log.info("이미 자격이 있습니다.");
             return;
         }
@@ -170,18 +176,28 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMemberRoleState(MemberUpdateRoleStateInput input) {
 
         String memberCode = input.memberCode();
-        MemberRole memberRole = input.role();
+        MemberRole inputRole = input.role();
 
         Members existMember = findMembers(input.memberCode());
 
+        //TODO(Contract에 현재 계약 중인 게 있는 지 확인)
+//        if (canDeleteRole(existMember, inputRole)) {
+//            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
+//        }
         // Register 변경이 불가능한 경우 안하고 넘어가기.
         // Register가 불가능한 경우는 보통 이미 자격이 있거나 admin 이거나라서 상태 변화를 일으키지 않도록.
-        if(!existMember.canDeleteRoleState(memberRole)) {
+        if (!existMember.canDeleteRoleState(inputRole)) {
             return;
         }
-        existMember.deleteRoleState(memberRole);
+        existMember.deleteRoleState(inputRole);
 
         Members updatedMember = memberJpaRepository.save(existMember);
+
+        if (inputRole.equals(MemberRole.CLIENT)){
+            memberKafkaEventProducer.sendDeletedClientRoleEvent(new MemberDeletedClientRoleEvent(updatedMember.getCode()));
+        }else{
+            memberKafkaEventProducer.sendDeletedFreelancerRoleEvent(new MemberDeletedFreelancerRoleEvent(updatedMember.getCode()));
+        }
     }
 
 
@@ -191,7 +207,13 @@ public class MemberServiceImpl implements MemberService {
 
         existMember.deletedMember();
 
-        memberJpaRepository.save(existMember);
+        if (canDeleteRole(existMember, MemberRole.BOTH)) {
+            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
+        }
+
+        Members deleteMember = memberJpaRepository.save(existMember);
+
+        memberKafkaEventProducer.sendDeletedEvent(new MemberDeletedEvent(deleteMember.getCode()));
     }
 
     @Override
@@ -252,4 +274,21 @@ public class MemberServiceImpl implements MemberService {
                 }
             });
     }
+
+    private boolean validContract(ContractStateResponse contractStateResponse) {
+        return !(contractStateResponse.isClient() && contractStateResponse.isFreelancer());
+    }
+
+    private boolean canDeleteRole(Members existMember, MemberRole memberRole) {
+        ContractStateResponse response = contractServiceClient.existContractByRole(
+            existMember.getCode()).data();
+
+        return switch (memberRole) {
+            case FREELANCER -> response.isFreelancer();
+            case CLIENT -> response.isClient();
+            case BOTH -> !(response.isFreelancer() && response.isClient());
+            default -> false;
+        };
+    }
+
 }
