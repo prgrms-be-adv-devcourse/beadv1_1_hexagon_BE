@@ -7,6 +7,7 @@ import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.s3service.controller.swagger.S3ControllerSwagger;
 import org.hexagon.s3service.controller.swagger.S3InternalControllerSwagger;
+import org.hexagon.s3service.dto.ExistsResponse;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
 import org.hexagon.s3service.dto.PresignedDownloadRequestByKey;
@@ -16,11 +17,13 @@ import org.hexagon.core.vo.ServiceName;
 import org.hexagon.s3service.dto.StoreKeysRequest;
 import org.hexagon.s3service.service.S3Service;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -70,5 +73,11 @@ public class S3InternalController implements S3InternalControllerSwagger {
         }
         s3Service.syncAttachments(request.code(), keys);
         return ResponseDto.success(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/exists")
+    public ResponseDto<ExistsResponse> exists(@RequestParam String key) {
+        ExistsResponse response = s3Service.exists(key);
+        return ResponseDto.success(response);
     }
 }
