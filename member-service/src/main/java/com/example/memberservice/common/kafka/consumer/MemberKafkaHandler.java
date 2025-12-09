@@ -1,5 +1,6 @@
 package com.example.memberservice.common.kafka.consumer;
 
+import com.example.memberservice.member.mapper.MemberServiceInputMapper;
 import com.example.memberservice.member.model.enums.MemberRole;
 import com.example.memberservice.member.service.MemberService;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
@@ -24,10 +25,7 @@ public class MemberKafkaHandler {
 //    public void handleFreelancerRoleUpdate(TempEventDto event) {
 //
 //        memberService.updateMember(
-//            new MemberUpdateRoleStateInput(
-//                MemberRole.FREELANCER,
-//                event.getMemberCode()
-//            )
+//            MemberServiceInputMapper.toUpdateMemberRoleStateInput(event.memberCode, event);
 //        );
 //    }
 

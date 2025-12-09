@@ -36,6 +36,11 @@ public final class MemberServiceInputMapper {
         return new MemberUpdateRoleStateInput(memberCode, request.role());
     }
 
+    //TODO(Profile 에서 카프카 메세지 구현 이후 의존)
+//    public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(MemberRoleEvent event){
+//        return new MemberUpdateRoleStateInput(memberCode, event.role)
+//    }
+
     public static MemberDeleteInput toDeleteMemberInput(String memberCode) {
         return new MemberDeleteInput(memberCode);
     }
