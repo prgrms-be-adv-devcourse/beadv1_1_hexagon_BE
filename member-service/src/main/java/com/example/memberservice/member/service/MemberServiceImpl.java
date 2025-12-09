@@ -5,7 +5,6 @@ import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.member.model.enums.MemberRole;
-import java.lang.reflect.Member;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
 import com.example.memberservice.member.model.entity.Members;
@@ -16,7 +15,7 @@ import com.example.memberservice.member.service.model.dto.input.MemberDeleteInpu
 import com.example.memberservice.member.service.model.dto.input.MemberExistByNameInput;
 import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
-import com.example.memberservice.member.service.model.dto.input.MemberUpdateWorkStateInput;
+import com.example.memberservice.member.service.model.dto.input.MemberUpdateRoleStateInput;
 import com.example.memberservice.member.service.model.vo.ApiMemberInfo;
 import com.example.memberservice.member.service.model.vo.MemberRating;
 import com.example.memberservice.member.service.model.vo.MemberTag;
@@ -55,7 +54,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final RequestURIGenerator requestURIGenerator;
 
-    private EmailAuthRepository emailAuthRepository;
+    private final EmailAuthRepository emailAuthRepository;
 
 
     //외부 API를 2개나 타기에 Transactional을 해주지 않습니다.
@@ -142,7 +141,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void updateMemberRoleState(MemberUpdateWorkStateInput input) {
+    public void updateMemberRoleState(MemberUpdateRoleStateInput input) {
 
         String memberCode = input.memberCode();
         MemberRole memberRole = input.role();
@@ -150,16 +149,16 @@ public class MemberServiceImpl implements MemberService {
         Members existMember = findMembers(input.memberCode());
 
         //이메일 인증 내역이 있는지 확인
-        if(emailAuthRepository.existVerificationByMemberCode(memberRole, memberCode)){
-            throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND);
+        if(!emailAuthRepository.existVerificationByMemberCode(memberRole, memberCode)){
+            throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_NEED);
         }
 
         // Register 변경이 불가능한 경우 안하고 넘어가기.
         // Register가 불가능한 경우는 보통 이미 자격이 있거나 admin 이거나라서 상태 변화를 일으키지 않도록.
         if(!existMember.canRegisterRoleState(memberRole)) {
+            log.info("이미 자격이 있습니다.");
             return;
         }
-
 
         existMember.registerRoleState(memberRole);
 
@@ -168,7 +167,8 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void deleteMemberRoleState(MemberUpdateWorkStateInput input) {
+    public void deleteMemberRoleState(MemberUpdateRoleStateInput input) {
+
         String memberCode = input.memberCode();
         MemberRole memberRole = input.role();
 
@@ -179,7 +179,6 @@ public class MemberServiceImpl implements MemberService {
         if(!existMember.canDeleteRoleState(memberRole)) {
             return;
         }
-
         existMember.deleteRoleState(memberRole);
 
         Members updatedMember = memberJpaRepository.save(existMember);

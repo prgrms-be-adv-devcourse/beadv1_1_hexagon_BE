@@ -8,7 +8,7 @@ import com.example.memberservice.member.service.model.dto.input.MemberDeleteInpu
 import com.example.memberservice.member.service.model.dto.input.MemberExistByNameInput;
 import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
-import com.example.memberservice.member.service.model.dto.input.MemberUpdateWorkStateInput;
+import com.example.memberservice.member.service.model.dto.input.MemberUpdateRoleStateInput;
 
 public final class MemberServiceInputMapper {
 
@@ -31,9 +31,9 @@ public final class MemberServiceInputMapper {
             request.birthDate(), request.gender());
     }
 
-    public static MemberUpdateWorkStateInput toUpdateMemberRoleStateInput(String memberCode,
+    public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(String memberCode,
         MemberRoleUpdateRequest request) {
-        return new MemberUpdateWorkStateInput(memberCode,request.memberRole());
+        return new MemberUpdateRoleStateInput(memberCode, request.role());
     }
 
     public static MemberDeleteInput toDeleteMemberInput(String memberCode) {

@@ -85,8 +85,9 @@ public class Members {
     private MemberRole role;
 
     @Builder
-    private Members(String nickName, String code, String email, String phoneNumber, LocalDate birthDate, Gender gender,
-        Provider provider, String providerId) {
+    private Members(String nickName, String code, String email, String phoneNumber,
+        LocalDate birthDate, Gender gender,
+        Provider provider, String providerId, MemberRole role) {
         this.nickName = nickName;
         this.code = code;
         this.email = email;
@@ -95,8 +96,11 @@ public class Members {
         this.gender = gender;
         this.provider = provider;
         this.providerId = providerId;
-
-        this.role = MemberRole.NONE;
+        if(role==null){
+            this.role = MemberRole.NONE;
+        }else{
+            this.role = role;
+        }
     }
 
     // 닉네임 변경
@@ -178,6 +182,7 @@ public class Members {
     public void updateGender(Gender gender) {
         this.gender = gender;
     }
+
     public void deletedMember() {
         this.isDeleted = true;
     }
@@ -185,20 +190,21 @@ public class Members {
     public void restoreMember() {
         this.isDeleted = false;
     }
+
     private boolean canRegisterClientState() {
-        return (role.equals(MemberRole.NONE) || role.equals(MemberRole.FREELANCER));
+        return (this.role.equals(MemberRole.NONE) || this.role.equals(MemberRole.FREELANCER));
     }
 
     private boolean canRegisterFreelancerState() {
-        return (role.equals(MemberRole.NONE) || role.equals(MemberRole.CLIENT));
+        return (this.role.equals(MemberRole.NONE) || this.role.equals(MemberRole.CLIENT));
     }
 
     private boolean canDeleteClientState() {
-        return (role.equals(MemberRole.CLIENT) || role.equals(MemberRole.BOTH));
+        return (this.role.equals(MemberRole.CLIENT) || this.role.equals(MemberRole.BOTH));
     }
 
     private boolean canDeleteFreelancerState() {
-        return (role.equals(MemberRole.FREELANCER) || role.equals(MemberRole.BOTH));
+        return (this.role.equals(MemberRole.FREELANCER) || this.role.equals(MemberRole.BOTH));
     }
 
     private void registerClientState() {

@@ -51,12 +51,19 @@ public interface MemberApiControllerSwagger {
     ResponseDto<Empty> updateMember(@RequestHeader("X-CODE") String memberCode,
         @RequestBody MemberUpdateRequest request);
 
-    @Operation(summary = "사용자 판매자 등록", description = "사용자의 판매자 등록을 진행합니다")
+    @Operation(summary = "사용자 역할 등록", description = "사용자의 역할 등록을 진행합니다")
     @Parameters({
         @Parameter(name = "X-CODE", description = "로그인한 사용자 코드", in = ParameterIn.HEADER, required = true)
     })
     @ApiErrorResponses(exceptions = {ErrorCode.MEMBER_NOT_FOUND})
     ResponseDto<Empty> updateMemberRoleState(@RequestHeader("X-CODE") String memberCode, @RequestBody MemberRoleUpdateRequest request);
+
+    @Operation(summary = "사용자 역할 제거", description = "사용자의 역할 제거를 진행합니다")
+    @Parameters({
+        @Parameter(name = "X-CODE", description = "로그인한 사용자 코드", in = ParameterIn.HEADER, required = true)
+    })
+    @ApiErrorResponses(exceptions = {ErrorCode.MEMBER_NOT_FOUND})
+    ResponseDto<Empty> deleteMemberRoleState(@RequestHeader("X-CODE") String memberCode, @RequestBody MemberRoleUpdateRequest request);
 
     @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다.")
     @Parameters({
