@@ -34,7 +34,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
-import org.hexagon.core.vo.ServiceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -159,8 +158,7 @@ public class CommissionsManagerService {
 
         PeopleInfoResponseDto peopleInfo = applicantsResponse.data();
 
-        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(
-                ServiceName.COMMISSIONS, commissionCode);
+        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(commissionCode);
         ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
                 downloadFileComponentRequest);
 
@@ -215,7 +213,7 @@ public class CommissionsManagerService {
         List<String> updatedKeys = request.fileKeys();
         if (request.fileKeys() == null) {
             DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(
-                    ServiceName.COMMISSIONS, commissionCode);
+                    commissionCode);
             ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
                     downloadFileComponentRequest);
             updatedKeys = downloadFileComponents.data().urls().stream()
