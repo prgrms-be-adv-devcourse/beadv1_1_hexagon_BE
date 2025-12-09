@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "s3-service", path = "/internal/s3", contextId = "commissionFileClient")
 public interface FileManagementClient {
 
-    @PostMapping("/s3-resources")
+    @PostMapping("/s3-resource")
     ResponseDto<Empty> registerFileStatus(@RequestBody FilesRequestDto filesRequestDto);
 
 
