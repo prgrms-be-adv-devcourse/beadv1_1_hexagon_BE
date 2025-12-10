@@ -15,7 +15,7 @@ public record CommissionResponseDto(
         LocalDate endedAt,
         PaymentType paymentType,
         Long payAmount,
-        Boolean isClosed
+        Boolean isOpen
 ) {
     public static CommissionResponseDto from(CommissionDocumentEntity commissionDocumentEntity) {
         return new CommissionResponseDto(
