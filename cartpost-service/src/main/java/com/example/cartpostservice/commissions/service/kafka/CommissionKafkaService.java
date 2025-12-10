@@ -1,13 +1,6 @@
 package com.example.cartpostservice.commissions.service.kafka;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpsertRequest;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.model.CommissionsEntity;
-import com.example.cartpostservice.commissions.repository.CommissionsRepository;
-import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
-import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
-import com.example.cartpostservice.common.exception.BusinessException;
-import com.example.cartpostservice.common.exception.CustomStatusCode;
+import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.commission.CommissionCreatedEvent;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
@@ -21,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CommissionKafkaService {
 
-    private final CommissionsRepository commissionsRepository;
-
     // KafkaTemplate 주입 (Config에서 빈으로 등록한 타입과 일치해야 함)
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -31,47 +22,41 @@ public class CommissionKafkaService {
     private String searchTopicName;
 
     @Transactional
-    public void createProducer(String commissionCode, CommissionUpsertRequest request){
-
-        CommissionsEntity commissionsEntity = commissionsRepository.findByCode(commissionCode)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION));
+    public void createProducer(CommissionServiceMessage createMessage) {
 
         CommissionCreatedEvent commissionCreatedEvent = new CommissionCreatedEvent(
-                commissionCode,
-                commissionsEntity.getTitle(),
-                commissionsEntity.getContent(),
-                commissionsEntity.getMemberCode(),
-                commissionsEntity.getWriterName(),
-                request.tagCode(),
-                request.startedAt(),
-                request.endedAt(),
-                commissionsEntity.getPaymentType(),
-                Long.parseLong(commissionsEntity.getUnitAmount()),
-                commissionsEntity.isOpen(),
-                commissionsEntity.getUpdatedAt()
+                createMessage.code(),
+                createMessage.title(),
+                createMessage.content(),
+                createMessage.memberCode(),
+                createMessage.memberNickname(),
+                createMessage.tags(),
+                createMessage.startedAt(),
+                createMessage.endedAt(),
+                createMessage.paymentType(),
+                createMessage.payAmount(),
+                createMessage.isClosed(),
+                createMessage.updatedAt()
         );
 
         kafkaTemplate.send(searchTopicName, commissionCreatedEvent);
     }
 
-    public void updateProducer(String commissionCode, CommissionUpsertRequest request) {
-
-        CommissionsEntity commissionsEntity = commissionsRepository.findByCode(commissionCode)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION));
+    public void updateProducer(CommissionServiceMessage updateMessage) {
 
         CommissionUpdatedEvent commissionUpdatedEvent = new CommissionUpdatedEvent(
-                commissionCode,
-                commissionsEntity.getTitle(),
-                commissionsEntity.getContent(),
-                commissionsEntity.getMemberCode(),
-                commissionsEntity.getWriterName(),
-                request.tagCode(),
-                request.startedAt(),
-                request.endedAt(),
-                commissionsEntity.getPaymentType(),
-                Long.parseLong(commissionsEntity.getUnitAmount()),
-                commissionsEntity.isOpen(),
-                commissionsEntity.getUpdatedAt()
+                updateMessage.code(),
+                updateMessage.title(),
+                updateMessage.content(),
+                updateMessage.memberCode(),
+                updateMessage.memberNickname(),
+                updateMessage.tags(),
+                updateMessage.startedAt(),
+                updateMessage.endedAt(),
+                updateMessage.paymentType(),
+                updateMessage.payAmount(),
+                updateMessage.isClosed(),
+                updateMessage.updatedAt()
         );
 
         kafkaTemplate.send(searchTopicName, commissionUpdatedEvent);
@@ -83,24 +68,21 @@ public class CommissionKafkaService {
         kafkaTemplate.send(searchTopicName, commissionDeletedEvent);
     }
 
-    public void finishProducer(String commissionCode, TagServiceResult tagResult) {
-
-        CommissionsEntity commissionsEntity = commissionsRepository.findByCode(commissionCode)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION));
+    public void finishProducer(CommissionServiceMessage finishMessage) {
 
         CommissionUpdatedEvent commissionUpdatedEvent = new CommissionUpdatedEvent(
-                commissionCode,
-                commissionsEntity.getTitle(),
-                commissionsEntity.getContent(),
-                commissionsEntity.getMemberCode(),
-                commissionsEntity.getWriterName(),
-                tagResult.tagCodes(),
-                commissionsEntity.getStartedAt(),
-                commissionsEntity.getEndedAt(),
-                commissionsEntity.getPaymentType(),
-                Long.parseLong(commissionsEntity.getUnitAmount()),
-                commissionsEntity.isOpen(),
-                commissionsEntity.getUpdatedAt()
+                finishMessage.code(),
+                finishMessage.title(),
+                finishMessage.content(),
+                finishMessage.memberCode(),
+                finishMessage.memberNickname(),
+                finishMessage.tags(),
+                finishMessage.startedAt(),
+                finishMessage.endedAt(),
+                finishMessage.paymentType(),
+                finishMessage.payAmount(),
+                finishMessage.isClosed(),
+                finishMessage.updatedAt()
         );
 
         kafkaTemplate.send(searchTopicName, commissionUpdatedEvent);

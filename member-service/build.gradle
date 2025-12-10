@@ -74,7 +74,6 @@ dependencies {
     
     //feignClient 관련 의존성
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign' // FeignClient
-
 }
 
 dependencyManagement {

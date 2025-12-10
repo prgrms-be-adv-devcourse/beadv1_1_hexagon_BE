@@ -2,7 +2,7 @@ package com.example.contractservice.contract.service;
 
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
 
-import com.example.contractservice.common.UriConstructor;
+import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractListWithCursorResponse;
 import com.example.contractservice.contract.domain.exception.ContractException;

@@ -1,4 +1,4 @@
-package com.example.contractservice.common;
+package com.example.contractservice.common.util;
 
 import java.net.URI;
 import java.util.List;

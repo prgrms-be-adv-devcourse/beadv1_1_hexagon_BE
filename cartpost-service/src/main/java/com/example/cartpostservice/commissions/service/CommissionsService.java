@@ -7,11 +7,11 @@ import com.example.cartpostservice.commissions.service.dto.response.CommissionsS
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +43,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
         CommissionsEntity commission = commissionsRepository.findByCode(commissionsCode)
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION));
 
-        CommissionsServiceResult result = new CommissionsServiceResult(
+        return new CommissionsServiceResult(
                 commission.getCode(),
                 commission.getMemberCode(),
                 commission.getTitle(),
@@ -53,36 +53,38 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 commission.getStartedAt(),
                 commission.getEndedAt(),
                 commission.isOpen(),
-                commission.getWriterName()
+                commission.getWriterName(),
+                commission.getUpdatedAt()
         );
-
-        return result;
     }
 
     @Override
-    public void update(CommissionsServiceCommand requestDto, String commissionsCode) {
-        List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(requestDto.memberCode());
+    @Transactional
+    public void update(CommissionsServiceCommand commissionsServiceCommand, String commissionsCode) {
+        List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(
+                commissionsServiceCommand.memberCode());
         if (commissions.isEmpty()) {
             throw new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION);
         }
-        boolean owned = commissions.stream().anyMatch(entity -> entity.getCode().equals(commissionsCode));
 
-        if (!owned) {
-            throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
-        }
+        CommissionsEntity foundEntity = commissions.stream()
+                .filter(entity -> entity.getCode().equals(commissionsCode))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
 
-        CommissionsEntity commission = CommissionsEntity.builder()
-                .memberCode(requestDto.memberCode())
-                .title(requestDto.title())
-                .content(requestDto.content())
-                .paymentType(requestDto.paymentType())
-                .unitAmount(requestDto.unitAmount())
-                .startedAt(requestDto.startedAt())
-                .endedAt(requestDto.endedAt())
-                .writerName(requestDto.writerName())
-                .build();
+        foundEntity.update(
+                commissionsServiceCommand.memberCode(),
+                commissionsServiceCommand.title(),
+                commissionsServiceCommand.content(),
+                commissionsServiceCommand.paymentType(),
+                commissionsServiceCommand.unitAmount(),
+                commissionsServiceCommand.startedAt(),
+                commissionsServiceCommand.endedAt(),
+                commissionsServiceCommand.writerName()
+        );
 
-        CommissionsEntity saved = commissionsRepository.save(commission);
+        // 자동 반영
+        //CommissionsEntity saved = commissionsRepository.save(foundEntity);
     }
 
     @Override
@@ -108,7 +110,8 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                         commission.getStartedAt(),
                         commission.getEndedAt(),
                         commission.isOpen(),
-                        commission.getWriterName()
+                        commission.getWriterName(),
+                        commission.getUpdatedAt()
                 )
         );
     }

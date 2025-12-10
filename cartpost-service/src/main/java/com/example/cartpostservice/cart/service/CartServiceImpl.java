@@ -20,9 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
-import org.hexagon.core.events.commission.CommissionDeletedEvent;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,13 +33,12 @@ public class CartServiceImpl implements CartService {
     private final ContractClient contractClient;
 
 
-
     @Override
     @Transactional(readOnly = true)
     public List<CartItemsGetResponse> getCartItems(String xCode) {
 
         CartsEntity cart = cartsRepository.findByMemberCode(xCode).orElseThrow(() -> new BusinessException(
-                CustomStatusCode.NOT_FOUND_MEMBER));
+                CustomStatusCode.NOT_FOUND_CART));
 
         List<CartItemsEntity> cartItems = cartItemsRepository.findByCartCode(cart.getCode());
 
@@ -71,7 +67,7 @@ public class CartServiceImpl implements CartService {
     public Empty deleteCartItems(String xCode, String itemCode) {
 
         CartsEntity cart = cartsRepository.findByMemberCode(xCode).orElseThrow(() -> new BusinessException(
-                CustomStatusCode.NOT_FOUND_MEMBER));
+                CustomStatusCode.NOT_FOUND_CART));
 
         CartItemsEntity cartItem = cartItemsRepository.findByCode(itemCode)
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_ITEM));

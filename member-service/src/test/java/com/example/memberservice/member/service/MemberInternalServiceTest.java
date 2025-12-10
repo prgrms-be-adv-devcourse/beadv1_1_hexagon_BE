@@ -6,7 +6,10 @@ import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.security.model.vo.Provider;
 import com.example.memberservice.member.model.entity.Members;
 import com.example.memberservice.member.model.enums.Gender;
+<<<<<<< HEAD
 import com.example.memberservice.member.model.enums.MemberRole;
+=======
+>>>>>>> 5b77d1cae66126ece54824d9aae1839936fb4a02
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;

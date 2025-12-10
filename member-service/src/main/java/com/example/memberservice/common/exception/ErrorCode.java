@@ -12,6 +12,7 @@ public enum ErrorCode {
     EMAIL_VERIFICATION_BAD_ROLE_REQUEST(2003, HttpStatus.BAD_REQUEST,"Email 인증은 Freelancer 혹은 Client에 대해서만 가능합니다."),
     EMAIL_VERIFICATION_NEED(2004,HttpStatus.BAD_REQUEST,"이메일 인증 내역이 없습니다. 이메일 인증 후 진행해주세요."),
 
+
     //401
     FAIL_LOGIN(2200, HttpStatus.UNAUTHORIZED, "로그인에 실패하였습니다."),
     UN_AUTHORIZATION(2201, HttpStatus.UNAUTHORIZED, "인증되지 않은 요청입니다."),
@@ -30,12 +31,14 @@ public enum ErrorCode {
     NICKNAME_ALREADY_EXISTS(2451, HttpStatus.CONFLICT, "이미 회원가입을 진행한 멤버입니다."),
     CONTRACT_EXISTS(2452, HttpStatus.CONFLICT, "현재 진행 중인 계약이 있습니다. 현재 진행 중인 계약을 취소해주세요."),
 
+
     //429Too Many Requests
     EMAIL_VERIFICATION_EXCEEDED(2480, HttpStatus.TOO_MANY_REQUESTS,"인증 요청 가능 횟수를 초과하였습니다. 인증 코드를 재요청해주세요."),
 
     //500
     INTERNAL_SERVER_ERROR(2500, HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 오류가 발생했습니다."),
     DATA_SAVE_FAILED(2501, HttpStatus.INTERNAL_SERVER_ERROR, "데이터 저장에 실패했습니다."),
+
     MAIL_SEND_FAILED(2502,HttpStatus.INTERNAL_SERVER_ERROR, "메일 전송에 실패했습니다."),
 
     // Feign 통신 실패

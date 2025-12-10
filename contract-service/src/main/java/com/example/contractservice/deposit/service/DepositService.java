@@ -4,6 +4,7 @@ import static com.example.contractservice.deposit.domain.exception.DepositErrorC
 import static com.example.contractservice.deposit.service.mapper.DepositHistoryMapper.toEntity;
 import static com.example.contractservice.deposit.service.mapper.DepositMapper.toDomain;
 
+import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
 import com.example.contractservice.deposit.controller.dto.response.DepositInfoResponse;
@@ -67,7 +68,8 @@ public class DepositService {
     }
 
     @Transactional
-    public DepositRechargeResponse recharge(DepositRechargeRequest request) { // TODO: 동시성 테스트
+    @OptimisticRetry
+    public DepositRechargeResponse recharge(DepositRechargeRequest request) {
         DepositProcessRequest processRequest = new DepositProcessRequest(request.memberCode(), request.amount(),
                 "예치금 입금");
 
@@ -77,6 +79,7 @@ public class DepositService {
     }
 
     @Transactional
+    @OptimisticRetry
     public DepositProcessResponse withdraw(DepositProcessRequest request) {
         DepositEntity depositEntity = process(request, Deposit::withdraw);
 
@@ -85,6 +88,7 @@ public class DepositService {
     }
 
     @Transactional
+    @OptimisticRetry
     public DepositProcessResponse transfer(DepositProcessRequest request) {
         DepositEntity depositEntity = process(request, Deposit::transfer);
 

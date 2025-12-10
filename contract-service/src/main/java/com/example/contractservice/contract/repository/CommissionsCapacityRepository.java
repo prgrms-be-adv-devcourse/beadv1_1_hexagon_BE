@@ -12,6 +12,15 @@ import static  com.example.contractservice.contract.domain.exception.ContractErr
 public class CommissionsCapacityRepository {
     private final CommissionsCapacityJpaRepository commissionsCapacityJpaRepository;
 
+    public CommissionsCapacity findByCommissionCodeOrCreate(String commissionCode, int applyCapacity, int selectionCapacity) {
+        return commissionsCapacityJpaRepository.findByCommissionCode(commissionCode)
+                .orElseGet(() -> {
+                    CommissionsCapacity createdCapacity = CommissionsCapacity.createBy(commissionCode, applyCapacity, selectionCapacity);
+
+                    return commissionsCapacityJpaRepository.save(createdCapacity);
+                });
+    }
+
     public CommissionsCapacity findByCommissionCode(String commissionCode) {
         return commissionsCapacityJpaRepository.findByCommissionCode(commissionCode)
                 .orElseThrow(() -> new ContractException(COMMISSION_CAPACITY_NOT_FOUND));

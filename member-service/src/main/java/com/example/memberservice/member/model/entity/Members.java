@@ -97,27 +97,19 @@ public class Members {
         this.gender = gender;
         this.provider = provider;
         this.providerId = providerId;
+
         if(role==null){
             this.role = MemberRole.NONE;
         }else{
             this.role = role;
         }
+
     }
 
     // 닉네임 변경
     public void updateNickName(String newNickName) {
         this.nickName = newNickName;
     }
-
-//    //판매자 등록 가능 여부 확인
-//    public boolean canEnableWork() {
-//        return Boolean.FALSE.equals(this.canWork);
-//    }
-//
-//    // 판매자 등록 변경
-//    public void updateCanWork(Boolean canWork) {
-//        this.canWork = canWork;
-//    }
 
     public boolean canRegisterRoleState(MemberRole role) {
         switch (role) {
@@ -173,13 +165,12 @@ public class Members {
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-    // 생년월일 변경
 
+    // 생년월일 변경
     public void updateBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
     // 성별 변경
-
     public void updateGender(Gender gender) {
         this.gender = gender;
     }

@@ -17,7 +17,10 @@ import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.common.security.model.vo.Provider;
 import com.example.memberservice.member.model.entity.Members;
 import com.example.memberservice.member.model.enums.Gender;
+<<<<<<< HEAD
 import com.example.memberservice.member.model.enums.MemberRole;
+=======
+>>>>>>> 5b77d1cae66126ece54824d9aae1839936fb4a02
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.input.MemberCreateInput;
 import com.example.memberservice.member.service.model.dto.input.MemberDeleteInput;

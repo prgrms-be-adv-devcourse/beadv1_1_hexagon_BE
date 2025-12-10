@@ -3,11 +3,13 @@ package com.example.memberservice.common.redis.repository;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Repository;
 
 @Slf4j
@@ -16,6 +18,14 @@ import org.springframework.stereotype.Repository;
 public class RedisSingleDataRepository implements KeyValueRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final DefaultRedisScript<Long> INCR_WITH_TTL_SCRIPT =
+        new DefaultRedisScript<>(
+            "local v = redis.call('INCR', KEYS[1]); " +
+                "if v == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; " +
+                "return v;",
+            Long.class
+        );
 
     @Override
     public void setSingleData(String key, Object value, long offset) {
@@ -41,13 +51,13 @@ public class RedisSingleDataRepository implements KeyValueRepository {
 
     @Override
     public Long incrementKey(String key, long offset) {
-        Long value = redisTemplate.opsForValue().increment(key);// 값 1 증가
+        long ttlSeconds = Duration.ofMinutes(offset).toSeconds();
 
-        Optional.ofNullable(value).orElseThrow(() -> new BusinessException(ErrorCode.DATA_SAVE_FAILED));
-        if(value == 1L){
-            redisTemplate.expire(key, Duration.ofMinutes(offset));
-        }
-        return value;
+        return redisTemplate.execute(
+            INCR_WITH_TTL_SCRIPT,
+            List.of(key),
+            String.valueOf(ttlSeconds)
+        );
     }
 
     private ValueOperations<String, Object> valueOperations() {
