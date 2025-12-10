@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.infra.client.internal.dto.response;
+package com.example.cartpostservice.commissions.common.dto;
 
 import org.hexagon.core.vo.FileType;
 

@@ -13,7 +13,7 @@ import com.example.cartpostservice.commissions.infra.client.internal.dto.respons
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.InternalMemberInfo;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.MemberInfoOutput;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PeopleInfoResponseDto;
-import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PresignedUrlComponent;
+import com.example.cartpostservice.commissions.common.dto.PresignedUrlComponent;
 import com.example.cartpostservice.commissions.infra.client.internal.ContractClient;
 import com.example.cartpostservice.commissions.infra.client.internal.FileManagementClient;
 import com.example.cartpostservice.commissions.infra.client.internal.MemberClient;

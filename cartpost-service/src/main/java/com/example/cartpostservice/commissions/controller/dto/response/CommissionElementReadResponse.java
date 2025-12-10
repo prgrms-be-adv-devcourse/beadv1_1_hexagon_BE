@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.controller.dto.response;
 
+import com.example.cartpostservice.commissions.common.dto.PresignedUrlComponent;
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
 import java.util.List;
