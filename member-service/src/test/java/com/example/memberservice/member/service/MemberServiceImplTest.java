@@ -82,13 +82,6 @@ class MemberServiceImplTest {
     @MockitoBean
     private ContractServiceClient contractServiceClient;
 
-//        private final MemberJpaRepository memberJpaRepository;
-//    private final SocialMemberJpaRepository socialMemberJpaRepository;
-//    private final RestTemplate restTemplate;
-//    private final MemberKafkaEventProducer memberKafkaEventProducer;
-//    private final RequestURIGenerator requestURIGenerator;
-//    private final EmailAuthRepository emailAuthRepository;
-
     private MemberService memberService;
 
     @BeforeEach
@@ -246,11 +239,13 @@ class MemberServiceImplTest {
         Members m = createMember();
         memberJpaRepository.save(m);
 
+        when(contractServiceClient.existContractByRole(anyString())).thenReturn(ResponseDto.success(new ContractStateResponse(false, false)));
+
         MemberDeleteInput input = new MemberDeleteInput(m.getCode());
         service.deleteMember(input);
 
         Members updated = memberJpaRepository.findByCode(m.getCode()).get();
-        // deletedMember()가 삭제 플래그 처리하는 메서드라면 그에 맞게 검증
+
         assertThat(updated.getIsDeleted()).isTrue();
     }
 
@@ -269,208 +264,202 @@ class MemberServiceImplTest {
         service.existMemberByNickName(input2); // not throws
     }
 
-    //멤버 롤 업데이트 관련 로직 검증
-    // =============================================================
-    // updateMemberRoleState 테스트
-    // =============================================================
-    @Nested
-    class UpdateRoleTests {
+        // updateMemberRoleState 테스트
+        @Nested
+        class UpdateRoleTests {
 
-        @Test
-        @DisplayName("NONE → CLIENT 요청 시 CLIENT 로 변경됨")
-        void update_none_to_client() {
-            Members m = createMember("code1", "tester1", MemberRole.NONE);
-            memberJpaRepository.save(m);
+            @Test
+            @DisplayName("NONE → CLIENT 요청 시 CLIENT 로 변경됨")
+            void update_none_to_client() {
+                Members m = createMember("code1", "tester1", MemberRole.NONE);
+                memberJpaRepository.save(m);
 
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
 
-            memberService.updateMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+                memberService.updateMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
 
-            assertThat(m.getRole()).isEqualTo(MemberRole.CLIENT);
+                assertThat(m.getRole()).isEqualTo(MemberRole.CLIENT);
+            }
+
+            @Test
+            @DisplayName("NONE → CLIENT 요청 시 이메일 인증을 하지 않았을 경우 요청에 실패하고 EMAIL_VERIFICATION_NEED 예외 발생")
+            void update_need_email_auth() {
+                Members m = createMember("code1", "tester1", MemberRole.NONE);
+                memberJpaRepository.save(m);
+
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(false);
+                // when & then
+                BusinessException ex = assertThrows(
+                    BusinessException.class,
+                    () -> memberService.updateMemberRoleState(
+                        new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT))
+                );
+
+                assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_VERIFICATION_NEED);
+            }
+
+            @Test
+            @DisplayName("CLIENT → FREELANCER 요청 시 BOTH 로 변경됨")
+            void update_client_to_freelancer() {
+                Members m = createMember("code2", "tester2", MemberRole.CLIENT);
+                memberJpaRepository.save(m);
+
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
+
+                memberService.updateMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.BOTH);
+            }
+
+            @Test
+            @DisplayName("FREELANCER → CLIENT 요청 시 BOTH 로 변경됨")
+            void update_freelancer_to_client() {
+                Members m = createMember("code3", "tester3", MemberRole.FREELANCER);
+                memberJpaRepository.save(m);
+
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
+
+                memberService.updateMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.BOTH);
+            }
+
+            @Test
+            @DisplayName("CLIENT → CLIENT 요청 시 변화 없음")
+            void update_client_to_client() {
+                Members m = createMember("code4", "tester4", MemberRole.CLIENT);
+                memberJpaRepository.save(m);
+
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
+
+                memberService.updateMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.CLIENT);
+            }
+
+            @Test
+            @DisplayName("FREELANCER → FREELANCER 요청 시 변화 없음")
+            void update_freelancer_to_freelancer() {
+                Members m = createMember("code5", "tester5", MemberRole.FREELANCER);
+                memberJpaRepository.save(m);
+
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
+
+                memberService.updateMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.FREELANCER);
+            }
+
+            @Test
+            @DisplayName("ADMIN -> CLIENT update 요청 시 변화 없음")
+            void update_admin_no_change() {
+                Members m = createMember("code6", "tester6", MemberRole.ADMIN);
+                memberJpaRepository.save(m);
+
+                when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
+
+                memberService.updateMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.ADMIN);
+            }
         }
+        // deleteMemberRoleState 테스트
+        @Nested
+        class DeleteRoleTests {
 
-        @Test
-        @DisplayName("NONE → CLIENT 요청 시 이메일 인증을 하지 않았을 경우 요청에 실패하고 EMAIL_VERIFICATION_NEED 예외 발생")
-        void update_need_email_auth() {
-            Members m = createMember("code1", "tester1", MemberRole.NONE);
-            memberJpaRepository.save(m);
+            @BeforeEach
+            void setUp() {
+                when(contractServiceClient.existContractByRole(anyString())).thenReturn(
+                    ResponseDto.success(new ContractStateResponse(false, false))
+                );
+            }
 
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(false);
-            // when & then
-            BusinessException ex = assertThrows(
-                BusinessException.class,
-                () -> memberService.updateMemberRoleState(
-                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT))
-            );
+            @Test
+            @DisplayName("CLIENT → CLIENT 삭제(NONE)")
+            void deleteClient() {
+                Members m = createMember("t1", "tester1", MemberRole.CLIENT);
 
-            // 예외 코드 검증 (필요하면)
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_VERIFICATION_NEED);
+                Members save = memberJpaRepository.save(m);
+
+                memberService.deleteMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
+            }
+
+            @Test
+            @DisplayName("FREELANCER → FREELANCER 삭제(NONE)")
+            void deleteFreelancer() {
+                Members m = createMember("t1", "tester1", MemberRole.FREELANCER);
+
+                Members save = memberJpaRepository.save(m);
+
+                memberService.deleteMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
+            }
+
+            @Test
+            @DisplayName("BOTH 상태에서 CLIENT 삭제 시 FREELANCER 로 변경됨")
+            void delete_both_client() {
+                Members m = createMember("code9", "tester9", MemberRole.BOTH);
+                memberJpaRepository.save(m);
+
+                memberService.deleteMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.FREELANCER);
+            }
+
+            @Test
+            @DisplayName("ADMIN 삭제 요청 시 변화 없음")
+            void delete_admin_no_change() {
+                Members m = createMember("code10", "tester10", MemberRole.ADMIN);
+                memberJpaRepository.save(m);
+
+                memberService.deleteMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.ADMIN);
+            }
+
+            @Test
+            @DisplayName("NONE 이 CLIENT 삭제 요청 → 변화 없음")
+            void delete_none() {
+                Members m = createMember("code11", "tester11", MemberRole.NONE);
+                memberJpaRepository.save(m);
+
+                memberService.deleteMemberRoleState(
+                    new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
+
+                assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
+            }
+
+
+            @Test
+            @DisplayName("현재 진행중인 계약이 있을 경우 CONTRACT_EXIST 예외 발생.")
+            void contract_exists() {
+
+                when(contractServiceClient.existContractByRole(anyString())).thenReturn(
+                    ResponseDto.success(new ContractStateResponse(true, true))
+                );
+
+                Members m = createMember("code11", "tester11", MemberRole.NONE);
+                memberJpaRepository.save(m);
+
+                assertThatThrownBy(() -> service.deleteMemberRoleState(new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT)))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(ErrorCode.CONTRACT_EXISTS.getMessage());
+                assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
+            }
         }
-
-        @Test
-        @DisplayName("CLIENT → FREELANCER 요청 시 BOTH 로 변경됨")
-        void update_client_to_freelancer() {
-            Members m = createMember("code2", "tester2", MemberRole.CLIENT);
-            memberJpaRepository.save(m);
-
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
-
-            memberService.updateMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.BOTH);
-        }
-
-        @Test
-        @DisplayName("FREELANCER → CLIENT 요청 시 BOTH 로 변경됨")
-        void update_freelancer_to_client() {
-            Members m = createMember("code3", "tester3", MemberRole.FREELANCER);
-            memberJpaRepository.save(m);
-
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
-
-            memberService.updateMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.BOTH);
-        }
-
-        @Test
-        @DisplayName("CLIENT → CLIENT 요청 시 변화 없음")
-        void update_client_to_client() {
-            Members m = createMember("code4", "tester4", MemberRole.CLIENT);
-            memberJpaRepository.save(m);
-
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
-
-            memberService.updateMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.CLIENT);
-        }
-
-        @Test
-        @DisplayName("FREELANCER → FREELANCER 요청 시 변화 없음")
-        void update_freelancer_to_freelancer() {
-            Members m = createMember("code5", "tester5", MemberRole.FREELANCER);
-            memberJpaRepository.save(m);
-
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
-
-            memberService.updateMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.FREELANCER);
-        }
-
-        @Test
-        @DisplayName("ADMIN -> CLIENT update 요청 시 변화 없음")
-        void update_admin_no_change() {
-            Members m = createMember("code6", "tester6", MemberRole.ADMIN);
-            memberJpaRepository.save(m);
-
-            when(emailAuthRepository.existVerificationByMemberCode(any(), any())).thenReturn(true);
-
-            memberService.updateMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.ADMIN);
-        }
-    }
-    // =============================================================
-    // deleteMemberRoleState 테스트
-    // =============================================================
-    @Nested
-    class DeleteRoleTests {
-
-        @BeforeEach
-        void setUp() {
-            when(contractServiceClient.existContractByRole(anyString())).thenReturn(
-                ResponseDto.success(new ContractStateResponse(false, false))
-            );
-        }
-
-        @Test
-        @DisplayName("CLIENT → CLIENT 삭제(NONE)")
-        void deleteClient() {
-            Members m = createMember("t1", "tester1", MemberRole.CLIENT);
-
-            Members save = memberJpaRepository.save(m);
-
-            memberService.deleteMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
-        }
-
-        @Test
-        @DisplayName("FREELANCER → FREELANCER 삭제(NONE)")
-        void deleteFreelancer() {
-            Members m = createMember("t1", "tester1", MemberRole.FREELANCER);
-
-            Members save = memberJpaRepository.save(m);
-
-            memberService.deleteMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
-        }
-
-        @Test
-        @DisplayName("BOTH 상태에서 CLIENT 삭제 시 FREELANCER 로 변경됨")
-        void delete_both_client() {
-            Members m = createMember("code9", "tester9", MemberRole.BOTH);
-            memberJpaRepository.save(m);
-
-            memberService.deleteMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.FREELANCER);
-        }
-
-        @Test
-        @DisplayName("ADMIN 삭제 요청 시 변화 없음")
-        void delete_admin_no_change() {
-            Members m = createMember("code10", "tester10", MemberRole.ADMIN);
-            memberJpaRepository.save(m);
-
-            memberService.deleteMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.FREELANCER));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.ADMIN);
-        }
-
-        @Test
-        @DisplayName("NONE 이 CLIENT 삭제 요청 → 변화 없음")
-        void delete_none() {
-            Members m = createMember("code11", "tester11", MemberRole.NONE);
-            memberJpaRepository.save(m);
-
-            memberService.deleteMemberRoleState(
-                new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
-
-            assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
-        }
-
-
-        @Test
-        @DisplayName("현재 진행중인 계약이 있을 경우 CONTRACT_EXIST 예외 발생.")
-        void contract_exists() {
-
-            when(contractServiceClient.existContractByRole(anyString())).thenReturn(
-                ResponseDto.success(new ContractStateResponse(true, true))
-            );
-
-            Members m = createMember("code11", "tester11", MemberRole.NONE);
-            memberJpaRepository.save(m);
-
-            assertThatThrownBy(() -> service.deleteMemberRoleState(new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT)))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(ErrorCode.CONTRACT_EXISTS.getMessage());
-            assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
-        }
-    }
 
 
     private Members createMember(String nickName) {
