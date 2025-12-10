@@ -28,7 +28,7 @@ public record CommissionResponseDto(
                 commissionDocumentEntity.getEndedAt(),
                 commissionDocumentEntity.getPaymentType(),
                 commissionDocumentEntity.getPayAmount(),
-                commissionDocumentEntity.getIsClosed()
+                commissionDocumentEntity.getIsOpen()
         );
     }
 }

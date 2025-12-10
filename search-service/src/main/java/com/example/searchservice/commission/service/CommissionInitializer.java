@@ -31,7 +31,7 @@ public class CommissionInitializer {
                 .endedAt(LocalDate.now())
                 .paymentType(PaymentType.MONTHLY)
                 .payAmount(3_000_000L)
-                .isClosed(false)
+                .isOpen(true)
                 .updatedAt(Instant.now())
                 .build());
 
@@ -46,7 +46,7 @@ public class CommissionInitializer {
                 .endedAt(LocalDate.now())
                 .paymentType(PaymentType.MONTHLY)
                 .payAmount(2_500_000L)
-                .isClosed(false)
+                .isOpen(true)
                 .updatedAt(Instant.now())
                 .build());
     }
