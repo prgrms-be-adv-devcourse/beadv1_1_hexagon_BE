@@ -1,6 +1,7 @@
 package com.example.searchservice.commission.controller.swagger;
 
 import com.example.searchservice.commission.dto.CommissionResponseDto;
+import com.example.searchservice.commission.vo.OpenStatus;
 import com.example.searchservice.common.vo.SearchScope;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,7 +25,7 @@ public interface CommissionControllerSwagger {
             @Parameter(name = "min-pay", description = "최소 급여", required = false),
             @Parameter(name = "started-at", description = "프로젝트 시작일 (yyyy-MM-dd)", required = false),
             @Parameter(name = "ended-at", description = "프로젝트 종료일 (yyyy-MM-dd)", required = false),
-            @Parameter(name = "is-open", description = "모집 중 여부"),
+            @Parameter(name = "open-status", description = "마감 여부(all | open(default) | close"),
             @Parameter(name = "page", description = "페이지 번호", required = false),
             @Parameter(name = "size", description = "페이지 크기", required = false)
     })
@@ -36,7 +37,7 @@ public interface CommissionControllerSwagger {
             Long minPay,
             LocalDate startedAt,
             LocalDate endedAt,
-            boolean isOpen,
+            OpenStatus openStatus,
             int page,
             int size
     );

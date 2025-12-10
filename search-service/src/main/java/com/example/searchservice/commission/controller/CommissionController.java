@@ -2,6 +2,7 @@ package com.example.searchservice.commission.controller;
 
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.service.CommissionService;
+import com.example.searchservice.commission.vo.OpenStatus;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionControllerSwagger;
 import java.time.LocalDate;
@@ -33,14 +34,14 @@ public class CommissionController implements CommissionControllerSwagger {
             @RequestParam(name = "min-pay", required = false) Long minPay,
             @RequestParam(name = "started-at", required = false) LocalDate startedAt,
             @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
-            @RequestParam(name = "is-open", defaultValue = "true") boolean isOpen,
+            @RequestParam(name = "open-status", defaultValue = "open") OpenStatus openStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
 
         Page<CommissionResponseDto> result;
 
-        result = commissionService.search(query, scope, page, size);
+        result = commissionService.search(query, scope, tags, paymentType, minPay, startedAt, endedAt, openStatus, page, size);
 
         return ResponseDto.success(result);
     }
