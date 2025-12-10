@@ -24,6 +24,7 @@ public interface CommissionControllerSwagger {
             @Parameter(name = "min-pay", description = "최소 급여", required = false),
             @Parameter(name = "started-at", description = "프로젝트 시작일 (yyyy-MM-dd)", required = false),
             @Parameter(name = "ended-at", description = "프로젝트 종료일 (yyyy-MM-dd)", required = false),
+            @Parameter(name = "is-open", description = "모집 중 여부"),
             @Parameter(name = "page", description = "페이지 번호", required = false),
             @Parameter(name = "size", description = "페이지 크기", required = false)
     })
@@ -35,6 +36,7 @@ public interface CommissionControllerSwagger {
             Long minPay,
             LocalDate startedAt,
             LocalDate endedAt,
+            boolean isOpen,
             int page,
             int size
     );

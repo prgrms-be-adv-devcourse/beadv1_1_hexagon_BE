@@ -33,6 +33,7 @@ public class CommissionController implements CommissionControllerSwagger {
             @RequestParam(name = "min-pay", required = false) Long minPay,
             @RequestParam(name = "started-at", required = false) LocalDate startedAt,
             @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
+            @RequestParam(name = "is-open", defaultValue = "true") boolean isOpen,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
