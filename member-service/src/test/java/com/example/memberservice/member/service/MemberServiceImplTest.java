@@ -5,22 +5,21 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.dto.response.ContractStateResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.common.security.model.vo.Provider;
 import com.example.memberservice.member.model.entity.Members;
 import com.example.memberservice.member.model.enums.Gender;
-<<<<<<< HEAD
 import com.example.memberservice.member.model.enums.MemberRole;
-=======
->>>>>>> 5b77d1cae66126ece54824d9aae1839936fb4a02
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.input.MemberCreateInput;
 import com.example.memberservice.member.service.model.dto.input.MemberDeleteInput;
@@ -34,6 +33,7 @@ import com.example.memberservice.socialmember.repository.SocialMemberJpaReposito
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.AfterEach;
@@ -225,6 +225,22 @@ class MemberServiceImplTest {
 
 
     @Test
+    @DisplayName("deleteMember: 계약이 존재하는 경우 CONTRACT_EXISTS 예외 발생")
+    void deleteMember_contract_exists() {
+        Members m = createMember();
+        memberJpaRepository.save(m);
+
+        when(contractServiceClient.existContractByRole(anyString()))
+            .thenReturn(ResponseDto.success(new ContractStateResponse(true, true))); // 둘 중 하나라도 true
+
+        MemberDeleteInput input = new MemberDeleteInput(m.getCode());
+
+        assertThatThrownBy(() -> service.deleteMember(input))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining(ErrorCode.CONTRACT_EXISTS.getMessage());
+    }
+
+    @Test
     @DisplayName("deleteMember: 삭제 플래그 업데이트")
     void deleteMember_success() {
         Members m = createMember();
@@ -368,6 +384,13 @@ class MemberServiceImplTest {
     @Nested
     class DeleteRoleTests {
 
+        @BeforeEach
+        void setUp() {
+            when(contractServiceClient.existContractByRole(anyString())).thenReturn(
+                ResponseDto.success(new ContractStateResponse(false, false))
+            );
+        }
+
         @Test
         @DisplayName("CLIENT → CLIENT 삭제(NONE)")
         void deleteClient() {
@@ -427,6 +450,24 @@ class MemberServiceImplTest {
             memberService.deleteMemberRoleState(
                 new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT));
 
+            assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
+        }
+
+
+        @Test
+        @DisplayName("현재 진행중인 계약이 있을 경우 CONTRACT_EXIST 예외 발생.")
+        void contract_exists() {
+
+            when(contractServiceClient.existContractByRole(anyString())).thenReturn(
+                ResponseDto.success(new ContractStateResponse(true, true))
+            );
+
+            Members m = createMember("code11", "tester11", MemberRole.NONE);
+            memberJpaRepository.save(m);
+
+            assertThatThrownBy(() -> service.deleteMemberRoleState(new MemberUpdateRoleStateInput(m.getCode(), MemberRole.CLIENT)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.CONTRACT_EXISTS.getMessage());
             assertThat(m.getRole()).isEqualTo(MemberRole.NONE);
         }
     }

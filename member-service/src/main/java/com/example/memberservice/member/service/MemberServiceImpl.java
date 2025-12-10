@@ -181,9 +181,9 @@ public class MemberServiceImpl implements MemberService {
         Members existMember = findMembers(input.memberCode());
 
         //TODO(Contract에서 Internal API 구현시 해제)
-//        if (hasContractForRole(existMember, inputRole)) {
-//            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
-//        }
+        if (hasContractForRole(existMember, inputRole)) {
+            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
+        }
         // delete 변경이 불가능한 경우 안하고 넘어가기.
         // delete가 불가능한 경우는 이미 해당 자격이 없거나 admin 이거나라서 상태 변화를 일으키지 않도록.
         if (!existMember.canDeleteRoleState(inputRole)) {
@@ -207,9 +207,9 @@ public class MemberServiceImpl implements MemberService {
 
         existMember.deletedMember();
         //TODO(Contract에서 Internal API 구현시 해제)
-//        if (hasContractForRole(existMember, MemberRole.BOTH)) {
-//            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
-//        }
+        if (hasContractForRole(existMember, MemberRole.BOTH)) {
+            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
+        }
 
         Members deleteMember = memberJpaRepository.save(existMember);
 
