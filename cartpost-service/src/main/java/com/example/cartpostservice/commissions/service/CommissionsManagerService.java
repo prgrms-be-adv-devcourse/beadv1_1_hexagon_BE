@@ -2,6 +2,8 @@ package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.internal.dto.request.RecruitmentStatusRequest;
+import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.DownloadFileComponentRequest;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.FilesRequestDto;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.TotalPeopleInfoRequestDto;
@@ -27,6 +29,7 @@ import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExternalServerException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -342,6 +345,14 @@ public class CommissionsManagerService {
         }
     }
 
+    @Transactional
+    public CommissionRecruitmentStatusResponse getRecruitmentStatus(RecruitmentStatusRequest recruitmentStatusRequest) {
+        CommissionsServiceResult commissionsServiceResult = commissionsService.read(
+                recruitmentStatusRequest.commissionCode());
+
+        return new CommissionRecruitmentStatusResponse(commissionsServiceResult.isOpen());
+    }
+
     private void sendContractInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
         TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionCode,
                 plannedHires, eligibleApplicants);
@@ -359,4 +370,6 @@ public class CommissionsManagerService {
     private <T> T getOrDefault(T newValue, T oldValue) {
         return newValue != null ? newValue : oldValue;
     }
+
+
 }
