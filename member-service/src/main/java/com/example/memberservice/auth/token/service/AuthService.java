@@ -6,6 +6,7 @@ import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.jwt.JwtTokenParser;
 import com.example.memberservice.common.security.jwt.JwtTokenValidator;
+import com.example.memberservice.member.model.entity.Members;
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.auth.token.service.dto.output.TokensOutput;
 import io.jsonwebtoken.Claims;
@@ -36,12 +37,17 @@ public class AuthService {
 
         refreshTokenRepository.saveRefreshToken(memberCode, newRefreshToken);
 
-        boolean isSignedUp = memberJpaRepository.existsByCode(memberCode);
+        Optional<Members> optionalMembers = memberJpaRepository.findByCode(memberCode);
+        
 
-        String newAccessToken = jwtTokenGenerator.generateAccessToken(memberCode, isSignedUp);
+        Members members = optionalMembers.orElse(null);
+        String newAccessToken = (members != null)
+            //회원 가입 한 사용자의 경우 memberRole을 claims 에 추가
+            ? jwtTokenGenerator.generateAccessToken(members.getCode(), true, members.getRole())
+            //회원 가입 안한 사용자의 경우 memberRole을 claims 에 제거
+            : jwtTokenGenerator.generateAccessToken(memberCode, false);
 
         return new TokensOutput(newAccessToken, newRefreshToken);
-
     }
 
     @Transactional
