@@ -39,13 +39,13 @@ public class IsClientCheckFilter extends
             }
 
             String role = jwtTokenParser.parseRole(claims)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NEED_SIGNUP));
 
             log.info("role: {}", role);
 
             if (!ALLOWED_ROLES.contains(role.toUpperCase())) {
                 log.info("CLIENT 권한이 없음. role={}", role);
-                throw new BusinessException(ErrorCode.FORBIDDEN);
+                throw new BusinessException(ErrorCode.FORBIDDEN_CLIENT);
             }
 
             return chain.filter(exchange);

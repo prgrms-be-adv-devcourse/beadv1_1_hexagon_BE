@@ -38,13 +38,13 @@ public class IsFreelancerCheckFilter extends AbstractGatewayFilterFactory<Config
             }
 
             String role = jwtTokenParser.parseRole(claims)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NEED_SIGNUP));
 
             log.info("role: {}", role);
 
             if (!ALLOWED_ROLES.contains(role.toUpperCase())) {
                 log.info("FREELANCER 권한이 없음. role={}", role);
-                throw new BusinessException(ErrorCode.FORBIDDEN);
+                throw new BusinessException(ErrorCode.FORBIDDEN_FREELANCER);
             }
 
             return chain.filter(exchange);
