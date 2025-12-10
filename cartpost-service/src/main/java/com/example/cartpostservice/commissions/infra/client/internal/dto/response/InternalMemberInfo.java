@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.controller.dto.response.internal;
+package com.example.cartpostservice.commissions.infra.client.internal.dto.response;
 
 public record InternalMemberInfo(
         String memberCode,
