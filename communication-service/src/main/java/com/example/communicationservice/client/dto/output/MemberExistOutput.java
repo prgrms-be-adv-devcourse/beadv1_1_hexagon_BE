@@ -1,4 +1,4 @@
-package com.example.communicationservice.client.dto;
+package com.example.communicationservice.client.dto.output;
 
 import java.util.List;
 

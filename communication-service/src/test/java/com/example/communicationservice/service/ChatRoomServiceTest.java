@@ -1,7 +1,7 @@
 package com.example.communicationservice.service;
 
 import com.example.communicationservice.client.MemberServiceClient;
-import com.example.communicationservice.client.dto.MemberExistOutput;
+import com.example.communicationservice.client.dto.output.MemberExistOutput;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.example.communicationservice.controller.dto.request.ChatRoomCreateRequest;
