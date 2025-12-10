@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.controller.dto.request;
+package com.example.cartpostservice.commissions.controller.external.dto.request;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;

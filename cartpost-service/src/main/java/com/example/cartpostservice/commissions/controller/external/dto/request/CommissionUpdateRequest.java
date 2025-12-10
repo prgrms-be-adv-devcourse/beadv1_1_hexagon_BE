@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.controller.dto.request;
+package com.example.cartpostservice.commissions.controller.external.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Future;

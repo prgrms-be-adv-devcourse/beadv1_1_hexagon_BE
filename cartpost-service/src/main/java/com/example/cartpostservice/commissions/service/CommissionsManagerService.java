@@ -1,14 +1,14 @@
 package com.example.cartpostservice.commissions.service;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.DownloadFileComponentRequest;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.FilesRequestDto;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.TotalPeopleInfoRequestDto;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.DownloadFileComponentResponse;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.InternalMemberInfo;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.MemberInfoOutput;

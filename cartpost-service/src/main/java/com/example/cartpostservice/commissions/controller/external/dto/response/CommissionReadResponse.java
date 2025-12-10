@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.controller.dto.response;
+package com.example.cartpostservice.commissions.controller.external.dto.response;
 
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
