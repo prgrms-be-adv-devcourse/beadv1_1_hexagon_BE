@@ -180,8 +180,8 @@ public class MemberServiceImpl implements MemberService {
 
         Members existMember = findMembers(input.memberCode());
 
-        //TODO(Contract에 현재 계약 중인 게 있는 지 확인)
-//        if (canDeleteRole(existMember, inputRole)) {
+        //TODO(Contract에서 Internal API 구현시 해제)
+//        if (hasContractForRole(existMember, inputRole)) {
 //            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
 //        }
         // delete 변경이 불가능한 경우 안하고 넘어가기.
@@ -206,10 +206,10 @@ public class MemberServiceImpl implements MemberService {
         Members existMember = findMembers(input.memberCode());
 
         existMember.deletedMember();
-
-        if (canDeleteRole(existMember, MemberRole.BOTH)) {
-            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
-        }
+        //TODO(Contract에서 Internal API 구현시 해제)
+//        if (hasContractForRole(existMember, MemberRole.BOTH)) {
+//            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
+//        }
 
         Members deleteMember = memberJpaRepository.save(existMember);
 
@@ -279,14 +279,14 @@ public class MemberServiceImpl implements MemberService {
         return !(contractStateResponse.isClient() && contractStateResponse.isFreelancer());
     }
 
-    private boolean canDeleteRole(Members existMember, MemberRole memberRole) {
+    private boolean hasContractForRole(Members existMember, MemberRole inputRole) {
         ContractStateResponse response = contractServiceClient.existContractByRole(
             existMember.getCode()).data();
 
-        return switch (memberRole) {
+        return switch (inputRole) {
             case FREELANCER -> response.isFreelancer();
             case CLIENT -> response.isClient();
-            case BOTH -> !(response.isFreelancer() && response.isClient());
+            case BOTH -> response.isFreelancer() || response.isClient();
             default -> false;
         };
     }
