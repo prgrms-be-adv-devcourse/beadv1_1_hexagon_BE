@@ -1,7 +1,9 @@
 package com.example.communicationservice.client.dto.input;
 
+import org.hexagon.core.vo.ServiceName;
+
 public record FileUploadUrlGenerateInput(
-    String serviceName,
+    ServiceName serviceName,
     String fileName,
     String contentType
 ) {

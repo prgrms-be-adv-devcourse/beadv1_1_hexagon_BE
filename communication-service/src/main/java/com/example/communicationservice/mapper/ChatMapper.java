@@ -1,5 +1,6 @@
 package com.example.communicationservice.mapper;
 
+import com.example.communicationservice.client.dto.output.FileUploadUrlGenerateOutput;
 import com.example.communicationservice.controller.dto.FileInfo;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.*;
@@ -8,7 +9,7 @@ import com.example.communicationservice.entity.ChatRoom;
 import com.example.communicationservice.entity.File;
 import org.springframework.data.domain.Page;
 
-// dto와 entity 사이의 변환 로직 전담
+// dto <-> entity 또는 dto <-> dto 변환 로직 전담
 public abstract class ChatMapper {
 
     private ChatMapper() {} // 인스턴스화 방지
@@ -92,6 +93,13 @@ public abstract class ChatMapper {
         return File.builder()
             .key(fileInfo.key())
             .build();
+    }
+
+    public static ChatFileUploadUrlGenerateResponse from(FileUploadUrlGenerateOutput output) {
+        return new ChatFileUploadUrlGenerateResponse(
+            output.key(),
+            output.queryString()
+        );
     }
 
 }
