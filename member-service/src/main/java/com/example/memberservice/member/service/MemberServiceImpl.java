@@ -150,23 +150,23 @@ public class MemberServiceImpl implements MemberService {
     public void updateMemberRoleState(MemberUpdateRoleStateInput input) {
 
         String memberCode = input.memberCode();
-        MemberRole memberRole = input.role();
+        MemberRole inputRole = input.role();
 
         Members existMember = findMembers(input.memberCode());
 
         //이메일 인증 내역이 있는지 확인
-        if (!emailAuthRepository.existVerificationByMemberCode(memberRole, memberCode)) {
+        if (!emailAuthRepository.existVerificationByMemberCode(inputRole, memberCode)) {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_NEED);
         }
 
         // Register 변경이 불가능한 경우 안하고 넘어가기.
         // Register가 불가능한 경우는 보통 이미 자격이 있거나 admin 이거나라서 상태 변화를 일으키지 않도록.
-        if (!existMember.canRegisterRoleState(memberRole)) {
+        if (!existMember.canRegisterRoleState(inputRole)) {
             log.info("이미 자격이 있습니다.");
             return;
         }
 
-        existMember.registerRoleState(memberRole);
+        existMember.registerRoleState(inputRole);
 
         Members updatedMember = memberJpaRepository.save(existMember);
     }
@@ -184,8 +184,8 @@ public class MemberServiceImpl implements MemberService {
 //        if (canDeleteRole(existMember, inputRole)) {
 //            throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
 //        }
-        // Register 변경이 불가능한 경우 안하고 넘어가기.
-        // Register가 불가능한 경우는 보통 이미 자격이 있거나 admin 이거나라서 상태 변화를 일으키지 않도록.
+        // delete 변경이 불가능한 경우 안하고 넘어가기.
+        // delete가 불가능한 경우는 이미 해당 자격이 없거나 admin 이거나라서 상태 변화를 일으키지 않도록.
         if (!existMember.canDeleteRoleState(inputRole)) {
             return;
         }

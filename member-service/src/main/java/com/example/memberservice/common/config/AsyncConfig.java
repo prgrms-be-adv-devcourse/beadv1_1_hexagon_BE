@@ -20,7 +20,6 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("Async-");
 
-        // 백프레셔(backpressure) 위해 CallerRunsPolicy 추천
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
         executor.initialize();
