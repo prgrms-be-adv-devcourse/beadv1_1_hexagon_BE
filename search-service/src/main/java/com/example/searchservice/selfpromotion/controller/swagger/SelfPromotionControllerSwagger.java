@@ -18,7 +18,7 @@ public interface SelfPromotionControllerSwagger {
     @Parameters({
             @Parameter(name = "query", description = "검색어", required = false),
             @Parameter(name = "scope", description = "검색 범위 (all(default) | title | content)"),
-            @Parameter(name = "payment-type", description = "급여 지급 방식 (MONTHLY | ONE_TIME)", required = false),
+            @Parameter(name = "payment-type", description = "급여 지급 방식 (MONTHLY | PER_JOB)", required = false),
             @Parameter(name = "max-pay", description = "최대 급여", required = false),
             @Parameter(name = "page", description = "페이지 번호", required = false),
             @Parameter(name = "size", description = "페이지 크기", required = false)
