@@ -44,7 +44,7 @@ public class AuthService {
         String newAccessToken = (members != null)
             //회원 가입 한 사용자의 경우 memberRole을 claims 에 추가
             ? jwtTokenGenerator.generateAccessToken(members.getCode(), true, members.getRole())
-            //회원 가입 안한 사용자의 경우 memberRole을 claims 에 제거
+            //회원 가입 안한 사용자의 경우 memberRole을 claims 에 추가 안함.
             : jwtTokenGenerator.generateAccessToken(memberCode, false);
 
         return new TokensOutput(newAccessToken, newRefreshToken);
