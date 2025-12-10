@@ -48,9 +48,10 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
             int page,
             int size)
     {
-        boolean hasQuery = query != null && !query.isEmpty();
-        boolean hasPayFilter = (paymentType != null || maxPay != null);
+        boolean hasQuery = query != null && !query.isEmpty(); // 검색문이 있는지 여부
+        boolean hasPayFilter = (paymentType != null || maxPay != null); // 급여 필터가 있는지 여부
 
+        // 검색문, 급여필터가 없다면 전체 검색
         if(!hasQuery && !hasPayFilter) {
             PageRequest sortedByUpdatedAt = PageRequest.of(
                     page,
@@ -62,28 +63,29 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                     .map(SelfPromotionResponseDto::from);
         }
 
-//        if (query == null || query.isBlank()) {
-//            PageRequest sortedByUpdatedAt = PageRequest.of(
-//                    page,
-//                    size,
-//                    Sort.by(Sort.Direction.DESC, "updatedAt")
-//            );
-//
-//            return selfPromotionRepository.findAll(sortedByUpdatedAt)
-//                    .map(SelfPromotionResponseDto::from);
-//        }
-
         PageRequest pageRequest = PageRequest.of(page, size);
+
+        /*
+         * "query": {
+         *   "bool": {
+         *     "must":   [ { ...multi_match or match... } ], 검색문이 있는 경우 must 쿼리 추가
+         *     "filter": [
+         *       { "term":  { "payment_type": "..." } }, 급여 지급 방식이 있는 경우 filter 쿼리 추가
+         *       { "range": { "pay_amount": { "lte": ... } } } 급여가 있는 경우 filter 쿼리 하나 더 추가
+         *     ]
+         *   }
+         * }
+         */
 
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(q -> q.bool(b -> {
-                    if(hasQuery) {
+                    if(hasQuery) { // 검색문이 있는 경우 must 쿼리 추가
                         switch (scope) {
                             case all -> b.must(
                                     MultiMatchQuery.of(m -> m
                                             .query(query)
                                             .fields("title^2", "content")
-                                            .minimumShouldMatch("70%")
+                                            .minimumShouldMatch("2<70%")
                                             .fuzziness("1")
                                     )._toQuery()
                             );
@@ -91,7 +93,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                                     MatchQuery.of(m -> m
                                             .field("title")
                                             .query(query)
-                                            .minimumShouldMatch("70%")
+                                            .minimumShouldMatch("2<70%")
                                             .fuzziness("1")
                                     )._toQuery()
                             );
@@ -99,14 +101,14 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                                     MatchQuery.of(m -> m
                                             .field("content")
                                             .query(query)
-                                            .minimumShouldMatch("70%")
+                                            .minimumShouldMatch("2<70%")
                                             .fuzziness("1")
                                     )._toQuery()
                             );
                         }
                     }
 
-                    if (paymentType != null) {
+                    if (paymentType != null) { // 급여 지급 방식이 있는 경우 filter 쿼리 추가
                         b.filter(
                                 TermQuery.of(t -> t
                                         .field("payment_type")
@@ -115,8 +117,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                         );
                     }
 
-                    // --- filter : pay_amount >= payAmount ---
-                    if (maxPay != null) {
+                    if (maxPay != null) { // 급여가 있는 경우 filter 쿼리 하나 더 추가
                         b.filter(
                                 RangeQuery.of(r -> r
                                         .number(n -> n
@@ -140,11 +141,6 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                 .toList();
 
         return new PageImpl<>(content, pageRequest, hits.getTotalHits());
-//        return switch (scope) {
-//            case all       -> selfPromotionRepository.searchAll(query, pageRequest).map(SelfPromotionResponseDto::from);
-//            case title     -> selfPromotionRepository.searchTitle(query, pageRequest).map(SelfPromotionResponseDto::from);
-//            case content   -> selfPromotionRepository.searchContent(query, pageRequest).map(SelfPromotionResponseDto::from);
-//        };
     }
 
     @Override
