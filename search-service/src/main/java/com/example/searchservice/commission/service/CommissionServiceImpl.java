@@ -16,6 +16,7 @@ import com.example.searchservice.commission.dto.CommissionSearchFilter;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.repository.CommissionRepository;
 import com.example.searchservice.commission.vo.OpenStatus;
+import com.example.searchservice.common.vo.Pagination;
 import com.example.searchservice.common.vo.SearchScope;
 import java.time.LocalDate;
 import java.util.List;
@@ -67,8 +68,8 @@ public class CommissionServiceImpl implements CommissionService {
     public Page<CommissionResponseDto> search(
             String query,
             CommissionSearchFilter filter,
-            int page,
-            int size) {
+            Pagination pagination
+    ) {
 
         SearchScope scope = filter.scope();
         List<String> tags = filter.tags();
@@ -77,6 +78,9 @@ public class CommissionServiceImpl implements CommissionService {
         LocalDate startedAt = filter.startedAt();
         LocalDate endedAt = filter.endedAt();
         OpenStatus openStatus = filter.openStatus();
+
+        int page = pagination.page();
+        int size = pagination.size();
 
         boolean hasQuery = (query != null && !query.isEmpty());
         boolean hasTagsFilter = (tags != null && !tags.isEmpty());

@@ -4,6 +4,7 @@ import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.dto.CommissionSearchFilter;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.vo.OpenStatus;
+import com.example.searchservice.common.vo.Pagination;
 import com.example.searchservice.common.vo.SearchScope;
 import java.time.LocalDate;
 import org.hexagon.core.vo.PaymentType;
@@ -12,7 +13,7 @@ import org.springframework.data.domain.Page;
 
 public interface CommissionService {
 
-    public Page<CommissionResponseDto> search(String query, CommissionSearchFilter filter, int page, int size);
+    public Page<CommissionResponseDto> search(String query, CommissionSearchFilter filter, Pagination pagination);
 
     public List<String> getSuggestions(String query, int size);
 
