@@ -2,8 +2,8 @@ package com.example.contractservice.contract.service;
 
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
 
-import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.common.domain.exception.DomainException;
+import com.example.contractservice.common.util.feign.MemberClient;
 import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
@@ -16,7 +16,6 @@ import com.example.contractservice.contract.service.dto.request.ContractPayProce
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -36,9 +34,8 @@ import org.springframework.web.client.RestTemplate;
 public class ContractService {
     private static final int CONTRACT_MEMBER_NUM = 2;
 
+    private final MemberClient memberClient;
     private final ContractRepository contractRepository;
-    private final RestTemplate restTemplate;
-    private final UriConstructor uriConstructor;
     private final ContractPayService contractPayService;
     private final ContractCancelService contractCancelService;
 
@@ -56,8 +53,7 @@ public class ContractService {
                 .collect(Collectors.toSet());
 
         // member 모듈로부터 정보 가져오기
-        URI memberInfoUri = uriConstructor.createMemberInfoUrl(memberCodes.stream().toList());
-        List<MemberInfo> memberInfos = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
+        List<MemberInfo> memberInfos = Optional.ofNullable(memberClient.getMemberInfo(memberCodes.stream().toList()))
                 .orElseThrow(() -> new ContractException(INVALID_MEMBER))
                 .members();
         Map<String, String> membersByCode = memberInfos.stream()
@@ -125,8 +121,7 @@ public class ContractService {
     }
 
     private void isValidMember(String clientCode, String freelancerCode) {
-        URI memberInfoUri = uriConstructor.createMemberInfoUrl(List.of(clientCode, freelancerCode));
-        MemberInfoResponse memberInfoResponse = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
+        MemberInfoResponse memberInfoResponse = Optional.ofNullable(memberClient.getMemberInfo(List.of(clientCode, freelancerCode)))
                 .orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
         List<MemberInfo> memberInfos = memberInfoResponse.members();
