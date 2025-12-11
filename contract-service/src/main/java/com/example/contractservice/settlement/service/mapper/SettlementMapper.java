@@ -29,7 +29,7 @@ public abstract class SettlementMapper {
         SettlementTimeline timeline = new SettlementTimeline(settlementEntity.getCreatedAt(),
                 settlementEntity.getSettledAt(), settlementEntity.getProgressingAt());
 
-        return new Settlement(settlementEntity.getCode(), reference, statusInfo, timeline);
+        return new Settlement(settlementEntity.getId(), settlementEntity.getCode(), reference, statusInfo, timeline);
     }
 
     public static List<Settlement> toDomains(SettlementSaveRequest request) {
@@ -48,6 +48,7 @@ public abstract class SettlementMapper {
         SettlementStatusInfo statusInfo = settlement.getSettlementStatusInfo();
 
         return SettlementEntity.builder()
+                .id(settlement.getId())
                 .code(settlement.getCode())
                 .receiverCode(reference.receiverCode())
                 .contractCode(reference.contractCode())
@@ -75,7 +76,7 @@ public abstract class SettlementMapper {
         SettlementTimeline timeline = getTimeline(request.endedAt());
 
         return Collections.singletonList(
-                new Settlement(null, reference, statusInfo, timeline));
+                new Settlement(null, null, reference, statusInfo, timeline));
     }
 
     /** 월급 타입인 경우 프로젝트 시작일 기준 30일 단위로 나누어 금액을 계산, 도메인 처리합니다. 이 때, processingAt은 기준일 + 30일이 됩니다.
@@ -96,13 +97,13 @@ public abstract class SettlementMapper {
 
             SettlementTimeline timeline = getTimeline(curTime);
 
-            settlements.add(new Settlement(null, reference, monthStatusInfo, timeline));
+            settlements.add(new Settlement(null, null, reference, monthStatusInfo, timeline));
 
             restAmount = restAmount - monthAmount;
         } // 30일 단위로 끊어 저장
 
         if (restAmount > 0L) {
-            settlements.add(new Settlement(null, reference, getStatusInfo(restAmount), getTimeline(curTime))); // 나머지 저장
+            settlements.add(new Settlement(null, null, reference, getStatusInfo(restAmount), getTimeline(curTime))); // 나머지 저장
         }
 
         return settlements;
