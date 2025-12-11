@@ -2,8 +2,11 @@ package com.example.searchservice.commission.controller;
 
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.dto.CommissionSearchFilter;
+import com.example.searchservice.commission.exception.CommissionErrorCode;
+import com.example.searchservice.commission.exception.CommissionException;
 import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.commission.vo.OpenStatus;
+import com.example.searchservice.common.vo.Pagination;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionControllerSwagger;
 import java.time.LocalDate;
@@ -13,7 +16,9 @@ import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -36,16 +41,25 @@ public class CommissionController implements CommissionControllerSwagger {
             @RequestParam(name = "started-at", required = false) LocalDate startedAt,
             @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
             @RequestParam(name = "open-status", defaultValue = "open") OpenStatus openStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @Validated @ModelAttribute Pagination pagination
     ) {
+        if(paymentType == null && minPay != null) {
+            throw new CommissionException(CommissionErrorCode.COMMISSION_PAY_FILTER_ERROR);
+        }
+
+        if(startedAt != null && endedAt != null) {
+            if(endedAt.isBefore(startedAt)) {
+                throw new CommissionException(CommissionErrorCode.COMMISSION_DATE_FILTER_ERROR);
+            }
+        }
+
         CommissionSearchFilter filter = new CommissionSearchFilter(
                 scope, tags, paymentType, minPay, startedAt, endedAt, openStatus
         );
 
         Page<CommissionResponseDto> result;
 
-        result = commissionService.search(query, filter, page, size);
+        result = commissionService.search(query, filter, pagination);
 
         return ResponseDto.success(result);
     }
