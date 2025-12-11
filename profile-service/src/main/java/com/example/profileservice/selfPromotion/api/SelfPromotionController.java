@@ -89,16 +89,4 @@ public class SelfPromotionController implements SelfPromotionApiController {
 
         return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
-
-    // 멤버 모듈에서 호출할 셀프 프로모션 일괄 삭제 API
-    @DeleteMapping("/internal/member/{memberCode}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Empty>> deletePromotionsForUnregister(
-            @PathVariable String memberCode) {
-
-        // 해당 회원의 Self Promotion 정보만 Soft Delete 처리합니다.
-        selfPromotionService.deletePromotionsByMemberCode(memberCode);
-
-        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
-    }
 }

@@ -1,4 +1,11 @@
 package com.example.profileservice.common.model.vo.util;
 
-public record MemberRoleRevokedEvent() {
+import java.time.LocalDateTime;
+
+public record MemberRoleRevokedEvent(
+        String memberCode,
+        LocalDateTime timestamp,
+        String role
+) {
+
 }
