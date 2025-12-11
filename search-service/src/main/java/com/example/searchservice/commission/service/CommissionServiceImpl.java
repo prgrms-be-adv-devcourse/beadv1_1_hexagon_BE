@@ -88,7 +88,8 @@ public class CommissionServiceImpl implements CommissionService {
         NativeQueryBuilder nativeQueryBuilder = NativeQuery.builder()
                 .withQuery(qry -> qry.bool(boolQuery -> {
 
-                    switch (openStatus) {
+                    // openStaus는 반드시 요청에 포함(Not Null)되기 때문에 맨 위에서 처리했습니다.
+                    switch (openStatus) { // 마감 상태에 따른 filter 쿼리 추가
                         case open -> boolQuery.filter(
                                 TermQuery.of(t -> t
                                         .field("is_open")
@@ -102,7 +103,7 @@ public class CommissionServiceImpl implements CommissionService {
                                 )._toQuery()
                         );
                         case all -> {
-                            // 상태 필터 안 건다 (열린 + 마감 전체)
+                            // 마감 상태 필터 x (open + closed 모두)
                         }
                     }
 
@@ -135,7 +136,7 @@ public class CommissionServiceImpl implements CommissionService {
                         }
                     }
 
-                    if (hasTagsFilter) {
+                    if (hasTagsFilter) { // 태그가 있는 경우 filter 쿼리 추가
                         boolQuery.filter(
                                 TermsQuery.of(fn -> fn
                                         .field("tags")
@@ -157,7 +158,7 @@ public class CommissionServiceImpl implements CommissionService {
                         );
                     }
 
-                    if (minPay != null) { // 급여가 있는 경우 filter 쿼리 하나 더 추가
+                    if (minPay != null) { // 급여가 있는 경우 filter 쿼리 추가
                         boolQuery.filter(
                                 RangeQuery.of(r -> r
                                         .number(n -> n
@@ -168,7 +169,7 @@ public class CommissionServiceImpl implements CommissionService {
                         );
                     }
 
-                    if (hasStartFilter) {
+                    if (hasStartFilter) { // 시작일이 있는 경우 filter 쿼리 추가
                         boolQuery.filter(
                                 RangeQuery.of(fn -> fn
                                         .date(dr -> dr
@@ -179,7 +180,7 @@ public class CommissionServiceImpl implements CommissionService {
                         );
                     }
 
-                    if (hasEndFilter) {
+                    if (hasEndFilter) { // 종료일이 있는 경우 filter 쿼리 추가
                         boolQuery.filter(
                                 RangeQuery.of(fn -> fn
                                         .date(dr -> dr
@@ -194,7 +195,7 @@ public class CommissionServiceImpl implements CommissionService {
                 }))
                 .withPageable(pageRequest);
 
-        if(!hasQuery) {
+        if(!hasQuery) { // 검색문이 없는 경우 정렬 조건 : updated_at 최신순 <-> 검색문이 있는 경우 : score 순
             nativeQueryBuilder.withSort(sort -> sort
                     .field(f -> f
                             .field("updated_at")
