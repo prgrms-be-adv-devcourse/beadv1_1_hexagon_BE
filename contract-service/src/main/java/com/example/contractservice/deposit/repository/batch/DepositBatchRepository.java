@@ -1,4 +1,4 @@
-package com.example.contractservice.settlement.service.batch.writer;
+package com.example.contractservice.deposit.repository.batch;
 
 import com.example.contractservice.deposit.domain.Deposit;
 import com.example.contractservice.deposit.domain.DepositHistory;

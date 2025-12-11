@@ -1,9 +1,10 @@
-package com.example.contractservice.settlement.repository;
+package com.example.contractservice.settlement.repository.batch;
 
 import static com.example.contractservice.settlement.service.mapper.SettlementMapper.toDomain;
 
 import com.example.contractservice.settlement.common.SettlementStatus;
 import com.example.contractservice.settlement.domain.Settlement;
+import com.example.contractservice.settlement.repository.SettlementJdbcRepository;
 import com.example.contractservice.settlement.service.mapper.SettlementMapper;
 import java.time.Instant;
 import java.util.List;

@@ -4,7 +4,7 @@ import static com.example.contractservice.settlement.common.SettlementStatus.*;
 import static java.time.ZoneOffset.UTC;
 
 import com.example.contractservice.settlement.domain.Settlement;
-import com.example.contractservice.settlement.repository.SettlementBatchRepository;
+import com.example.contractservice.settlement.repository.batch.SettlementBatchRepository;
 import com.example.contractservice.settlement.service.batch.SettlementLastCursorDao;
 import java.time.Instant;
 import java.time.LocalDate;
