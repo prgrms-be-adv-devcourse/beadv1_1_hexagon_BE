@@ -3,6 +3,8 @@ package com.example.cartpostservice.common.exception;
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getErrorResponse;
 
 import feign.FeignException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
@@ -19,7 +21,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ResponseDto<Empty>> handleBusinessException(BusinessException ex) {
-        log.warn("handleBusinessException: {}", ex.getMessage());
+        log.error("handleBusinessException: {}", ex.getMessage());
 
         CustomStatusCode customStatusCode = ex.getCustomStatusCode();
         ResponseDto<Empty> response = getErrorResponse(customStatusCode);
@@ -29,7 +31,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({FeignException.class, ExternalServerException.class})
     public ResponseEntity<ResponseDto<Empty>> handleExternalServerException(Exception ex) {
-        log.warn("Feign Network Error : {}", ex.getMessage());
+        log.error("Feign Network Error : {}", ex.getMessage());
 
         CustomStatusCode errorCode = CustomStatusCode.EXTERNAL_SERVER_ERROR;
 
@@ -40,13 +42,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ResponseDto<Empty>> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException ex) {
-        log.warn("handleMethodArgumentNotValidException: {}", ex.getMessage());
+        log.error("handleMethodArgumentNotValidException: {}", ex.getMessage());
 
         BindingResult bindingResult = ex.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
 
         CustomStatusCode errorCode = CustomStatusCode.INVALID_REQUEST_PPARAMETER;
         String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : errorCode.getMessage();
+
+        return new ResponseEntity<>(getErrorResponse(errorCode, errorMessage), errorCode.getStatus());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ResponseDto<Empty>> handleConstraintViolationException(ConstraintViolationException ex) {
+        log.error("handleConstraintViolationException: {}, ", ex.getMessage());
+
+        ConstraintViolation<?> violation = ex.getConstraintViolations().iterator().next();
+        CustomStatusCode errorCode = CustomStatusCode.INVALID_REQUEST_PPARAMETER;
+        String errorMessage = violation != null ? violation.getMessage() : errorCode.getMessage();
 
         return new ResponseEntity<>(getErrorResponse(errorCode, errorMessage), errorCode.getStatus());
     }
