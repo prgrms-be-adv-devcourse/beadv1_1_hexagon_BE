@@ -30,7 +30,6 @@ import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExternalServerException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -347,9 +346,9 @@ public class CommissionsManagerService {
     }
 
     @Transactional
-    public CommissionRecruitmentStatusResponse getRecruitmentStatus(RecruitmentStatusRequest recruitmentStatusRequest) {
+    public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
         CommissionsServiceResult commissionsServiceResult = commissionsService.read(
-                recruitmentStatusRequest.commissionCode());
+                commissionCode);
 
         return new CommissionRecruitmentStatusResponse(
                 commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN));
