@@ -12,6 +12,7 @@ import com.example.contractservice.contract.controller.dto.response.ContractPayR
 import com.example.contractservice.contract.service.CommissionsCapacityService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
@@ -38,7 +39,7 @@ public class ContractInternalController {
     @PostMapping("/pay")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<ContractPayResponse> payContract(@RequestHeader(name = "X-CODE") String xCode,
-            @RequestBody ContractPayRequest request) {
+            @Valid @RequestBody ContractPayRequest request) {
         ContractPayServiceRequest serviceRequest = new ContractPayServiceRequest(xCode, request.codes());
 
         return ResponseDto.success(contractService.payContracts(serviceRequest));
@@ -55,7 +56,7 @@ public class ContractInternalController {
     @CommissionCapacityUpsertApi
     @PostMapping("/commissions-capacity")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<Empty> upsertCapacity(@RequestBody CommissionsCapacityUpsertRequest request) {
+    public ResponseDto<Empty> upsertCapacity(@Valid @RequestBody CommissionsCapacityUpsertRequest request) {
         validateCapacityUpsertRequest(request);
 
         commissionsCapacityService.upsertCapacity(request);
