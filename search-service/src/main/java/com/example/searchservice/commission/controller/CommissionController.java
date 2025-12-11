@@ -1,6 +1,7 @@
 package com.example.searchservice.commission.controller;
 
 import com.example.searchservice.commission.dto.CommissionResponseDto;
+import com.example.searchservice.commission.dto.CommissionSearchFilter;
 import com.example.searchservice.commission.service.CommissionService;
 import com.example.searchservice.commission.vo.OpenStatus;
 import com.example.searchservice.common.vo.SearchScope;
@@ -38,10 +39,13 @@ public class CommissionController implements CommissionControllerSwagger {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
+        CommissionSearchFilter filter = new CommissionSearchFilter(
+                scope, tags, paymentType, minPay, startedAt, endedAt, openStatus
+        );
 
         Page<CommissionResponseDto> result;
 
-        result = commissionService.search(query, scope, tags, paymentType, minPay, startedAt, endedAt, openStatus, page, size);
+        result = commissionService.search(query, filter, page, size);
 
         return ResponseDto.success(result);
     }

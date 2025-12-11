@@ -12,6 +12,7 @@ import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
 import co.elastic.clients.elasticsearch.indices.AnalyzeResponse;
 import co.elastic.clients.elasticsearch.indices.analyze.AnalyzeToken;
 import com.example.searchservice.commission.dto.CommissionResponseDto;
+import com.example.searchservice.commission.dto.CommissionSearchFilter;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
 import com.example.searchservice.commission.repository.CommissionRepository;
 import com.example.searchservice.commission.vo.OpenStatus;
@@ -65,15 +66,17 @@ public class CommissionServiceImpl implements CommissionService {
     @Override
     public Page<CommissionResponseDto> search(
             String query,
-            SearchScope scope,
-            List<String> tags,
-            PaymentType paymentType,
-            Long minPay,
-            LocalDate startedAt,
-            LocalDate endedAt,
-            OpenStatus openStatus,
+            CommissionSearchFilter filter,
             int page,
             int size) {
+
+        SearchScope scope = filter.scope();
+        List<String> tags = filter.tags();
+        PaymentType paymentType = filter.paymentType();
+        Long minPay = filter.minPay();
+        LocalDate startedAt = filter.startedAt();
+        LocalDate endedAt = filter.endedAt();
+        OpenStatus openStatus = filter.openStatus();
 
         boolean hasQuery = (query != null && !query.isEmpty());
         boolean hasTagsFilter = (tags != null && !tags.isEmpty());
