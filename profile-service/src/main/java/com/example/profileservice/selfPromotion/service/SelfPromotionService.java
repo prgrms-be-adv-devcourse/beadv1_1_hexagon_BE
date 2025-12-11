@@ -1,5 +1,7 @@
 package com.example.profileservice.selfPromotion.service;
 
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
+
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.exception.CustomException;
@@ -12,6 +14,10 @@ import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionU
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.model.entity.SelfPromotionEntity;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
@@ -21,13 +27,6 @@ import org.hexagon.core.vo.SelfPromotion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +54,7 @@ public class SelfPromotionService {
     @Transactional(readOnly = true)
     public List<SelfPromotionResponse> getMyPromotions(String memberCode) {
         // 1:1 관계 강제에 따라 단건 조회
-        Optional<SelfPromotionEntity> myPromotion = selfPromotionRepository.findByMemberCodeAndIsDeletedFalseOrderByCreatedAtDesc(memberCode);
+        Optional<SelfPromotionEntity> myPromotion = selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode);
 
         // API 호환성을 위해 List로 래핑하여 반환
         return myPromotion.map(this::toResponse)
@@ -81,7 +80,7 @@ public class SelfPromotionService {
         validateResumeCode(request.resumeCode());
 
         // 3. 기존 활성 프로모션 확인 및 Soft Delete 처리
-        selfPromotionRepository.findByMemberCodeAndIsDeletedFalseOrderByCreatedAtDesc(memberCode)
+        selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
                 .ifPresent(existingPromotion -> {
                     // 기존 활성 프로모션이 있다면 논리적으로 삭제 처리 (isDeleted = true)
                     log.info("기존 활성 프로모션({})을 비활성화 처리합니다. (memberCode: {})", existingPromotion.getCode(), memberCode);
@@ -228,7 +227,7 @@ public class SelfPromotionService {
         log.info("프리랜서 등록 취소 - Self Promotion 삭제 시작. memberCode: {}", memberCode);
 
         // Optional로 조회
-        selfPromotionRepository.findByMemberCodeAndIsDeletedFalseOrderByCreatedAtDesc(memberCode)
+        selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
                 .ifPresent(promotion -> {
                     promotion.delete(); // Soft Delete 처리
                     selfPromotionRepository.save(promotion); // 변경 사항 저장

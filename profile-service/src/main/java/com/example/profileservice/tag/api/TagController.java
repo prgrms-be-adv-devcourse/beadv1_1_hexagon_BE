@@ -101,6 +101,6 @@ public class TagController implements TagApiController {
         // 해당 회원의 MemberTag 연결 정보만 Hard Delete 처리
         tagService.deleteMemberTagsByMemberCode(memberCode);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
 }

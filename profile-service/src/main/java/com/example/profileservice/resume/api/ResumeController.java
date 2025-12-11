@@ -133,6 +133,6 @@ public class ResumeController implements ResumeApiController {
         // 해당 회원의 이력서 및 종속된 경력/경험 정보만 Soft Delete 처리합니다.
         resumeService.deleteResumesByMemberCode(memberCode);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
 }

@@ -211,7 +211,7 @@ public class ResumeService {
                 .collect(Collectors.toList());
 
         // 3. 종속된 모든 경력/경험 항목 조회
-        List<ExperienceEntity> experiencesToDelete = experienceRepository.findAllByResumeCodeInAndIsDeletedFalse(resumeCodesToDelete);
+        List<ExperienceEntity> experiencesToDelete = experienceRepository.findAllByResumeCodeAndIsDeletedFalse(resumeCodesToDelete);
 
         // 4. 경력/경험 Soft Delete 처리
         experiencesToDelete.forEach(ExperienceEntity::delete);

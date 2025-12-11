@@ -99,6 +99,6 @@ public class SelfPromotionController implements SelfPromotionApiController {
         // 해당 회원의 Self Promotion 정보만 Soft Delete 처리합니다.
         selfPromotionService.deletePromotionsByMemberCode(memberCode);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
 }
