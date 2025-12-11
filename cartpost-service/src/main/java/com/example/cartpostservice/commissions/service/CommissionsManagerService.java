@@ -19,6 +19,7 @@ import com.example.cartpostservice.commissions.common.dto.PresignedUrlComponent;
 import com.example.cartpostservice.commissions.infra.client.internal.ContractClient;
 import com.example.cartpostservice.commissions.infra.client.internal.FileManagementClient;
 import com.example.cartpostservice.commissions.infra.client.internal.MemberClient;
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
@@ -133,7 +134,7 @@ public class CommissionsManagerService {
                 commissionResult.endedAt(),
                 commissionResult.paymentType(),
                 Long.parseLong(commissionResult.unitAmount()),
-                commissionResult.isOpen(),
+                commissionResult.recruitmentStatus().equals(RecruitmentStatus.OPEN),
                 commissionResult.updatedAt()
         );
 
@@ -172,7 +173,7 @@ public class CommissionsManagerService {
                 commissionResult.unitAmount(),
                 commissionResult.startedAt(),
                 commissionResult.endedAt(),
-                commissionResult.isOpen(),
+                commissionResult.recruitmentStatus(),
                 commissionResult.writerName(),
                 tagResult.tagCodes(),
                 peopleInfo.applyCapacity(),
@@ -245,7 +246,7 @@ public class CommissionsManagerService {
                 commissionUpdateResult.endedAt(),
                 commissionUpdateResult.paymentType(),
                 Long.parseLong(commissionUpdateResult.unitAmount()),
-                commissionUpdateResult.isOpen(),
+                commissionUpdateResult.recruitmentStatus().equals(RecruitmentStatus.OPEN),
                 commissionUpdateResult.updatedAt()
         );
         commissionKafkaService.updateProducer(updateMessage);
@@ -285,7 +286,7 @@ public class CommissionsManagerService {
                 commissionResult.endedAt(),
                 commissionResult.paymentType(),
                 Long.parseLong(commissionResult.unitAmount()),
-                commissionResult.isOpen(),
+                false,
                 commissionResult.updatedAt()
         );
 
@@ -329,7 +330,7 @@ public class CommissionsManagerService {
                         result.unitAmount(),
                         result.startedAt(),
                         result.endedAt(),
-                        result.isOpen(),
+                        result.recruitmentStatus(),
                         result.writerName(),
                         tagMap.getOrDefault(result.code(), List.of())
                 ))
@@ -350,7 +351,8 @@ public class CommissionsManagerService {
         CommissionsServiceResult commissionsServiceResult = commissionsService.read(
                 recruitmentStatusRequest.commissionCode());
 
-        return new CommissionRecruitmentStatusResponse(commissionsServiceResult.isOpen());
+        return new CommissionRecruitmentStatusResponse(
+                commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN));
     }
 
     private void sendContractInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {

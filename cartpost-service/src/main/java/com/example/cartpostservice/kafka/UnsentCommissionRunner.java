@@ -2,6 +2,7 @@ package com.example.cartpostservice.kafka;
 
 import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.model.CommissionsTagEntity;
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
 import com.example.cartpostservice.commissions.repository.CommissionsTagRepository;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UnsentCommissionRunner implements ApplicationRunner {
 
     private final CommissionsRepository commissionsRepository;
-    private final CommissionsTagRepository  commissionsTagRepository;
+    private final CommissionsTagRepository commissionsTagRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${search.topic.name}")
@@ -31,18 +32,21 @@ public class UnsentCommissionRunner implements ApplicationRunner {
 
     @Override
     @Transactional
-    public void run(ApplicationArguments args) throws Exception {
-        List<CommissionsEntity> commissionsToSend = commissionsRepository.findAll();
+    public void run(ApplicationArguments args) {
+        List<CommissionsEntity> commissionsToSend = commissionsRepository.findAll().stream()
+                .filter(commission -> commission.getRecruitmentStatus() != RecruitmentStatus.HALTED)
+                .toList();
 
-        if(commissionsToSend.isEmpty()){
+        if (commissionsToSend.isEmpty()) {
             log.info("전송할 대기 항목이 없습니다.");
             return;
         }
 
         List<Commission> commissions = new ArrayList<>();
-        for(CommissionsEntity commissionsEntity : commissionsToSend){
-            List<CommissionsTagEntity> tagEntities = commissionsTagRepository.findByCommissionCode(commissionsEntity.getCode());
-            List<String> tags= tagEntities.stream().map(CommissionsTagEntity::getTagCode).collect(Collectors.toList());
+        for (CommissionsEntity commissionsEntity : commissionsToSend) {
+            List<CommissionsTagEntity> tagEntities = commissionsTagRepository.findByCommissionCode(
+                    commissionsEntity.getCode());
+            List<String> tags = tagEntities.stream().map(CommissionsTagEntity::getTagCode).collect(Collectors.toList());
 
             Commission commission = new Commission(
                     commissionsEntity.getCode(),
@@ -55,7 +59,7 @@ public class UnsentCommissionRunner implements ApplicationRunner {
                     commissionsEntity.getEndedAt(),
                     commissionsEntity.getPaymentType(),
                     Long.valueOf(commissionsEntity.getUnitAmount()),
-                    commissionsEntity.isOpen(),
+                    commissionsEntity.getRecruitmentStatus().equals(RecruitmentStatus.OPEN),
                     commissionsEntity.getUpdatedAt()
             );
             commissions.add(commission);
