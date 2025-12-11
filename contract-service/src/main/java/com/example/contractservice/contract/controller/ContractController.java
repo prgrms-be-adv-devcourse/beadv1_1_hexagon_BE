@@ -14,6 +14,7 @@ import com.example.contractservice.contract.service.ContractReadService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
+import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +67,7 @@ public class ContractController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ContractCreateResponse> requestContract(@RequestHeader(name = "X-CODE") String xCode,
-            @RequestBody ContractCreateRequest request) {
+            @Valid @RequestBody ContractCreateRequest request) {
 
         validateCreateRequest(xCode, request);
 
