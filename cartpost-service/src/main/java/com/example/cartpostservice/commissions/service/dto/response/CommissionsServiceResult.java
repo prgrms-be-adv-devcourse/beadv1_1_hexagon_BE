@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.service.dto.response;
 
+import java.time.Instant;
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
 
@@ -22,7 +23,9 @@ public record CommissionsServiceResult(
 
         boolean isOpen,
 
-        String writerName
+        String writerName,
+
+        Instant updatedAt
 ) {
 
 }

@@ -1,10 +1,9 @@
 package com.example.memberservice.member.repository;
 
-import com.example.memberservice.member.entity.Members;
+import com.example.memberservice.member.model.entity.Members;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.apache.kafka.common.quota.ClientQuotaAlteration.Op;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

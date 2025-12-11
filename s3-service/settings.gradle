@@ -1,0 +1,4 @@
+rootProject.name = 's3-service'
+
+include(':core')
+project(':core').projectDir = file('../core')

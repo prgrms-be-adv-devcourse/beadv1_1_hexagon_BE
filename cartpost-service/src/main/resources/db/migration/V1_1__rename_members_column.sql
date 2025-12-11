@@ -1,0 +1,1 @@
+ALTER TABLE members CHANGE name nick_name VARCHAR(255);

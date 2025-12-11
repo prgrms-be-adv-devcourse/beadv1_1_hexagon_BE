@@ -39,7 +39,7 @@ class ContractKafkaHandlerTest {
     }
 
     @Test
-    @DisplayName("장바구니 삭제 이벤트 수신 후 계약을 취소 상태로 만들 수 있다.")
+    @DisplayName("REQUESTED인 계약을 취소 상태로 만들 수 있다.")
     void success_status_Change_to_cancelled_given_normal() {
         // given
 
@@ -48,6 +48,7 @@ class ContractKafkaHandlerTest {
                 .code(UUID.randomUUID().toString())
                 .clientCode(clientCode)
                 .freelancerCode(UUID.randomUUID().toString())
+                .commissionCode(UUID.randomUUID().toString())
                 .name("이름")
                 .body("내용")
                 .status(ContractStatus.REQUESTED)

@@ -2,7 +2,7 @@ package com.example.memberservice.member.service;
 
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
-import com.example.memberservice.member.entity.Members;
+import com.example.memberservice.member.model.entity.Members;
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;

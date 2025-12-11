@@ -22,4 +22,11 @@ public abstract class ResponseDtoMapper {
                 customStatusCode.getMessage(),
                 Empty.getInstance());
     }
+
+    public static ResponseDto<Empty> getErrorResponse(CustomStatusCode customStatusCode, String customMessage) {
+        return new ResponseDto<>(customStatusCode.getCode(),
+                customStatusCode.getStatus().value(),
+                customMessage,
+                Empty.getInstance());
+    }
 }

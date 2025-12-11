@@ -4,6 +4,7 @@ import static com.example.contractservice.settlement.service.mapper.SettlementMa
 
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.entity.SettlementEntity;
+import com.example.contractservice.settlement.service.mapper.SettlementMapper;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,11 @@ public class SettlementRepository {
     }
 
     public void saveAll(List<Settlement> settlements) {
-        settlements.forEach(this::save); // JDBC를 이용한 PSTMT 연결 후 한번에 처리?
+        List<SettlementEntity> settlementEntities = settlements.stream()
+                .map(SettlementMapper::toEntity)
+                .toList();
+
+        settlementJpaRepository.saveAll(settlementEntities);
     }
 
     public void hardDeleteAllBy(String contractCode) {

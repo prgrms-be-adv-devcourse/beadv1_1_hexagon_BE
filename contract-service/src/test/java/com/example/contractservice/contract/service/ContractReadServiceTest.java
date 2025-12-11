@@ -70,6 +70,7 @@ class ContractReadServiceTest {
                     .code(UUID.randomUUID().toString())
                     .clientCode(zeroOrOne % 2 == 0 ? memberCode : opponentCode)
                     .freelancerCode(zeroOrOne % 2 == 0 ? opponentCode : memberCode)
+                    .commissionCode(UUID.randomUUID().toString())
                     .name("이름" + i)
                     .body("내용" + i)
                     .status(ContractStatus.values()[random.nextInt(ContractStatus.values().length)]) // 상태 랜덤 선택
@@ -125,6 +126,7 @@ class ContractReadServiceTest {
                 .code(UUID.randomUUID().toString())
                 .clientCode(memberCode)
                 .freelancerCode(opponentCode)
+                .commissionCode(UUID.randomUUID().toString())
                 .name(name)
                 .body(body)
                 .status(done)

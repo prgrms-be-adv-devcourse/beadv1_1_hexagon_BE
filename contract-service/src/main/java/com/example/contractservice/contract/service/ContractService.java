@@ -17,7 +17,6 @@ import com.example.contractservice.contract.service.dto.request.ContractPayServi
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -75,9 +74,9 @@ public class ContractService {
 
         Contract createdContract = request.toContract();
 
-        Contract contractEntity = contractRepository.saveContract(createdContract);
+        Contract contract = contractRepository.saveContract(createdContract);
 
-        return ContractCreateResponse.of(contractEntity.getCode());
+        return ContractCreateResponse.of(contract.getCode());
     }
 
     /** 계약 코드를 받아 결제를 수행합니다. 다음 단계로 수행될 수 있습니다. <br />
@@ -91,13 +90,13 @@ public class ContractService {
      * @return 결제에 성공/실패한 계약 정보
      */
     public ContractPayResponse payContracts(ContractPayServiceRequest request) {
-        List<String> success = new ArrayList<>();
-        List<String> fail = new ArrayList<>();
-
-        request.contractCodes()
+        Map<Boolean, List<ContractPayProcessRequest>> resultSet = request.contractCodes()
                 .stream()
                 .map(contractCode -> new ContractPayProcessRequest(request.xCode(), contractCode))
-                .forEach(payProcessRequest -> pay(payProcessRequest, success, fail));
+                .collect(Collectors.partitioningBy(this::pay));
+
+        List<String> success = resultSet.get(true).stream().map(ContractPayProcessRequest::contractCode).toList();
+        List<String> fail = resultSet.get(false).stream().map(ContractPayProcessRequest::contractCode).toList();
 
         return new ContractPayResponse(success, fail);
     }
@@ -148,25 +147,22 @@ public class ContractService {
     /** 실제 결제 로직. 처리 중 예외 발생 시, 실패 결제로 처리되며 로깅합니다.
      *
      * @param request 결제를 위한 DTO
-     * @param success 성공한 결제 정보
-     * @param fail 실패한 결제 정보
+     * @return 메서드 실행 성공 여부
      */
-    private void pay(ContractPayProcessRequest request, List<String> success, List<String> fail) {
+    private boolean pay(ContractPayProcessRequest request) {
         try {
             contractPayService.processPayment(request);
         } catch (DomainException e) {
             log.warn("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: {}", request.contractCode(), e.getErrorCode().getMessage());
 
-            fail.add(request.contractCode());
-            return;
+            return false;
         } catch (Exception e) {
             log.error("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: ", request.contractCode(), e);
 
-            fail.add(request.contractCode());
-            return;
+            return false;
         }
 
-        success.add(request.contractCode());
+        return true;
     }
 
 }

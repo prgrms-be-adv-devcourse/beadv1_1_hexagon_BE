@@ -1,6 +1,6 @@
 package com.example.cartpostservice.commissions.controller.internal;
 
-import com.example.cartpostservice.commissions.controller.dto.response.MemberInfoOutput;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
 import java.util.List;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;

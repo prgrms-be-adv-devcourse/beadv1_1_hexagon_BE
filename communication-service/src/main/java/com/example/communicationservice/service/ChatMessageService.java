@@ -2,12 +2,14 @@ package com.example.communicationservice.service;
 
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
+import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.ChatMessageListReadResponse;
 import com.example.communicationservice.controller.dto.response.ChatMessageReadResponse;
 import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
 import com.example.communicationservice.controller.dto.response.PageInfo;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
+import com.example.communicationservice.mapper.ChatMapper;
 import com.example.communicationservice.repository.ChatMessageRepository;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,38 +49,33 @@ public class ChatMessageService {
 
         // 엔티티 -> DTO 변환
         List<ChatMessageReadResponse> messages = messagePage.getContent().stream()
-            .map(ChatMessageReadResponse::from)
+            .map(ChatMapper::toReadResponse)
             .toList();
 
         // Page 정보 추출 및 DTO 생성
-        PageInfo pageInfo = PageInfo.from(messagePage);
+        PageInfo pageInfo = ChatMapper.toPageInfo(messagePage);
 
         return new ChatMessageListReadResponse(messages, pageInfo);
     }
 
     /**
      * 특정 채팅방의 메시지를 저장합니다.
-     * @param roomId 해당 채팅방 아이디
-     * @param senderCode 메시지 송신자 코드
-     * @param content 메시지 내용
+     * @param request 저장할 채팅 메시지 전송 요청
      * @return 수신할 메시지
      */
     @Transactional
-    public ChatMessageSendResponse saveMessage(String roomId, String senderCode, String content) {
+    public ChatMessageSendResponse saveMessage(ChatMessageSendRequest request) {
         // 해당 채팅방이 존재하는지 확인
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+        ChatRoom chatRoom = chatRoomRepository.findById(request.roomId())
             .orElseThrow(() -> new ChatRoomException(ResponseDtoStatus.CHATROOM_NOT_FOUND));
 
         // 메시지 송신자가 해당 채팅방의 참여자인지 확인
-        if (!chatRoom.getMemberCodes().contains(senderCode)) {
+        if (!chatRoom.getMemberCodes().contains(request.senderCode())) {
             throw new ChatRoomException(ResponseDtoStatus.CHATROOM_FORBIDDEN);
         }
 
-        ChatMessage chatMessage = ChatMessage.builder()
-            .roomId(roomId)
-            .senderCode(senderCode)
-            .content(content)
-            .build();
+        // 메시지 생성 및 타입별 유효성 자동 검증
+        ChatMessage chatMessage = ChatMapper.toEntity(request);
 
         ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
 
@@ -86,7 +83,7 @@ public class ChatMessageService {
         chatRoom.setUpdatedAt(Instant.now());
         chatRoomRepository.save(chatRoom);
 
-        return ChatMessageSendResponse.from(savedChatMessage);
+        return ChatMapper.toSendResponse(savedChatMessage);
     }
 
 }

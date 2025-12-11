@@ -1,0 +1,50 @@
+name: Deploy and Rolling Update
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+  workflow_dispatch:
+
+
+
+env:
+  REGISTRY: docker.io
+
+jobs:
+  deploy:
+    name: ${{ inputs.service-name }}docker service container 재실행
+    runs-on: self-hosted
+
+    steps:
+      - name: 현재 동작 중인 container 삭제
+        run: |
+          echo "Stopping and removing old container..."
+          docker stop ${{ inputs.service-name }} || true
+          docker rm ${{ inputs.service-name }} || true
+          docker image prune -a -f
+
+      - name: 도커 이미지 PULL 받기
+        run: |
+          echo "Full image name setting"
+          echo "${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs['image-tag'] }}"
+          IMAGE=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
+          docker pull $IMAGE
+
+      - name: 도커 서비스 컨테이너 실행
+        run: |
+          echo "Full image"
+          IMAGE=${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ inputs.service-name }}:${{ inputs.image-tag }}
+          docker run -d --name ${{ inputs.service-name }} --network exp_default $IMAGE
+
+      - name: Verify container status
+        run: |
+          echo "배포 상태 체크"
+          docker ps --filter "name=${{ inputs.service-name }}"
+          
+          
