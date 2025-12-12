@@ -5,8 +5,6 @@ import com.example.contractservice.deposit.domain.DepositHistory;
 import com.example.contractservice.deposit.domain.exception.DepositErrorCode;
 import com.example.contractservice.deposit.domain.exception.DepositException;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +30,10 @@ public class DepositBatchRepository {
                 """;
         // 주의: JDBC -> DB로는 Instant를 자동 계산해주지만(JVM 시간대 정보를 통해 실제로 들어갈 값으로 변환. 현재 JVM 시간대가 KST라서 9시간을 더함)
         // DB(MySQL)는 시간대 정보를 몰라서 그대로 반환하며(DB는 이게 서버 시간대인지 UTC 시간대인지 모름) 그래서 Instant.parse()로 읽어오게 되어 절대 동일 값이 될 수 없다!
-        // 이에 따라 날짜 데이터를 문자열로 변환해 직접 넣어주도록 하였음
+        // JDBC URL에 serverTimezone을 UTC로 설정할 경우, JVM 시간대 정보를 폐기하고 JDBC가 UTC 기준으로 Instant를 조정해준다. 이것으로 헤결되었다.
 
         List<Object[]> args = memberDepositMap.values().stream()
-                .map(deposit -> new Object[]{deposit.getAmount(), formatInstantForMysql(Instant.now()), deposit.getCode(), formatInstantForMysql(deposit.getUpdatedAt())}).toList();
+                .map(deposit -> new Object[]{deposit.getAmount(), Instant.now(), deposit.getCode(), deposit.getUpdatedAt()}).toList();
 
         int[] updatedCounts = jdbcTemplate.batchUpdate(sql, args);
 
@@ -48,7 +46,7 @@ public class DepositBatchRepository {
 
     public void saveAllHistories(List<DepositHistory> depositHistories) {
         String sql = """
-                INSERT INTO deposit_histories (code, is_deleted, change_amount, created_at, updated_at, result_amount, deposit_code, contract_code, summary) 
+                INSERT INTO deposit_histories (code, is_deleted, change_amount, created_at, updated_at, result_amount, deposit_code, contract_code, summary)
                 VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
@@ -64,12 +62,6 @@ public class DepositBatchRepository {
         }).toList();
 
         jdbcTemplate.batchUpdate(sql, args);
-    }
-
-    private String formatInstantForMysql(Instant instant) {
-        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
-                .withZone(ZoneOffset.UTC)       // Instant를 UTC 기준 local datetime으로 변환
-                .format(instant);
     }
 
 }
