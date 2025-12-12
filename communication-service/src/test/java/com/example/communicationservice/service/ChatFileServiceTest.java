@@ -83,7 +83,7 @@ public class ChatFileServiceTest {
             // when + then
             // try 안에서만 static mocking 유지
             try (MockedStatic<ChatMapper> mockedStatic = mockStatic(ChatMapper.class)) {
-                mockedStatic.when(() -> ChatMapper.of(output))
+                mockedStatic.when(() -> ChatMapper.from(output))
                     .thenReturn(expectedResponse);
 
                 // when

@@ -1,7 +1,10 @@
 package com.example.communicationservice.mapper;
 
+import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
+import com.example.communicationservice.client.dto.output.FileDownloadUrlListGenerateOutput;
 import com.example.communicationservice.client.dto.output.FileUploadUrlGenerateOutput;
 import com.example.communicationservice.controller.dto.FileInfo;
+import com.example.communicationservice.controller.dto.request.ChatFileSendRequest;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.*;
 import com.example.communicationservice.entity.ChatMessage;
@@ -37,14 +40,17 @@ public abstract class ChatMapper {
         );
     }
 
-    public static ChatMessageSendResponse toSendResponse(ChatMessage message) {
+    public static ChatMessageSendResponse toSendResponse(
+        ChatMessage message,
+        FileDownloadUrlListGenerateOutput output
+    ) {
         return new ChatMessageSendResponse(
             message.getId(),
             message.getRoomId(),
             message.getSenderCode(),
             message.getType(),
             message.getText(),
-            from(message.getFile()),
+            output != null ? from(output.urls().get(0)) : null,
             message.getSentAt()
         );
     }
@@ -85,13 +91,13 @@ public abstract class ChatMapper {
         return new FileInfo(file.getKey());
     }
 
-    public static File toEntity(FileInfo fileInfo) {
-        if (fileInfo == null) {
+    public static File toEntity(ChatFileSendRequest request) {
+        if (request == null) {
             return null;
         }
 
         return File.builder()
-            .key(fileInfo.key())
+            .key(request.key())
             .build();
     }
 
@@ -99,6 +105,14 @@ public abstract class ChatMapper {
         return new ChatFileUploadUrlGenerateResponse(
             output.key(),
             output.queryString()
+        );
+    }
+
+    public static ChatFileSendResponse from(FileDownloadUrlGenerateOutput output) {
+        return new ChatFileSendResponse(
+            output.key(),
+            output.queryString(),
+            output.fileType()
         );
     }
 
