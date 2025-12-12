@@ -60,7 +60,7 @@ public class ContractPayService {
         saveSettlements(contract);
 
         applicationEventPublisher.publishEvent(
-                new ContractEvent(request.xCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.PAID.name()));
+                new ContractEvent(contract.getCode(), contract.getInfo().commissionCode(), contract.getCreatedAt(), ContractStatus.PAID.name()));
     }
 
     /**
