@@ -152,7 +152,7 @@ class ChatMessageServiceTest {
             .willReturn(savedMessage);
 
         // when
-        ChatMessageSendResponse response = chatMessageService.saveMessage(request);
+        ChatMessageSendResponse response = chatMessageService.sendMessage(request);
 
         // then
         assertThat(response).isNotNull();
@@ -180,7 +180,7 @@ class ChatMessageServiceTest {
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatMessageService.saveMessage(request));
+            () -> chatMessageService.sendMessage(request));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_NOT_FOUND);
 
@@ -206,7 +206,7 @@ class ChatMessageServiceTest {
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatMessageService.saveMessage(request));
+            () -> chatMessageService.sendMessage(request));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_FORBIDDEN);
 
