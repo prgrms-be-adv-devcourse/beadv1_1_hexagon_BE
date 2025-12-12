@@ -1,6 +1,8 @@
 package com.example.communicationservice.client;
 
+import com.example.communicationservice.client.dto.input.FileDownloadUrlGenerateInput;
 import com.example.communicationservice.client.dto.input.FileUploadUrlGenerateInput;
+import com.example.communicationservice.client.dto.output.FileDownloadUrlListGenerateOutput;
 import com.example.communicationservice.client.dto.output.FileUploadUrlGenerateOutput;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -16,5 +18,8 @@ public interface S3ServiceClient {
 
     @PostMapping("/upload-url")
     ResponseDto<FileUploadUrlGenerateOutput> generateUploadUrl(@RequestBody FileUploadUrlGenerateInput input);
+
+    @PostMapping("/download-url/key")
+    ResponseDto<FileDownloadUrlListGenerateOutput> generateDownloadUrl(@RequestBody FileDownloadUrlGenerateInput input);
 
 }
