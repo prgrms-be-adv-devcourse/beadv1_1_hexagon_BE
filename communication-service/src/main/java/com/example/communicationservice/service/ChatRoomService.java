@@ -11,6 +11,7 @@ import com.example.communicationservice.controller.dto.response.ChatRoomReadResp
 import com.example.communicationservice.controller.dto.response.PageInfo;
 import com.example.communicationservice.entity.ChatRoom;
 import com.example.communicationservice.mapper.ChatMapper;
+import com.example.communicationservice.mapper.PageMapper;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -84,7 +85,7 @@ public class ChatRoomService {
             .toList();
 
         // Page 정보 추출 및 DTO 생성
-        PageInfo pageInfo = ChatMapper.toPageInfo(chatRoomPage);
+        PageInfo pageInfo = PageMapper.toPageInfo(chatRoomPage);
 
         return new ChatRoomListReadResponse(chatRooms, pageInfo);
     }

@@ -8,7 +8,7 @@ import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.example.communicationservice.controller.dto.request.ChatFileUploadUrlGenerateRequest;
 import com.example.communicationservice.controller.dto.response.ChatFileUploadUrlGenerateResponse;
 import com.example.communicationservice.entity.ChatRoom;
-import com.example.communicationservice.mapper.ChatMapper;
+import com.example.communicationservice.mapper.FileMapper;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.vo.ServiceName;
@@ -52,7 +52,7 @@ public class ChatFileService {
         // S3 service에 pre-signed upload URL 발급 요청
         FileUploadUrlGenerateOutput output = s3ServiceClient.generateUploadUrl(input).data();
 
-        return ChatMapper.from(output);
+        return FileMapper.from(output);
     }
 
 }

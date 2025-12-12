@@ -13,6 +13,7 @@ import com.example.communicationservice.controller.dto.response.PageInfo;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
 import com.example.communicationservice.mapper.ChatMapper;
+import com.example.communicationservice.mapper.PageMapper;
 import com.example.communicationservice.repository.ChatMessageRepository;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import com.example.communicationservice.type.MessageType;
@@ -57,7 +58,7 @@ public class ChatMessageService {
             .toList();
 
         // Page 정보 추출 및 DTO 생성
-        PageInfo pageInfo = ChatMapper.toPageInfo(messagePage);
+        PageInfo pageInfo = PageMapper.toPageInfo(messagePage);
 
         return new ChatMessageListReadResponse(messages, pageInfo);
     }

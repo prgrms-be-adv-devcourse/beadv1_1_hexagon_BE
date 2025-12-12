@@ -8,7 +8,7 @@ import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.example.communicationservice.controller.dto.request.ChatFileUploadUrlGenerateRequest;
 import com.example.communicationservice.controller.dto.response.ChatFileUploadUrlGenerateResponse;
 import com.example.communicationservice.entity.ChatRoom;
-import com.example.communicationservice.mapper.ChatMapper;
+import com.example.communicationservice.mapper.FileMapper;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.ServiceName;
@@ -82,8 +82,8 @@ public class ChatFileServiceTest {
 
             // when + then
             // try 안에서만 static mocking 유지
-            try (MockedStatic<ChatMapper> mockedStatic = mockStatic(ChatMapper.class)) {
-                mockedStatic.when(() -> ChatMapper.from(output))
+            try (MockedStatic<FileMapper> mockedStatic = mockStatic(FileMapper.class)) {
+                mockedStatic.when(() -> FileMapper.from(output))
                     .thenReturn(expectedResponse);
 
                 // when
