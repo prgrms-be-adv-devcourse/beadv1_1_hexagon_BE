@@ -41,29 +41,6 @@ public class CommissionServiceImpl implements CommissionService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticsearchClient esClient;
 
-
-    public Page<CommissionResponseDto> search(String query, SearchScope scope, int page, int size) {
-
-        if (query == null || query.isBlank()) {
-            PageRequest sortedByUpdatedAt = PageRequest.of(
-                    page,
-                    size,
-                    Sort.by(Sort.Direction.DESC, "updatedAt")
-            );
-
-            return commissionRepository.findAll(sortedByUpdatedAt)
-                    .map(CommissionResponseDto::from);
-        }
-
-        PageRequest pageable = PageRequest.of(page, size);
-
-        return switch (scope) {
-            case all -> commissionRepository.searchAll(query, pageable).map(CommissionResponseDto::from);
-            case title -> commissionRepository.searchTitle(query, pageable).map(CommissionResponseDto::from);
-            case content -> commissionRepository.searchContent(query, pageable).map(CommissionResponseDto::from);
-        };
-    }
-
     @Override
     public Page<CommissionResponseDto> search(
             String query,
