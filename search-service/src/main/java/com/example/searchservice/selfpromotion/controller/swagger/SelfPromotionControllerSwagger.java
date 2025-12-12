@@ -6,12 +6,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "Self Promotion Search API", description = "Self Promotion 검색 / 검색 키워드 추천 API")
+@Validated
 public interface SelfPromotionControllerSwagger {
 
     @Operation(summary = "Self Promotion 검색", description = "검색어, 검색 범위를 기반으로 Self Promotion을 검색합니다.")
@@ -28,8 +32,8 @@ public interface SelfPromotionControllerSwagger {
             SearchScope scope,
             PaymentType paymentType,
             Long maxPay,
-            int page,
-            int size);
+            @Min(0) int page,
+            @Min(1) @Max(30) int size);
 
     @Operation(summary = "Self Promotion 추천 검색 키워드", description = "입력한 접두어(prefix)를 기반으로 추천 검색어 키워드를 반환합니다.")
     @Parameters({
