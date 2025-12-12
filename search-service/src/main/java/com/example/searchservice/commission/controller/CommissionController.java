@@ -9,6 +9,9 @@ import com.example.searchservice.commission.vo.OpenStatus;
 import com.example.searchservice.common.vo.Pagination;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionControllerSwagger;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/search/commissions")
 @RequiredArgsConstructor
+@Validated
 public class CommissionController implements CommissionControllerSwagger {
 
     private final CommissionService commissionService;
@@ -41,7 +45,8 @@ public class CommissionController implements CommissionControllerSwagger {
             @RequestParam(name = "started-at", required = false) LocalDate startedAt,
             @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
             @RequestParam(name = "open-status", defaultValue = "open") OpenStatus openStatus,
-            @Validated @ModelAttribute Pagination pagination
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Max(30) int size
     ) {
         if(paymentType == null && minPay != null) {
             throw new CommissionException(CommissionErrorCode.COMMISSION_PAY_FILTER_ERROR);
@@ -59,7 +64,7 @@ public class CommissionController implements CommissionControllerSwagger {
 
         Page<CommissionResponseDto> result;
 
-        result = commissionService.search(query, filter, pagination);
+        result = commissionService.search(query, filter, page, size);
 
         return ResponseDto.success(result);
     }

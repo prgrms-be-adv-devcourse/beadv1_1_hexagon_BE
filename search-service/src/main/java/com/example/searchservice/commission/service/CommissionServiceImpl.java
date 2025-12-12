@@ -68,7 +68,8 @@ public class CommissionServiceImpl implements CommissionService {
     public Page<CommissionResponseDto> search(
             String query,
             CommissionSearchFilter filter,
-            Pagination pagination
+            int page,
+            int size
     ) {
 
         SearchScope scope = filter.scope();
@@ -78,9 +79,6 @@ public class CommissionServiceImpl implements CommissionService {
         LocalDate startedAt = filter.startedAt();
         LocalDate endedAt = filter.endedAt();
         OpenStatus openStatus = filter.openStatus();
-
-        int page = pagination.page();
-        int size = pagination.size();
 
         boolean hasQuery = (query != null && !query.isEmpty());
         boolean hasTagsFilter = (tags != null && !tags.isEmpty());

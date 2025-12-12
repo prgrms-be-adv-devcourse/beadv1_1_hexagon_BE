@@ -13,7 +13,7 @@ import org.springframework.data.domain.Page;
 
 public interface CommissionService {
 
-    public Page<CommissionResponseDto> search(String query, CommissionSearchFilter filter, Pagination pagination);
+    public Page<CommissionResponseDto> search(String query, CommissionSearchFilter filter, int page, int size);
 
     public List<String> getSuggestions(String query, int size);
 
