@@ -16,6 +16,7 @@ import com.example.contractservice.contract.service.dto.request.ContractPayProce
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
+import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -109,6 +110,13 @@ public class ContractService {
         contractCancelService.processCancel(contract);
     }
 
+    public MemberRoleStatusResponse getMemberRoleStatus(String memberCode) {
+        long clientContractNum = contractRepository.countClientContractBy(memberCode);
+        long freelancerContractNum = contractRepository.countFreelancerContractBy(memberCode);
+
+        return new MemberRoleStatusResponse(clientContractNum > 0, freelancerContractNum > 0);
+    }
+
     private void validateCancelRequest(String xCode, Contract contract) {
         if (!contract.isRelatedWith(xCode)) {
             throw new ContractException(MEMBER_NOT_RELATED);
@@ -164,5 +172,4 @@ public class ContractService {
 
         return true;
     }
-
 }

@@ -12,6 +12,7 @@ import com.example.contractservice.contract.controller.dto.response.ContractPayR
 import com.example.contractservice.contract.service.CommissionsCapacityService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
+import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
@@ -45,11 +46,17 @@ public class ContractInternalController {
     }
 
     @GetContractInternalApi
-    @GetMapping("")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<List<ContractBriefWithNicknameResponse>> getBriefInfo(@RequestParam(name = "code") List<String> codes) {
 
         return ResponseDto.success(contractService.getBriefInfos(codes));
+    }
+
+    @GetMapping("/{member-code}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<MemberRoleStatusResponse> getMemberRoleStatus(@PathVariable("member-code") String memberCode) {
+        return ResponseDto.success(contractService.getMemberRoleStatus(memberCode));
     }
 
     @CommissionCapacityUpsertApi
