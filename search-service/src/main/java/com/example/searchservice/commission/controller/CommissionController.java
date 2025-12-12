@@ -46,7 +46,7 @@ public class CommissionController implements CommissionControllerSwagger {
             @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
             @RequestParam(name = "open-status", defaultValue = "open") OpenStatus openStatus,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Max(30) int size
+            @RequestParam(defaultValue = "20") @Min(1) @Max(30) int size
     ) {
         if(paymentType == null && minPay != null) {
             throw new CommissionException(CommissionErrorCode.COMMISSION_PAY_FILTER_ERROR);

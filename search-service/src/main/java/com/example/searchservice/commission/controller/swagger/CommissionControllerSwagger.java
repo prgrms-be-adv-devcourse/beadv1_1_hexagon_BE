@@ -45,7 +45,7 @@ public interface CommissionControllerSwagger {
             LocalDate endedAt,
             OpenStatus openStatus,
             @Min(0) int page,
-            @Max(30) int size
+            @Min(1) @Max(30) int size
     );
 
     @Operation(summary = "의뢰글 추천 검색 키워드", description = "입력한 접두어(prefix)를 기반으로 추천 검색 키워드를 반환합니다.")
