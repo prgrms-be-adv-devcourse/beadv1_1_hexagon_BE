@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "Commissions Internal API", description = "의뢰글 Internal API 명세")
+@Validated
 public interface CommissionInternalApi {
 
     @Operation(summary = "의뢰글 마감 상태 반환", description = "의뢰글의 마감 상태를 요청하는 기능입니다.")

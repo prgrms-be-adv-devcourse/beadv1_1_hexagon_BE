@@ -5,6 +5,7 @@ import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.get
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
 import com.example.cartpostservice.commissions.service.CommissionsManagerService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,9 @@ public class CommissionInternalController implements CommissionInternalApi {
     @Override
     @GetMapping("/recruitment-status")
     public ResponseEntity<ResponseDto<CommissionRecruitmentStatusResponse>> getRecruitmentStatus(
-            @PathVariable("commission-code") String commissionsCode) {
+            @PathVariable("commission-code")
+            @NotBlank(message = "의뢰글 uuid를 전달해 주시기 바랍니다")
+            String commissionsCode) {
 
         CommissionRecruitmentStatusResponse statusResponse = commissionsManagerService.getRecruitmentStatus(
                 commissionsCode);
