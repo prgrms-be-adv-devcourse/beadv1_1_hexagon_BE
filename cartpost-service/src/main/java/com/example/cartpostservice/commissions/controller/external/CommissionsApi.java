@@ -87,6 +87,16 @@ public interface CommissionsApi {
             @PathVariable String commissionCode
     );
 
+    @Operation(summary = "의뢰글 공고", description = "X-CODE 헤더를 기준으로 의뢰글 모집 공고 처리합니다.")
+    @Parameter(name = "X-CODE", description = "요청 사용자 식별 코드", required = true, in = ParameterIn.HEADER)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "공고 오픈 성공"),
+            @ApiResponse(responseCode = "404", description = "대상 의뢰글 없음")
+    })
+    ResponseEntity<ResponseDto<Empty>> openCommission(
+            @RequestHeader("X-CODE") String memberCode,
+            @PathVariable String commissionCode
+    );
 
     @Operation(summary = "내 의뢰글 목록 조회", description = "X-CODE 헤더를 기준으로 본인의 의뢰글 목록을 페이징 조회합니다.")
     @Parameters({

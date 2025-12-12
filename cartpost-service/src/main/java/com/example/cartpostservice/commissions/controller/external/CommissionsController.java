@@ -97,6 +97,13 @@ public class CommissionsController implements CommissionsApi {
     }
 
     @Override
+    public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
+            String commissionCode) {
+        return null;
+    }
+
+
+    @Override
     @GetMapping("/total")
     public ResponseEntity<ResponseDto<Page<CommissionReadResponse>>> readOwnCommissions(
             @RequestHeader("X-CODE") String code,
