@@ -3,6 +3,7 @@ package com.example.contractservice.contract.service;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
 
 import com.example.contractservice.common.domain.exception.DomainException;
+import com.example.contractservice.common.util.feign.CommissionClient;
 import com.example.contractservice.common.util.feign.MemberClient;
 import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
@@ -35,6 +36,7 @@ public class ContractService {
     private static final int CONTRACT_MEMBER_NUM = 2;
 
     private final MemberClient memberClient;
+    private final CommissionClient commissionClient;
     private final ContractRepository contractRepository;
     private final ContractPayService contractPayService;
     private final ContractCancelService contractCancelService;
@@ -67,6 +69,7 @@ public class ContractService {
     @Transactional
     public ContractCreateResponse requestContract(ContractCreateRequest request) {
         isValidMember(request.clientCode(), request.freelancerCode());
+        isCommissionOpen(request.commissionCode());
 
         Contract createdContract = request.toContract();
 
@@ -103,6 +106,16 @@ public class ContractService {
         validateCancelRequest(request.xCode(), contract);
 
         contractCancelService.processCancel(contract);
+    }
+
+    private void isCommissionOpen(String commissionCode) {
+        boolean isOpen = Optional.ofNullable(commissionClient.getRecruitmentStatus(commissionCode))
+                .orElseThrow(() -> new ContractException(COMMISSION_NOT_AVAILABLE))
+                .isOpen();
+
+        if (!isOpen) {
+            throw new ContractException(COMMISSION_NOT_AVAILABLE);
+        }
     }
 
     private void validateCancelRequest(String xCode, Contract contract) {
