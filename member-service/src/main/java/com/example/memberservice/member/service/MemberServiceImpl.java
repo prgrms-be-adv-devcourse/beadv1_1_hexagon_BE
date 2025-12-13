@@ -2,7 +2,7 @@ package com.example.memberservice.member.service;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
-import com.example.memberservice.common.client.dto.response.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;

@@ -1,7 +1,7 @@
 package com.example.memberservice.common.client;
 
 
-import com.example.memberservice.common.client.dto.response.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

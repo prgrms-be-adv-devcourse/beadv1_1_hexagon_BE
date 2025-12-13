@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
-import com.example.memberservice.common.client.dto.response.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
@@ -37,7 +37,6 @@ import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
