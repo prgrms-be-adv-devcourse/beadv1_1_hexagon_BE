@@ -21,14 +21,26 @@ public final class MemberServiceInputMapper {
 
     public static MemberCreateInput toCreateMemberInput(String memberCode,
         MemberCreateRequest request) {
-        return new MemberCreateInput(memberCode, request.name(), request.phoneNumber(),
-            request.birthDate(), request.gender());
+        return new MemberCreateInput(
+            memberCode,
+            request.name(),
+            request.phoneNumber(),
+            request.birthDate(),
+            request.gender(),
+            request.profileImageKey()
+        );
     }
 
     public static MemberUpdateInput toUpdateMemberInput(String memberCode,
         MemberUpdateRequest request) {
-        return new MemberUpdateInput(memberCode, request.name(), request.phoneNumber(),
-            request.birthDate(), request.gender());
+        return new MemberUpdateInput(
+            memberCode,
+            request.name(),
+            request.phoneNumber(),
+            request.birthDate(),
+            request.gender(),
+            request.profileImageKey()
+        );
     }
 
     public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(String memberCode,

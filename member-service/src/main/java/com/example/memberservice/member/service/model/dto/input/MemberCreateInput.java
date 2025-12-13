@@ -12,5 +12,7 @@ public record MemberCreateInput(
 
     LocalDate birthDate,
 
-    Gender gender
+    Gender gender,
+
+    String profileImageKey
 ) {}

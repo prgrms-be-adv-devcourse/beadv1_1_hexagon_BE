@@ -2,11 +2,14 @@ package com.example.memberservice.member.service;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.S3ServiceClient;
+import com.example.memberservice.common.client.dto.request.s3.StoreKeysRequest;
 import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.member.model.enums.MemberRole;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
 import com.example.memberservice.member.model.entity.Members;
@@ -62,6 +65,8 @@ public class MemberServiceImpl implements MemberService {
     private final EmailAuthRepository emailAuthRepository;
 
     private final ContractServiceClient contractServiceClient;
+
+    private final S3ServiceClient s3ServiceClient;
 
     //외부 API를 2개나 타기에 Transactional을 해주지 않습니다.
     @Override
@@ -121,7 +126,15 @@ public class MemberServiceImpl implements MemberService {
             .providerId(socialMembers.getProviderId())
             .build();
 
+
         Members savedMember = memberJpaRepository.save(newMember);
+
+        if(input.profileImageKey() != null && !input.profileImageKey().isBlank()) {
+            ResponseDto<Empty> emptyResponseDto = s3ServiceClient.updateKeys(new StoreKeysRequest(
+                savedMember.getCode(),
+                List.of(input.profileImageKey())
+            ));
+        }
 
         // Kafka Event 발송.
         memberKafkaEventProducer.sendCreatedEvent(new MemberCreatedEvent(savedMember.getCode()));
@@ -139,6 +152,11 @@ public class MemberServiceImpl implements MemberService {
         MembersMapper.toApply(existMember, input);
 
         Members updatedMember = memberJpaRepository.save(existMember);
+
+        ResponseDto<Empty> emptyResponseDto = s3ServiceClient.updateKeys(new StoreKeysRequest(
+            updatedMember.getCode(),
+            List.of(input.profileImageKey())
+        ));
 
         memberKafkaEventProducer.sendUpdatedEvent(
             new MemberUpdatedEvent(updatedMember.getCode(), updatedMember.getNickName()));
