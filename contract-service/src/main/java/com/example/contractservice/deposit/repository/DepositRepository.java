@@ -1,15 +1,21 @@
 package com.example.contractservice.deposit.repository;
 
 import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.NO_DEPOSIT_ENTITY;
+import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.NO_HISTORY_ENTITY;
 
+import com.example.contractservice.deposit.domain.Deposit;
+import com.example.contractservice.deposit.domain.DepositHistory;
 import com.example.contractservice.deposit.domain.exception.DepositException;
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.entity.DepositHistoryEntity;
 import com.example.contractservice.deposit.entity.QDepositHistoryEntity;
+import com.example.contractservice.deposit.service.mapper.DepositHistoryMapper;
+import com.example.contractservice.deposit.service.mapper.DepositMapper;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -20,24 +26,35 @@ public class DepositRepository {
     private final DepositHistoryJpaRepository depositHistoryJpaRepository;
     private final JPAQueryFactory queryFactory;
 
-    public DepositEntity findDepositByMemberCode(String memberCode) {
-        return depositJpaRepository.findByMemberCode(memberCode)
-                .orElseThrow(() -> new DepositException(NO_DEPOSIT_ENTITY));
+    public Deposit findDepositByMemberCode(String memberCode) {
+        return DepositMapper.toDomain(depositJpaRepository.findByMemberCode(memberCode)
+                .orElseThrow(() -> new DepositException(NO_DEPOSIT_ENTITY)));
     }
 
-    public DepositEntity saveDeposit(DepositEntity depositEntity) {
-        return depositJpaRepository.save(depositEntity);
+    public Deposit saveDeposit(Deposit deposit) {
+        Optional<DepositEntity> optionalEntity = depositJpaRepository.findByMemberCode(deposit.getMemberCode());
+
+        if (optionalEntity.isPresent()) {
+            DepositEntity depositEntity = optionalEntity.get();
+            DepositMapper.applyToEntity(deposit, depositEntity);
+            return DepositMapper.toDomain(depositJpaRepository.save(depositEntity));
+        }
+
+        DepositEntity depositEntity = DepositMapper.toEntity(deposit);
+        return DepositMapper.toDomain(depositJpaRepository.save(depositEntity));
     }
 
-    public DepositHistoryEntity saveDepositHistory(DepositHistoryEntity depositHistoryEntity) {
-        return depositHistoryJpaRepository.save(depositHistoryEntity);
+    public DepositHistory saveDepositHistory(DepositHistory depositHistory) {
+        DepositHistoryEntity historyEntity = DepositHistoryMapper.toEntity(depositHistory);
+
+        return DepositHistoryMapper.toDomain(depositHistoryJpaRepository.save(historyEntity));
     }
 
     public boolean existMemberDeposit(String memberCode) {
         return depositJpaRepository.existsByMemberCode(memberCode);
     }
 
-    public List<DepositHistoryEntity> findAllBy(String depositCode, Instant cursorDate, String cursorCode, int limit) {
+    public List<DepositHistory> findAllHistoriesBy(String depositCode, Instant cursorDate, String cursorCode, int limit) {
         QDepositHistoryEntity history = QDepositHistoryEntity.depositHistoryEntity;
 
         BooleanExpression predicate = history.depositCode.eq(depositCode);
@@ -54,6 +71,17 @@ public class DepositRepository {
                 .where(predicate)
                 .orderBy(history.createdAt.desc(), history.code.asc())
                 .limit(limit + 1L) // hasNext 판별
-                .fetch();
+                .fetch()
+                .stream()
+                .map(DepositHistoryMapper::toDomain)
+                .toList();
+    }
+
+    public DepositHistory findHistoryBy(String clientCode, String contractCode) {
+        Deposit clientDeposit = findDepositByMemberCode(clientCode);
+        DepositHistoryEntity depositHistoryEntity = depositHistoryJpaRepository.findByDepositAndContract(
+                clientDeposit.getCode(), contractCode).orElseThrow(() -> new DepositException(NO_HISTORY_ENTITY));
+
+        return DepositHistoryMapper.toDomain(depositHistoryEntity);
     }
 }

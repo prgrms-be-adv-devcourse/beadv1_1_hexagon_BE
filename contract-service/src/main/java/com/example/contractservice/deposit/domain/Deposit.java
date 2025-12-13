@@ -14,6 +14,10 @@ public class Deposit {
 
     private Long amount;
 
+    public static Deposit createdBy(String memberCode) {
+        return new Deposit(null, memberCode, 0L);
+    }
+
     public Deposit(String code, String memberCode, Long amount) {
         this.code = (code == null) ? generateCode() : code;
         this.memberCode = memberCode;

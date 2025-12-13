@@ -2,24 +2,22 @@ package com.example.contractservice.contract.controller;
 
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCancelApi;
-import com.example.contractservice.contract.common.swagger.annotation.ContractConfirmApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCreateApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractByCodeApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractsApi;
+import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
-import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractListWithCursorResponse;
 import com.example.contractservice.contract.service.ContractReadService;
 import com.example.contractservice.contract.service.ContractService;
-import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
 import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.http.HttpStatus;
@@ -75,37 +73,23 @@ public class ContractController {
         return ResponseDto.success(contractService.requestContract(request));
     }
 
-    @ContractConfirmApi
-    @PostMapping("/{code}/confirm")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<ContractInfoResponse> confirmContract(@RequestHeader(name = "X-CODE") String xCode,
-            @PathVariable String code) {
-
-        ContractConfirmRequest request = new ContractConfirmRequest(xCode, code);
-
-        return ResponseDto.success(contractService.confirmContract(request));
-    }
-
     @ContractCancelApi
     @PostMapping("/{code}/cancel")
     @ResponseStatus(HttpStatus.OK)
-    public ContractInfoResponse cancelContract(@RequestHeader(name = "X-CODE") String xCode,
+    public ResponseDto<Empty> cancelContract(@RequestHeader(name = "X-CODE") String xCode,
             @PathVariable String code) {
+        contractService.cancelContract(new ContractCancelRequest(xCode, code));
 
-        return new ContractInfoResponse(UUID.randomUUID().toString(), "CANCELLED");
+        return ResponseDto.success();
     }
 
     private void validateCreateRequest(String xCode, ContractCreateRequest request) {
-        if (!canCreateContract(xCode, request)) {
-            throw new IllegalArgumentException("X-CODE 회원 코드는 요청 회원 코드 혹은 요청 성립 회원 코드와 일치해야 합니다.");
+        if (!isUserClient(xCode, request)) {
+            throw new IllegalArgumentException("X-CODE 회원 코드는 계약 요청 클라이언트 코드와 일치해야 합니다.");
         }
 
-        if (request.requestorCode().equals(request.contractorCode())) {
+        if (request.clientCode().equals(request.freelancerCode())) {
             throw new IllegalArgumentException("자기 자신과 계약할 수 없습니다.");
-        }
-
-        if (!(request.contractorCode().equals(request.freelancerCode()) || request.requestorCode().equals(request.freelancerCode()))) {
-            throw new IllegalArgumentException("계약 요청자, 성립자 코드 중 하나는 반드시 계약 상 프리랜서 코드와 일치해야 합니다.");
         }
 
         if (request.startedAt().isAfter(request.endedAt()) || request.startedAt().isBefore(Instant.now())) {
@@ -117,12 +101,12 @@ public class ContractController {
         boolean isMonthly = request.paymentType().equals(PaymentType.MONTHLY.name());
 
         if (projectDays < DAYS_OF_MONTH && isMonthly) {
-            throw new IllegalArgumentException("프로젝트 기간이 짧아 월급 단위 금액으로 생성할 수 없습니다.");
+            throw new IllegalArgumentException("프로젝트 기간이 짧아 지급 단위를 월급으로 하여 생성할 수 없습니다.");
         }
     }
 
-    private boolean canCreateContract(String xCode, ContractCreateRequest request) {
-        return request.contractorCode().equals(xCode) || request.requestorCode().equals(xCode);
+    private boolean isUserClient(String xCode, ContractCreateRequest request) {
+        return request.clientCode().equals(xCode);
     }
 
     private Order getOrder(String order) {

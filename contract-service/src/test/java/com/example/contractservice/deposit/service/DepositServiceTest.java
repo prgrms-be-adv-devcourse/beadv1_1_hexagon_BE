@@ -3,6 +3,7 @@ package com.example.contractservice.deposit.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.example.contractservice.common.TestConfig;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
 import com.example.contractservice.deposit.domain.exception.DepositErrorCode;
@@ -12,17 +13,28 @@ import com.example.contractservice.deposit.entity.DepositHistoryEntity;
 import com.example.contractservice.deposit.repository.DepositHistoryJpaRepository;
 import com.example.contractservice.deposit.repository.DepositJpaRepository;
 import com.example.contractservice.deposit.service.dto.request.DepositHistoryCursorRequest;
+import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
+@Import(TestConfig.class)
 class DepositServiceTest {
 
     private static final int PAGE_SIZE = 20;
@@ -32,6 +44,11 @@ class DepositServiceTest {
     DepositJpaRepository depositRepository;
     @Autowired
     DepositHistoryJpaRepository depositHistoryJpaRepository;
+
+    @MockitoBean
+    KafkaTemplate<String, String> kafkaTemplate;
+    @MockitoBean
+    KafkaAdmin kafkaAdmin;
 
     Random random = new Random();
 
@@ -70,7 +87,7 @@ class DepositServiceTest {
                 .isInstanceOf(DepositException.class)
                 .satisfies(ex -> {
                     DepositException depositException = (DepositException) ex;
-                    assertEquals(DepositErrorCode.NO_DEPOSIT_ENTITY, depositException.errorCode);
+                    assertEquals(DepositErrorCode.NO_DEPOSIT_ENTITY, depositException.getErrorCode());
                 });
     }
 
@@ -124,5 +141,47 @@ class DepositServiceTest {
         assertEquals(PAGE_SIZE, secondResp.infos().size());
         assertFalse(secondResp.hasNext());
         assertTrue(firstResp.infos().get(0).createdAt().isAfter(secondResp.infos().get(0).createdAt()));
+    }
+
+    @Test
+    @DisplayName("동시 출금 요청이 제대로 처리된다")
+    void success_concurrency_test_given_recharge_scenario_at_the_same_time() throws Exception {
+        // given
+        String memberCode = UUID.randomUUID().toString();
+        DepositEntity entity = DepositEntity.createBy(memberCode);
+        long initAmount = 100_000L;
+        entity.updateInfo(initAmount);
+        depositRepository.save(entity);
+
+        int withdrawCnt = 3;
+        long withdrawAmount = 5_000L;
+        DepositProcessRequest request = new DepositProcessRequest(memberCode, null, withdrawAmount, "");
+
+        CyclicBarrier barrier = new CyclicBarrier(withdrawCnt); // 태스크 동시 시작용
+        ExecutorService executorService = Executors.newFixedThreadPool(3); // 3개 커널 스레드 할당
+        CountDownLatch latch = new CountDownLatch(withdrawCnt);
+
+        // when
+        for (int i = 0; i < withdrawCnt; i++) {
+            executorService.execute(() -> {
+                try {
+                    barrier.await(); // 모든 태스크를 대기
+                } catch (Exception e) {
+                    latch.countDown();
+                    throw new RuntimeException(e);
+                }
+                try {
+                    depositService.withdraw(request);
+                    latch.countDown();
+                } catch (Exception e) {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await(8000, TimeUnit.MILLISECONDS);
+
+        // then
+        DepositEntity found = depositRepository.findByMemberCode(memberCode).get();
+        assertEquals(initAmount - withdrawAmount * withdrawCnt, found.getAmount());
     }
 }

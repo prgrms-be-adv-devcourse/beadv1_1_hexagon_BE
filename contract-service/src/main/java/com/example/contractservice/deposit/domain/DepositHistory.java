@@ -7,6 +7,7 @@ import java.util.UUID;
 public class DepositHistory {
     private String code;
     private String depositCode;
+    private String contractCode;
 
     private DepositChange depositChange;
 
@@ -14,14 +15,15 @@ public class DepositHistory {
 
     private Instant createdAt;
 
-    public DepositHistory(String depositCode, DepositChange depositChange, String summary) {
-        this(null, depositCode, depositChange, summary, null);
+    public DepositHistory(String depositCode, String contractCode, DepositChange depositChange, String summary) {
+        this(null, depositCode, contractCode, depositChange, summary, null);
     }
 
-    public DepositHistory(String code, String depositCode, DepositChange depositChange,
+    public DepositHistory(String code, String depositCode, String contractCode, DepositChange depositChange,
         String summary, Instant createdAt) {
         this.code = (code == null) ? generateCode() : code;
         this.depositCode = depositCode;
+        this.contractCode = contractCode;
         this.depositChange = depositChange;
         this.summary = summary;
         this.createdAt = (createdAt == null) ? Instant.now() : createdAt;
@@ -33,6 +35,10 @@ public class DepositHistory {
 
     public String getDepositCode() {
         return depositCode;
+    }
+
+    public String getContractCode() {
+        return contractCode;
     }
 
     public DepositChange getDepositChange() {

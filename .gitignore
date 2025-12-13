@@ -18,3 +18,4 @@ build/
 !*-workflow.yml
 
 !docker-*
+!application-prod.yml

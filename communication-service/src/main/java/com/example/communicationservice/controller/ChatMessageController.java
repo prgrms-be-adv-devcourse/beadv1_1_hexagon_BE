@@ -6,11 +6,13 @@ import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
 import com.example.communicationservice.service.ChatMessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
@@ -29,10 +31,8 @@ public class ChatMessageController {
      * 3. 해당 토픽 구독자에게 메시지 전송
      */
     @MessageMapping("chat.send")
-    public void handleChatMessage(ChatMessageSendRequest request) {
-        ChatMessageSendResponse response = chatMessageService.saveMessage(
-            request.roomId(), request.senderCode(), request.content()
-        );
+    public void handleChatMessage(@Valid @Payload ChatMessageSendRequest request) {
+        ChatMessageSendResponse response = chatMessageService.saveMessage(request);
 
         String destinationPrefix = "/queue/room/";
         messagingTemplate.convertAndSend(destinationPrefix + request.roomId(), response);

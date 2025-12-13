@@ -4,11 +4,13 @@ import com.example.communicationservice.client.MemberServiceClient;
 import com.example.communicationservice.client.dto.MemberExistOutput;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
+import com.example.communicationservice.controller.dto.request.ChatRoomCreateRequest;
 import com.example.communicationservice.controller.dto.response.ChatRoomCreateResponse;
 import com.example.communicationservice.controller.dto.response.ChatRoomListReadResponse;
 import com.example.communicationservice.controller.dto.response.ChatRoomReadResponse;
 import com.example.communicationservice.controller.dto.response.PageInfo;
 import com.example.communicationservice.entity.ChatRoom;
+import com.example.communicationservice.mapper.ChatMapper;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,12 +28,13 @@ public class ChatRoomService {
 
     /**
      * 새로운 채팅방을 생성하고 저장합니다.
-     * @param name 채팅방 이름
-     * @param memberCodes 채팅방 참여자들의 코드 목록
+     * @param request 채팅방 생성 요청
      * @param currentMemberCode 현재 로그인한 회원의 코드
      * @return 생성된 채팅방 아이디
      */
-    public ChatRoomCreateResponse createChatRoom(String name, List<String> memberCodes, String currentMemberCode) {
+    public ChatRoomCreateResponse createChatRoom(ChatRoomCreateRequest request, String currentMemberCode) {
+        List<String> memberCodes = request.memberCodes();
+
         // 1:1 채팅인지 확인
         if (memberCodes.stream().distinct().count() != 2) {
             throw new ChatRoomException(ResponseDtoStatus.CHATROOM_INVALID_MEMBER_COUNT);
@@ -56,14 +59,14 @@ public class ChatRoomService {
 
         // 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
-            .name(name)
+            .name(request.name())
             .memberCodes(memberCodes)
             .build();
 
         // 채팅방 저장
         ChatRoom createdChatRoom = chatRoomRepository.save(chatRoom);
 
-        return ChatRoomCreateResponse.from(createdChatRoom);
+        return ChatMapper.toCreateResponse(createdChatRoom);
     }
 
     /**
@@ -77,11 +80,11 @@ public class ChatRoomService {
 
         // 엔티티 -> DTO 변환
         List<ChatRoomReadResponse> chatRooms = chatRoomPage.getContent().stream()
-            .map(ChatRoomReadResponse::from)
+            .map(ChatMapper::toReadResponse)
             .toList();
 
         // Page 정보 추출 및 DTO 생성
-        PageInfo pageInfo = PageInfo.from(chatRoomPage);
+        PageInfo pageInfo = ChatMapper.toPageInfo(chatRoomPage);
 
         return new ChatRoomListReadResponse(chatRooms, pageInfo);
     }

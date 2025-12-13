@@ -1,10 +1,10 @@
 package com.example.contractservice.deposit.domain.exception;
 
-public class DepositException extends RuntimeException {
-    public final DepositErrorCode errorCode;
+import com.example.contractservice.common.domain.exception.DomainException;
+
+public class DepositException extends DomainException {
 
     public DepositException(DepositErrorCode errorCode) {
-        this.errorCode = errorCode;
+        super(errorCode);
     }
-
 }

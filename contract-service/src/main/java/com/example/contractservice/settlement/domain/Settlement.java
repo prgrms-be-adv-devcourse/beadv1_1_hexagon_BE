@@ -1,5 +1,8 @@
 package com.example.contractservice.settlement.domain;
 
+import static com.example.contractservice.settlement.domain.exception.SettlementErrorCode.FEE_NOT_CALCULATED;
+
+import com.example.contractservice.settlement.domain.exception.SettlementException;
 import com.example.contractservice.settlement.domain.vo.SettlementReference;
 import com.example.contractservice.settlement.domain.vo.SettlementStatusInfo;
 import com.example.contractservice.settlement.domain.vo.SettlementTimeline;
@@ -51,5 +54,13 @@ public class Settlement {
 
     private String generateCode() {
         return UUID.randomUUID().toString();
+    }
+
+    public Long getFee() {
+        if (settlementStatusInfo.settledAmount() == null) {
+            throw new SettlementException(FEE_NOT_CALCULATED);
+        }
+
+        return settlementStatusInfo.originalAmount() - settlementStatusInfo.settledAmount();
     }
 }

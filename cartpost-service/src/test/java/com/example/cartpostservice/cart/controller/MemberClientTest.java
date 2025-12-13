@@ -1,7 +1,7 @@
 package com.example.cartpostservice.cart.controller;
 
-import com.example.cartpostservice.commissions.controller.dto.response.InternalMemberInfo;
-import com.example.cartpostservice.commissions.controller.dto.response.MemberInfoOutput;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.InternalMemberInfo;
+import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
 import com.example.cartpostservice.commissions.controller.internal.MemberClient;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,5 +1,8 @@
 package com.example.communicationservice.entity;
 
+import com.example.communicationservice.common.exception.ChatMessageException;
+import com.example.communicationservice.common.status.ResponseDtoStatus;
+import com.example.communicationservice.type.MessageType;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,16 +25,36 @@ public class ChatMessage {
 
     private String senderCode;
 
-    private String content;
+    private MessageType type;
+
+    private String text;
+
+    private File file;
 
     @CreatedDate
     private Instant sentAt; // 전송된 시간
 
     @Builder
-    private ChatMessage(String roomId, String senderCode, String content) {
+    private ChatMessage(
+        String roomId,
+        String senderCode,
+        MessageType type,
+        String text,
+        File file
+    ) {
+        // 메시지 타입 null 체크
+        if (type == null) {
+            throw new ChatMessageException(ResponseDtoStatus.MESSAGE_TYPE_MISSING);
+        }
+
         this.roomId = roomId;
         this.senderCode = senderCode;
-        this.content = content;
+        this.type = type;
+        this.text = text;
+        this.file = file;
+
+        // 타입별 유효성 검증
+        type.validate(this);
     }
 
 }

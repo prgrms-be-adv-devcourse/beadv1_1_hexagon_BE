@@ -1,6 +1,6 @@
 package com.example.contractservice.contract.service.batch.writer;
 
-import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.repository.ContractRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -10,23 +10,23 @@ import org.springframework.context.ApplicationEventPublisher;
 
 @StepScope
 @RequiredArgsConstructor
-public abstract class ContractStatusWriter implements ItemWriter<ContractEntity> {
+public abstract class ContractStatusWriter implements ItemWriter<Contract> {
 
     protected final ApplicationEventPublisher applicationEventPublisher;
     protected final ContractRepository contractRepository;
 
     @Override
-    public void write(Chunk<? extends ContractEntity> chunk) {
-        chunk.forEach(contractEntity -> {
-            changeStatus(contractEntity);
+    public void write(Chunk<? extends Contract> chunk) {
+        chunk.forEach(contract -> {
+            changeStatus(contract);
 
-            contractRepository.saveContract(contractEntity);
+            contractRepository.saveContract(contract);
 
-            publishEvent(contractEntity);
+            publishEvent(contract);
         });
     }
 
-    protected abstract void changeStatus(ContractEntity contractEntity);
+    protected abstract void changeStatus(Contract contractEntity);
 
-    protected abstract void publishEvent(ContractEntity contractEntity);
+    protected abstract void publishEvent(Contract contractEntity);
 }

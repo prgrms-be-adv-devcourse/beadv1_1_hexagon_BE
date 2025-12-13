@@ -5,7 +5,7 @@ import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
-import com.example.memberservice.member.entity.Members;
+import com.example.memberservice.member.model.entity.Members;
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.mapper.MembersMapper;
 import com.example.memberservice.member.service.model.dto.input.MemberCreateInput;
