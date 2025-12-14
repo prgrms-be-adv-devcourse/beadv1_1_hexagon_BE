@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "memberClient", path = "/internal/members")
+@FeignClient(name = "member-service", path = "/internal/members")
 public interface MemberClient {
     @GetMapping
     MemberInfoResponse getMemberInfo(@RequestParam("member-code") List<String> memberCodes);
