@@ -28,9 +28,6 @@ public class DepositBatchRepository {
                 SET amount = ?, updated_at = ?
                 WHERE code = ? AND updated_at = ?
                 """;
-        // 주의: JDBC -> DB로는 Instant를 자동 계산해주지만(JVM 시간대 정보를 통해 실제로 들어갈 값으로 변환. 현재 JVM 시간대가 KST라서 9시간을 더함)
-        // DB(MySQL)는 시간대 정보를 몰라서 그대로 반환하며(DB는 이게 서버 시간대인지 UTC 시간대인지 모름) 그래서 Instant.parse()로 읽어오게 되어 절대 동일 값이 될 수 없다!
-        // JDBC URL에 serverTimezone을 UTC로 설정할 경우, JVM 시간대 정보를 폐기하고 JDBC가 UTC 기준으로 Instant를 조정해준다. 이것으로 헤결되었다.
 
         List<Object[]> args = memberDepositMap.values().stream()
                 .map(deposit -> new Object[]{deposit.getAmount(), Instant.now(), deposit.getCode(), deposit.getUpdatedAt()}).toList();
