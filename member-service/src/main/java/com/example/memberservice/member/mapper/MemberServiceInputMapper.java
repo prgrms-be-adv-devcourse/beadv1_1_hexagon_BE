@@ -17,8 +17,8 @@ public final class MemberServiceInputMapper {
     private MemberServiceInputMapper() {
     }
 
-    public static MemberGetInput toGetMemberInput(String xCode, String paramCode) {
-        return new MemberGetInput(xCode, paramCode);
+    public static MemberGetInput toGetMemberInput(String memberCode) {
+        return new MemberGetInput(memberCode);
     }
 
     public static MemberCreateInput toCreateMemberInput(String memberCode,

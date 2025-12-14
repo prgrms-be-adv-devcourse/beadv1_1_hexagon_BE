@@ -70,9 +70,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberGetResponse getMemberByCode(MemberGetInput input) {
 
-        String findMemberCode = (input.xCode() != null && !input.xCode().isBlank())
-            ? input.xCode()
-            : input.paramCode();
+        String findMemberCode =input.memberCode();
 
         if (findMemberCode == null || findMemberCode.isBlank()) {
             throw new BusinessException(ErrorCode.NOT_CONTAINS_MEMBER_CODE);
@@ -87,8 +85,6 @@ public class MemberServiceImpl implements MemberService {
         MemberRating memberRating = null;
 
         List<MemberTag> memberTags = null;
-
-        String memberProfileImageKey = null;
 
         memberRating = getMemberRating(findMemberCode);
 

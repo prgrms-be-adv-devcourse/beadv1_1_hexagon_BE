@@ -43,9 +43,16 @@ public class MemberApiController implements MemberApiControllerSwagger {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<MemberGetResponse> getMemberByCode(
-        @RequestHeader(name = "X-CODE", required = false) String xCode,
-        @RequestParam(name = "member-code", required = false) String paramCode) {
-        return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(xCode, paramCode)));
+        @RequestParam(name = "member-code", required = false) String paramCode
+    ) {
+        return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(paramCode)));
+    }
+
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<MemberGetResponse> getMyMemberByCode(
+        @RequestHeader(name = "X-CODE", required = false) String xCode) {
+        return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(xCode)));
     }
 
     @PostMapping
