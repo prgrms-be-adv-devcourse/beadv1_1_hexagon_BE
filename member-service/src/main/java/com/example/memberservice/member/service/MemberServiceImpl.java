@@ -160,7 +160,13 @@ public class MemberServiceImpl implements MemberService {
         //회원 가입을 하기 전 이미 해당 nick name을 사용하는 사람이 있는 지 확인.
         checkNickNameDuplicate(input.memberCode(), input.name());
 
+        boolean updateEventTrigger = false;
+
         Members existMember = findMembers(input.memberCode());
+
+        if(!input.name().equals(existMember.getNickName())){
+            updateEventTrigger = true;
+        }
 
         MembersMapper.toApply(existMember, input);
 
@@ -171,8 +177,10 @@ public class MemberServiceImpl implements MemberService {
             List.of(input.profileImageKey())
         ));
 
-        memberKafkaEventProducer.sendUpdatedEvent(
-            new MemberUpdatedEvent(updatedMember.getCode(), updatedMember.getNickName()));
+        if(updateEventTrigger){
+            memberKafkaEventProducer.sendUpdatedEvent(
+                new MemberUpdatedEvent(updatedMember.getCode(), updatedMember.getNickName()));
+        }
     }
 
 
