@@ -6,8 +6,8 @@ import com.example.cartpostservice.commissions.controller.external.dto.request.C
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.service.CommissionsManagerService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.Valid;
@@ -99,7 +99,10 @@ public class CommissionsController implements CommissionsApi {
     @Override
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
             String commissionCode) {
-        return null;
+
+        commissionsManagerService.openCommission(memberCode, commissionCode);
+        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
+                .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
     }
 
 

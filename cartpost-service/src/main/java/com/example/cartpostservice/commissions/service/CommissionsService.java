@@ -130,4 +130,15 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
 
         commission.closeRecruitmentStatus();
     }
+
+    public void openCommission(String commissionCode) {
+        CommissionsEntity commission = commissionsRepository.findByCode(commissionCode)
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
+
+        if (commission.getRecruitmentStatus() == RecruitmentStatus.HALTED) {
+            throw new BusinessException(CustomStatusCode.NOT_OPEN_COMMISSION);
+        }
+
+        commission.openRecruitmentStatus();
+    }
 }

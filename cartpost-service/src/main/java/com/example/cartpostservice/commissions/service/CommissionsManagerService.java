@@ -294,6 +294,17 @@ public class CommissionsManagerService {
     }
 
     @Transactional
+    public void openCommission(String memberCode, String commissionCode) {
+        if (!commissionsService.isOwner(memberCode, commissionCode)) {
+            throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
+        }
+
+        // 추후 선정 인원수를 보고 예외 처리하는 코드 추가
+
+        commissionsService.openCommission(commissionCode);
+    }
+
+    @Transactional
     public Page<CommissionReadResponse> readOwnCommissions(String code, Pageable pageable) {
 
         int page = 0;
@@ -370,6 +381,5 @@ public class CommissionsManagerService {
     private <T> T getOrDefault(T newValue, T oldValue) {
         return newValue != null ? newValue : oldValue;
     }
-
 
 }

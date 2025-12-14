@@ -14,6 +14,7 @@ public enum CustomStatusCode {
 
     FORBIDDEN_ITEM(HttpStatus.FORBIDDEN, 6403, "소유하고 있는 아이템이 아닙니다"),
     FORBIDDEN_COMMISSION(HttpStatus.FORBIDDEN, 6413, "의뢰글에 접근 권한이 없습니다"),
+    NOT_OPEN_COMMISSION(HttpStatus.UNAUTHORIZED, 6423, "중단된 의뢰글은 다시 모집 공고를 열 수 없습니다"),
 
     NOT_FOUND_ITEM(HttpStatus.BAD_REQUEST, 6404, "아이템이 존재하지 않습니다"),
     NOT_FOUND_COMMISSION(HttpStatus.BAD_REQUEST, 6414, "의뢰글이 존재하지 않습니다"),
