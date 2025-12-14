@@ -3,12 +3,16 @@ package com.example.memberservice.member.service;
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
 import com.example.memberservice.common.client.S3ServiceClient;
+import com.example.memberservice.common.client.dto.request.s3.PresignedDownloadRequestByCode;
 import com.example.memberservice.common.client.dto.request.s3.StoreKeysRequest;
 import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadListResponse;
+import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.member.model.enums.MemberRole;
+import java.io.DataOutput;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
@@ -90,11 +94,21 @@ public class MemberServiceImpl implements MemberService {
 
         List<MemberTag> memberTags = null;
 
+        String memberProfileImageKey = null;
+
         memberRating = getMemberRating(findMemberCode);
 
         memberTags = getMemberTags(findMemberCode);
 
-        return new MemberGetResponse(memberInfo, memberRating, memberTags);
+        ResponseDto<PresignedDownloadListResponse> downloadUrlByCode = s3ServiceClient.getDownloadUrlByCode(
+            new PresignedDownloadRequestByCode(
+                existMembers.getCode()
+            )
+        );
+
+        List<PresignedDownloadResponse> urls = downloadUrlByCode.data().urls();
+
+        return new MemberGetResponse(memberInfo, memberRating, memberTags, urls);
     }
 
     @Override
@@ -126,10 +140,9 @@ public class MemberServiceImpl implements MemberService {
             .providerId(socialMembers.getProviderId())
             .build();
 
-
         Members savedMember = memberJpaRepository.save(newMember);
 
-        if(input.profileImageKey() != null && !input.profileImageKey().isBlank()) {
+        if (input.profileImageKey() != null && !input.profileImageKey().isBlank()) {
             ResponseDto<Empty> emptyResponseDto = s3ServiceClient.updateKeys(new StoreKeysRequest(
                 savedMember.getCode(),
                 List.of(input.profileImageKey())
@@ -211,10 +224,12 @@ public class MemberServiceImpl implements MemberService {
 
         Members updatedMember = memberJpaRepository.save(existMember);
 
-        if (inputRole.equals(MemberRole.CLIENT)){
-            memberKafkaEventProducer.sendDeletedClientRoleEvent(new MemberDeletedClientRoleEvent(updatedMember.getCode()));
-        }else{
-            memberKafkaEventProducer.sendDeletedFreelancerRoleEvent(new MemberDeletedFreelancerRoleEvent(updatedMember.getCode()));
+        if (inputRole.equals(MemberRole.CLIENT)) {
+            memberKafkaEventProducer.sendDeletedClientRoleEvent(
+                new MemberDeletedClientRoleEvent(updatedMember.getCode()));
+        } else {
+            memberKafkaEventProducer.sendDeletedFreelancerRoleEvent(
+                new MemberDeletedFreelancerRoleEvent(updatedMember.getCode()));
         }
     }
 
