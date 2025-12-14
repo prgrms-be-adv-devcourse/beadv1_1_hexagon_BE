@@ -19,6 +19,7 @@ public enum CustomStatusCode {
     NOT_FOUND_ITEM(HttpStatus.BAD_REQUEST, 6404, "아이템이 존재하지 않습니다"),
     NOT_FOUND_COMMISSION(HttpStatus.BAD_REQUEST, 6414, "의뢰글이 존재하지 않습니다"),
     INVALID_REQUEST_PPARAMETER(HttpStatus.BAD_REQUEST, 6424, "파리미터 값이 잘못되었습니다"),
+    ALREADY_CLOSED_COMMISSION(HttpStatus.BAD_REQUEST, 6434, "이미 마감된 의뢰글 입니다"),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6500, "내부 시스템에 오류가 발생했습니다"),
     NOT_FOUND_CART(HttpStatus.INTERNAL_SERVER_ERROR, 6510, "내부 서버 문제로 장바구니가 없습니다"),
