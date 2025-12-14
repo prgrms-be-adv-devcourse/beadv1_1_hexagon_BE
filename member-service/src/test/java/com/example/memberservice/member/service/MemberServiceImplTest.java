@@ -68,13 +68,7 @@ class MemberServiceImplTest {
     private MemberServiceImpl service;
 
     @MockitoBean
-    private RestTemplate restTemplate; // 외부 API는 Mock
-
-    @MockitoBean
     private MemberKafkaEventProducer memberKafkaEventProducer;
-
-    @MockitoBean
-    private RequestURIGenerator requestURIGenerator;
 
     @MockitoBean
     private KafkaAdmin kafkaAdmin;
@@ -101,9 +95,7 @@ class MemberServiceImplTest {
         memberService = new MemberServiceImpl(
             memberJpaRepository,
             socialMemberJpaRepository,
-            restTemplate,
             memberKafkaEventProducer,
-            requestURIGenerator,
             emailAuthRepository,
             contractServiceClient,
             s3ServiceClient,

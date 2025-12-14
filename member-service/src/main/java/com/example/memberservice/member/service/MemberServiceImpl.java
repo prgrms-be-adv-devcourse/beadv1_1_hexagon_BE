@@ -16,7 +16,6 @@ import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.member.model.enums.MemberRole;
-import java.io.DataOutput;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
@@ -32,11 +31,9 @@ import com.example.memberservice.member.service.model.dto.input.MemberUpdateRole
 import com.example.memberservice.member.service.model.vo.ApiMemberInfo;
 import com.example.memberservice.member.service.model.vo.MemberRating;
 import com.example.memberservice.member.service.model.vo.MemberTag;
-import com.example.memberservice.member.service.util.RequestURIGenerator;
 import com.example.memberservice.socialmember.entity.SocialMembers;
 import com.example.memberservice.socialmember.repository.SocialMemberJpaRepository;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.member.MemberCreatedEvent;
@@ -44,14 +41,8 @@ import org.hexagon.core.events.member.MemberDeletedClientRoleEvent;
 import org.hexagon.core.events.member.MemberDeletedEvent;
 import org.hexagon.core.events.member.MemberDeletedFreelancerRoleEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -62,13 +53,8 @@ public class MemberServiceImpl implements MemberService {
 
     private final SocialMemberJpaRepository socialMemberJpaRepository;
 
-    // 멤버 조회에서 태그 정보와 평가 정보를 받아올 RestTemplate
-    private final RestTemplate restTemplate;
-
     //멤버 생성 및 업데이트 시 이벤트 발생 주체
     private final MemberKafkaEventProducer memberKafkaEventProducer;
-
-    private final RequestURIGenerator requestURIGenerator;
 
     private final EmailAuthRepository emailAuthRepository;
 
