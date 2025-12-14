@@ -43,7 +43,7 @@ public class MemberApiController implements MemberApiControllerSwagger {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<MemberGetResponse> getMemberByCode(
-        @RequestParam(name = "member-code", required = false) String paramCode
+        @RequestParam(name = "member-code") String paramCode
     ) {
         return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(paramCode)));
     }
@@ -51,7 +51,7 @@ public class MemberApiController implements MemberApiControllerSwagger {
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<MemberGetResponse> getMyMemberByCode(
-        @RequestHeader(name = "X-CODE", required = false) String xCode) {
+        @RequestHeader(name = "X-CODE") String xCode) {
         return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(xCode)));
     }
 
