@@ -8,6 +8,7 @@ import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.common.model.vo.util.MemberInfoOutput;
+import com.example.profileservice.common.model.vo.util.S3FeignClient;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
@@ -17,6 +18,7 @@ import com.example.profileservice.selfPromotion.repository.SelfPromotionReposito
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
@@ -24,6 +26,10 @@ import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
 import org.hexagon.core.vo.SelfPromotion;
+import org.hexagon.s3service.dto.PresignedDownloadListResponse;
+import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
+import org.hexagon.s3service.dto.PresignedDownloadResponse;
+import org.hexagon.s3service.dto.StoreKeysRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +42,7 @@ public class SelfPromotionService {
     private final ResumeRepository resumeRepository;
     private final KafkaProducer kafkaProducer;
     private final MemberFeignClient memberFeignClient;
+    private final S3FeignClient s3FeignClient;
 
     // Search Service에서 사용할 토픽 이름
     @Value("${topics.selfpromotion-events:selfpromotion-events}")
@@ -92,14 +99,22 @@ public class SelfPromotionService {
                     kafkaProducer.send(selfPromotionTopic, existingPromotion.getCode(), deletedEvent);
                 });
 
-        // 4. SelfPromotion 엔티티 생성 및 저장
+        // 4. S3 리소스 영구 저장 및 Code 생성
+        String pdfCode = null;
+        if (request.pdfKey() != null && !request.pdfKey().isEmpty()) {
+            pdfCode = UUID.randomUUID().toString(); // 새로운 Code 생성
+            storeS3Keys(pdfCode, List.of(request.pdfKey())); // S3 모듈에 영구 저장 요청
+        }
+
+        // 5. SelfPromotion 엔티티 생성 및 저장
         SelfPromotionEntity promotion = SelfPromotionEntity.create(
                 memberCode,
                 request.title(),
                 request.content(),
                 request.paymentType(),
                 request.unitAmount(),
-                request.resumeCode()
+                request.resumeCode(),
+                pdfCode
         );
 
         selfPromotionRepository.save(promotion);
@@ -129,18 +144,41 @@ public class SelfPromotionService {
         // 2. 이력서 유효성 검증
         validateResumeCode(request.resumeCode());
 
-        // 3. 수정 (요청에 포함된 필드만 업데이트하며, null이 올 경우 기존 값 유지)
+        // 3. S3 리소스 동기화
+        String currentPortfolioCode = promotion.getPdfKey();
+        String newPortfolioCode = currentPortfolioCode;
+        String updatedKey = request.pdfKey();
+
+        // S3 모듈의 syncKeys/storeKeys가 List<String>을 받으므로, 단일 키를 List로 변환
+        List<String> updatedKeysList = updatedKey != null && !updatedKey.isBlank() ? List.of(updatedKey) : List.of();
+
+        if (currentPortfolioCode == null && !updatedKeysList.isEmpty()) {
+            // 새롭게 포트폴리오를 등록하는 경우
+            newPortfolioCode = UUID.randomUUID().toString();
+            storeS3Keys(newPortfolioCode, updatedKeysList);
+        } else if (currentPortfolioCode != null) {
+            // 기존 포트폴리오를 수정/삭제하는 경우 (syncAttachments API 사용)
+            syncS3Keys(currentPortfolioCode, updatedKeysList);
+
+            // 키가 완전히 제거되었다면(updatedKeysList.isEmpty()), code도 null로 설정
+            if (updatedKeysList.isEmpty()) {
+                newPortfolioCode = null;
+            }
+        }
+
+        // 4. 수정 (요청에 포함된 필드만 업데이트하며, null이 올 경우 기존 값 유지)
         promotion.update(
                 Optional.ofNullable(request.title()).orElse(promotion.getTitle()),
                 Optional.ofNullable(request.content()).orElse(promotion.getContent()),
                 Optional.ofNullable(request.paymentType()).orElse(promotion.getPaymentType()),
                 Optional.ofNullable(request.unitAmount()).orElse(promotion.getUnitAmount()),
-                request.resumeCode()
+                request.resumeCode(),
+                newPortfolioCode
         );
 
         SelfPromotionResponse response = toResponse(promotion);
 
-        // 4. 이벤트 발행 (UPDATE)
+        // 5. 이벤트 발행 (UPDATE)
         SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
 
         SelfPromotionUpdatedEvent updatedEvent = new SelfPromotionUpdatedEvent(
@@ -160,12 +198,16 @@ public class SelfPromotionService {
         // 1. 프로모션 존재 및 권한 확인
         SelfPromotionEntity promotion = getPromotionOrThrow(promotionCode, memberCode);
 
-        // 2. Soft Delete 처리
+        // 2. 연결된 S3 파일 메타데이터 삭제
+        // syncAttachments를 빈 키 리스트로 호출하여 DB에서 S3 Resource 메타데이터를 삭제하고 S3 오브젝트도 삭제
+        if (promotion.getPdfKey() != null) {
+            syncS3Keys(promotion.getPdfKey(), List.of());
+        }
+
+        // 3. Soft Delete 처리
         promotion.delete();
 
-        SelfPromotionResponse response = toResponse(promotion);
-
-        // 3. 이벤트 발행 (DELETE)
+        // 4. 이벤트 발행 (DELETE)
         SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotionCode);
 
         kafkaProducer.send(selfPromotionTopic, promotionCode, deletedEvent);
@@ -242,6 +284,57 @@ public class SelfPromotionService {
         log.info("프리랜서 등록 취소 - Self Promotion 삭제 완료.");
     }
 
+    // 헬퍼 메서드: S3 Resource Code를 사용하여 S3 모듈에 영구 저장 요청
+    private void storeS3Keys(String pdfCode, List<String> keys) {
+        StoreKeysRequest request = new StoreKeysRequest(pdfCode, keys);
+
+        try {
+            s3FeignClient.storeKeys(request);
+        } catch (Exception e) {
+            log.error("Failed to store S3 keys for code: {}", pdfCode, e);
+            throw new CustomException(ErrorCode.S3_RESOURCE_SAVE_FAILED);
+        }
+    }
+
+    // 헬퍼 메서드: S3 Resource Code를 사용하여 S3 모듈에 동기화 요청 (수정/삭제 시)
+    private void syncS3Keys(String pdfCode, List<String> keys) {
+        StoreKeysRequest request = new StoreKeysRequest(pdfCode, keys);
+
+        try {
+            s3FeignClient.updateKeys(request);
+        } catch (Exception e) {
+            log.error("Failed to sync S3 keys for code: {}", pdfCode, e);
+            throw new CustomException(ErrorCode.S3_RESOURCE_SYNC_FAILED);
+        }
+    }
+
+    // 헬퍼 메서드: 포트폴리오 다운로드 URL 생성
+    private String getPdfDownloadUrl(String pdfCode) {
+        try {
+            // S3 모듈의 Download by Code API가 필요하지만, DTO가 없으므로 가정
+            PresignedDownloadRequestByCode request = new PresignedDownloadRequestByCode(pdfCode);
+
+            ResponseDto<PresignedDownloadListResponse> responseDto = s3FeignClient.getDownloadUrlByCode(request);
+
+            if (responseDto.data() != null && responseDto.data().urls() != null && !responseDto.data().urls().isEmpty()) {
+                // 단일 포트폴리오 파일을 가정하고 리스트의 첫 번째 요소를 사용
+                PresignedDownloadResponse downloadResponse = responseDto.data().urls().get(0);
+
+                // S3 Service가 key + queryString만 반환하므로, S3 버킷의 URL 베이스를 하드코딩 또는 설정으로 주입받아야 합니다.
+                // 여기서는 "{S3_BASE_URL}"을 사용합니다.
+                String s3BaseUrl = "https://your-s3-bucket-region.amazonaws.com/"; // 실제 URL로 교체 필요
+
+                return s3BaseUrl + downloadResponse.key() + downloadResponse.queryString();
+            }
+            log.warn("Failed to get download URL for code: {}", pdfCode);
+            return null;
+
+        } catch (Exception e) {
+            log.error("Error calling S3 Feign Client for download URL: {}", pdfCode, e);
+            return null;
+        }
+    }
+
     // SelfPromotionService.java 내부에 SelfPromotion VO 변환 헬퍼
     private SelfPromotion toSelfPromotionVo(SelfPromotionEntity entity) {
         // 1. 회원 닉네임 조회 (기존 getMemberNickname 재사용)
@@ -264,6 +357,12 @@ public class SelfPromotionService {
         // 1. 회원 닉네임 조회
         String memberNickname = getMemberNickname(entity.getMemberCode());
 
+        // 2. 포트폴리오 다운로드 URL 생성
+        String downloadUrl = null;
+        if (entity.getPdfKey() != null) {
+            downloadUrl = getPdfDownloadUrl(entity.getPdfKey());
+        }
+
         return new SelfPromotionResponse(
                 entity.getCode(),
                 entity.getMemberCode(),
@@ -274,7 +373,8 @@ public class SelfPromotionService {
                 entity.getUnitAmount(),
                 entity.getResumeCode(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                entity.getUpdatedAt(),
+                downloadUrl
         );
     }
 }
