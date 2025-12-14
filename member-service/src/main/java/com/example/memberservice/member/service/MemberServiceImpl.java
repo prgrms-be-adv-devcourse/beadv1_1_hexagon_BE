@@ -2,12 +2,16 @@ package com.example.memberservice.member.service;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.RatingServiceClient;
 import com.example.memberservice.common.client.S3ServiceClient;
+import com.example.memberservice.common.client.TagServiceClient;
 import com.example.memberservice.common.client.dto.request.s3.PresignedDownloadRequestByCode;
 import com.example.memberservice.common.client.dto.request.s3.StoreKeysRequest;
 import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.rating.RatingResponse;
 import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadListResponse;
 import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadResponse;
+import com.example.memberservice.common.client.dto.response.tag.TagResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
@@ -71,6 +75,10 @@ public class MemberServiceImpl implements MemberService {
     private final ContractServiceClient contractServiceClient;
 
     private final S3ServiceClient s3ServiceClient;
+
+    private final TagServiceClient tagServiceClient;
+
+    private final RatingServiceClient ratingServiceClient;
 
     //외부 API를 2개나 타기에 Transactional을 해주지 않습니다.
     @Override
@@ -143,7 +151,7 @@ public class MemberServiceImpl implements MemberService {
         Members savedMember = memberJpaRepository.save(newMember);
 
         if (input.profileImageKey() != null && !input.profileImageKey().isBlank()) {
-            ResponseDto<Empty> emptyResponseDto = s3ServiceClient.updateKeys(new StoreKeysRequest(
+            s3ServiceClient.updateKeys(new StoreKeysRequest(
                 savedMember.getCode(),
                 List.of(input.profileImageKey())
             ));
@@ -161,7 +169,7 @@ public class MemberServiceImpl implements MemberService {
         checkNickNameDuplicate(input.memberCode(), input.name());
 
         Members existMember = findMembers(input.memberCode());
-        
+
         //업데이트 이벤트는 NickName에 변화가 있을 때만 적용 
         boolean updateEventTrigger = !input.name().equals(existMember.getNickName());
 
@@ -171,10 +179,10 @@ public class MemberServiceImpl implements MemberService {
 
         ResponseDto<Empty> emptyResponseDto = s3ServiceClient.updateKeys(new StoreKeysRequest(
             updatedMember.getCode(),
-            (input.profileImageKey()==null)?List.of():List.of(input.profileImageKey()))
+            (input.profileImageKey() == null) ? List.of() : List.of(input.profileImageKey()))
         );
 
-        if(updateEventTrigger){
+        if (updateEventTrigger) {
             memberKafkaEventProducer.sendUpdatedEvent(
                 new MemberUpdatedEvent(updatedMember.getCode(), updatedMember.getNickName()));
         }
@@ -216,7 +224,6 @@ public class MemberServiceImpl implements MemberService {
 
         Members existMember = findMembers(input.memberCode());
 
-        //TODO(Contract에서 Internal API 구현시 해제)
         if (hasContractForRole(existMember, inputRole)) {
             throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
         }
@@ -244,7 +251,7 @@ public class MemberServiceImpl implements MemberService {
         Members existMember = findMembers(input.memberCode());
 
         existMember.deletedMember();
-        //TODO(Contract에서 Internal API 구현시 해제)
+
         if (hasContractForRole(existMember, MemberRole.BOTH)) {
             throw new BusinessException(ErrorCode.CONTRACT_EXISTS);
         }
@@ -262,19 +269,17 @@ public class MemberServiceImpl implements MemberService {
     private List<MemberTag> getMemberTags(String findMemberCode) {
         List<MemberTag> memberTags;
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-CODE", findMemberCode); // 원하는 값 설정
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseDto<List<TagResponse>> response = tagServiceClient.getMyTags(findMemberCode);
 
-            ResponseEntity<ResponseDto<List<MemberTag>>> response = restTemplate.exchange(
-                requestURIGenerator.gettagsUri(findMemberCode),
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<>() {
-                }
-            );
+            List<TagResponse> tagInfo = response.data();
 
-            memberTags = Objects.requireNonNull(response.getBody()).data();
+            memberTags = tagInfo.stream()
+                .map(tag -> new MemberTag(
+                    tag.tagCode(),
+                    tag.skill()
+                ))
+                .toList();
+
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
@@ -284,15 +289,12 @@ public class MemberServiceImpl implements MemberService {
     private MemberRating getMemberRating(String findMemberCode) {
         MemberRating memberRating;
         try {
-            ResponseEntity<ResponseDto<MemberRating>> response = restTemplate.exchange(
-                requestURIGenerator.getRatingUri(findMemberCode),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<>() {
-                }
-            );
+            ResponseDto<RatingResponse> response = ratingServiceClient.getMemberRating(findMemberCode);
 
-            memberRating = Objects.requireNonNull(response.getBody()).data();
+            RatingResponse ratingInfo = response.data();
+
+            memberRating = new MemberRating(ratingInfo.memberCode(), ratingInfo.satisfiedCount(),
+                ratingInfo.unsatisfiedCount());
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }

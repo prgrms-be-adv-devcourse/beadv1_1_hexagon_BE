@@ -12,7 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.RatingServiceClient;
 import com.example.memberservice.common.client.S3ServiceClient;
+import com.example.memberservice.common.client.TagServiceClient;
 import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
 import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadListResponse;
 import com.example.memberservice.common.exception.BusinessException;
@@ -86,6 +88,12 @@ class MemberServiceImplTest {
     @MockitoBean
     private S3ServiceClient s3ServiceClient;
 
+    @MockitoBean
+    private TagServiceClient tagServiceClient;
+
+    @MockitoBean
+    private RatingServiceClient ratingServiceClient;
+
     private MemberService memberService;
 
     @BeforeEach
@@ -98,7 +106,9 @@ class MemberServiceImplTest {
             requestURIGenerator,
             emailAuthRepository,
             contractServiceClient,
-            s3ServiceClient
+            s3ServiceClient,
+            tagServiceClient,
+            ratingServiceClient
         );
 
         when(s3ServiceClient.getDownloadUrlByCode(any())).thenReturn(ResponseDto.success(new PresignedDownloadListResponse(List.of())));
