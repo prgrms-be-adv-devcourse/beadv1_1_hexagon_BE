@@ -160,13 +160,10 @@ public class MemberServiceImpl implements MemberService {
         //회원 가입을 하기 전 이미 해당 nick name을 사용하는 사람이 있는 지 확인.
         checkNickNameDuplicate(input.memberCode(), input.name());
 
-        boolean updateEventTrigger = false;
-
         Members existMember = findMembers(input.memberCode());
-
-        if(!input.name().equals(existMember.getNickName())){
-            updateEventTrigger = true;
-        }
+        
+        //업데이트 이벤트는 NickName에 변화가 있을 때만 적용 
+        boolean updateEventTrigger = !input.name().equals(existMember.getNickName());
 
         MembersMapper.toApply(existMember, input);
 
@@ -174,8 +171,8 @@ public class MemberServiceImpl implements MemberService {
 
         ResponseDto<Empty> emptyResponseDto = s3ServiceClient.updateKeys(new StoreKeysRequest(
             updatedMember.getCode(),
-            List.of(input.profileImageKey())
-        ));
+            (input.profileImageKey()==null)?List.of():List.of(input.profileImageKey()))
+        );
 
         if(updateEventTrigger){
             memberKafkaEventProducer.sendUpdatedEvent(

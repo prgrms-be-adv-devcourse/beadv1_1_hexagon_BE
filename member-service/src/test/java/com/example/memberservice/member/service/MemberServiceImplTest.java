@@ -12,7 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.S3ServiceClient;
 import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadListResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
@@ -81,6 +83,9 @@ class MemberServiceImplTest {
     @MockitoBean
     private ContractServiceClient contractServiceClient;
 
+    @MockitoBean
+    private S3ServiceClient s3ServiceClient;
+
     private MemberService memberService;
 
     @BeforeEach
@@ -92,8 +97,14 @@ class MemberServiceImplTest {
             memberKafkaEventProducer,
             requestURIGenerator,
             emailAuthRepository,
-            contractServiceClient
+            contractServiceClient,
+            s3ServiceClient
         );
+
+        when(s3ServiceClient.getDownloadUrlByCode(any())).thenReturn(ResponseDto.success(new PresignedDownloadListResponse(List.of())));
+
+        when(s3ServiceClient.updateKeys(any())).thenReturn(ResponseDto.success());
+
     }
 
     @AfterEach
@@ -122,7 +133,7 @@ class MemberServiceImplTest {
             memberJpaRepository.save(m);
 
             MemberCreateInput input = new MemberCreateInput(m.getCode(), "nick", "010100200",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
             assertThatThrownBy(() -> service.createMember(input))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(ErrorCode.MEMBER_ALREADY_EXISTS.getMessage());
@@ -135,7 +146,7 @@ class MemberServiceImplTest {
             memberJpaRepository.save(m);
 
             MemberCreateInput input = new MemberCreateInput("c1", m.getNickName(), "010100200",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
 
             assertThatThrownBy(() -> service.createMember(input))
                 .isInstanceOf(BusinessException.class)
@@ -146,7 +157,7 @@ class MemberServiceImplTest {
         @DisplayName("createMember: 소셜멤버 없으면 예외")
         void createMember_noSocialMember() {
             MemberCreateInput input = new MemberCreateInput("who", "nick", "010100200", LocalDate.now(),
-                Gender.MAN);
+                Gender.MAN,null);
 
             assertThatThrownBy(() -> service.createMember(input))
                 .isInstanceOf(BusinessException.class)
@@ -162,7 +173,7 @@ class MemberServiceImplTest {
             SocialMembers save = socialMemberJpaRepository.save(socialMembers);
 
             MemberCreateInput input = new MemberCreateInput(save.getCode(), "new", "01022223333",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
             given(memberKafkaEventProducer.sendCreatedEvent(any(MemberCreatedEvent.class)))
                 .willReturn(CompletableFuture.completedFuture(null));
 
@@ -189,7 +200,7 @@ class MemberServiceImplTest {
             memberJpaRepository.saveAll(List.of(m, m2));
 
             MemberUpdateInput input = new MemberUpdateInput("c1", "worker", "01099998888",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
 
             assertThatThrownBy(() -> service.updateMember(input))
                 .isInstanceOf(BusinessException.class)
@@ -203,7 +214,7 @@ class MemberServiceImplTest {
             memberJpaRepository.save(m);
 
             MemberUpdateInput input = new MemberUpdateInput(m.getCode(), "newNick", "01087901234",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
             given(memberKafkaEventProducer.sendUpdatedEvent(any(MemberUpdatedEvent.class)))
                 .willReturn(CompletableFuture.completedFuture(null));
 
