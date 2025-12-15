@@ -91,16 +91,4 @@ public class TagController implements TagApiController {
 
         return ResponseEntity.ok(ResponseDto.success(tag));
     }
-
-    // 멤버 모듈에서 호출할 기술 태그 연결 정보 일괄 삭제
-    @DeleteMapping("/internal/member/{memberCode}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Empty>> deleteMemberTagsForUnregister(
-            @PathVariable String memberCode) {
-
-        // 해당 회원의 MemberTag 연결 정보만 Hard Delete 처리
-        tagService.deleteMemberTagsByMemberCode(memberCode);
-
-        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
-    }
 }
