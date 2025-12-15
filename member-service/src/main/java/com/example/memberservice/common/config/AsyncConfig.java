@@ -27,6 +27,25 @@ public class AsyncConfig implements AsyncConfigurer {
         return executor;
     }
 
+    @Bean(name = "externalApiExecutor")
+    public Executor externalApiExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(6);
+        executor.setMaxPoolSize(12);
+        executor.setQueueCapacity(50);
+
+        executor.setThreadNamePrefix("External-API-");
+
+        executor.setRejectedExecutionHandler(
+            new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+
+        executor.initialize();
+        return executor;
+    }
+
+
     @Override
     public Executor getAsyncExecutor() {
         return asyncExecutor(); // Async에서 사용할 Executor 지정

@@ -17,6 +17,7 @@ import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.member.model.enums.MemberRole;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
@@ -42,12 +43,12 @@ import org.hexagon.core.events.member.MemberDeletedClientRoleEvent;
 import org.hexagon.core.events.member.MemberDeletedEvent;
 import org.hexagon.core.events.member.MemberDeletedFreelancerRoleEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
     private final MemberJpaRepository memberJpaRepository;
@@ -67,11 +68,28 @@ public class MemberServiceImpl implements MemberService {
 
     private final RatingServiceClient ratingServiceClient;
 
+    private final Executor externalApiExecutor;
+
+    public MemberServiceImpl(MemberJpaRepository memberJpaRepository,
+        SocialMemberJpaRepository socialMemberJpaRepository,
+        MemberKafkaEventProducer memberKafkaEventProducer, EmailAuthRepository emailAuthRepository,
+        ContractServiceClient contractServiceClient, S3ServiceClient s3ServiceClient,
+        TagServiceClient tagServiceClient, RatingServiceClient ratingServiceClient,
+        @Qualifier("externalApiExecutor") Executor externalApiExecutor) {
+        this.memberJpaRepository = memberJpaRepository;
+        this.socialMemberJpaRepository = socialMemberJpaRepository;
+        this.memberKafkaEventProducer = memberKafkaEventProducer;
+        this.emailAuthRepository = emailAuthRepository;
+        this.contractServiceClient = contractServiceClient;
+        this.s3ServiceClient = s3ServiceClient;
+        this.tagServiceClient = tagServiceClient;
+        this.ratingServiceClient = ratingServiceClient;
+        this.externalApiExecutor = externalApiExecutor;
+    }
+
     //외부 API를 2개나 타기에 Transactional을 해주지 않습니다.
     @Override
     public MemberGetResponse getMemberByCode(MemberGetInput input) {
-
-        long startTime = System.nanoTime(); // ⏱ 시작
 
         String findMemberCode =input.memberCode();
 
@@ -90,18 +108,24 @@ public class MemberServiceImpl implements MemberService {
         List<MemberTag> memberTags = null;
 
         CompletableFuture<MemberRating> ratingFuture =
-            CompletableFuture.supplyAsync(() -> getMemberRating(findMemberCode));
-
-        CompletableFuture<List<MemberTag>> tagsFuture =
-            CompletableFuture.supplyAsync(() -> getMemberTags(findMemberCode));
-
-        CompletableFuture<ResponseDto<PresignedDownloadListResponse>> downloadFuture =
-            CompletableFuture.supplyAsync(() ->
-                s3ServiceClient.getDownloadUrlByCode(
-                    new PresignedDownloadRequestByCode(existMembers.getCode())
-                )
+            CompletableFuture.supplyAsync(
+                () -> getMemberRating(findMemberCode),
+                externalApiExecutor
             );
 
+        CompletableFuture<List<MemberTag>> tagsFuture =
+            CompletableFuture.supplyAsync(
+                () -> getMemberTags(findMemberCode),
+                externalApiExecutor
+            );
+
+        CompletableFuture<ResponseDto<PresignedDownloadListResponse>> downloadFuture =
+            CompletableFuture.supplyAsync(
+                () -> s3ServiceClient.getDownloadUrlByCode(
+                    new PresignedDownloadRequestByCode(existMembers.getCode())
+                ),
+                externalApiExecutor
+            );
         memberRating = ratingFuture.join();
 
         memberTags = tagsFuture.join();
@@ -109,13 +133,7 @@ public class MemberServiceImpl implements MemberService {
         ResponseDto<PresignedDownloadListResponse> downloadUrlByCode = downloadFuture.join();
 
         List<PresignedDownloadResponse> urls = downloadUrlByCode.data().urls();
-
-        long endTime = System.nanoTime();
-        long elapsedMs = (endTime - startTime) / 1_000_000;
-
-        log.info("[getMemberByCode] memberCode={}, elapsed={}ms",
-            input.memberCode(), elapsedMs);
-
+        
         return new MemberGetResponse(memberInfo, memberRating, memberTags, urls);
     }
 
