@@ -15,12 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
-import org.hexagon.core.events.commission.CommissionInitEvent;
 import org.hexagon.core.events.commission.CommissionUpsertEvent;
-import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
-import org.hexagon.core.events.selfpromotion.SelfPromotionInitEvent;
-import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionUpsertEvent;
 import org.hexagon.core.events.tag.TagInitEvent;
 import org.hexagon.core.vo.Tag;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -62,25 +59,20 @@ public class SearchServiceListener {
         tagService.saveAll(docs);
     }
 
-    @KafkaHandler
-    public void handleEvent(@Payload SelfPromotionInitEvent event) {
-        List<SelfPromotionDocumentEntity> docs = event.selfPromotions().stream()
-                .map(SelfPromotionMapper::toSelfPromotionDocument)
-                .toList();
+    // TODO: 의뢰글 인덱싱 Python 코드 작성 후 삭제
+//    @KafkaHandler
+//    public void handleEvent(@Payload SelfPromotionInitEvent event) {
+//        List<SelfPromotionDocumentEntity> docs = event.selfPromotions().stream()
+//                .map(SelfPromotionMapper::toSelfPromotionDocument)
+//                .toList();
+//
+//        selfPromotionService.saveAll(docs);
+//    }
 
-        selfPromotionService.saveAll(docs);
-    }
-
     @KafkaHandler
-    public void handleEvent(@Payload SelfPromotionCreatedEvent event) {
+    public void handleEvnet(@Payload SelfPromotionUpsertEvent event) {
         SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
-        selfPromotionService.save(doc);
-    }
-
-    @KafkaHandler
-    public void handleEvent(@Payload SelfPromotionUpdatedEvent event) {
-        SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
-        selfPromotionService.update(doc);
+        selfPromotionService.upsert(doc);
     }
 
     @KafkaHandler

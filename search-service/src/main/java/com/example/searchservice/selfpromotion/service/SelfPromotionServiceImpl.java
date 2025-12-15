@@ -152,17 +152,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
     }
 
     @Override
-    public void saveAll(List<SelfPromotionDocumentEntity> selfPromotions) {
-        selfPromotionRepository.saveAll(selfPromotions);
-    }
-
-    @Override
-    public void save(SelfPromotionDocumentEntity selfPromotion) {
-        selfPromotionRepository.save(selfPromotion);
-    }
-
-    @Override
-    public void update(SelfPromotionDocumentEntity selfPromotion) {
+    public void upsert(SelfPromotionDocumentEntity selfPromotion) {
         selfPromotionRepository.save(selfPromotion);
     }
 
