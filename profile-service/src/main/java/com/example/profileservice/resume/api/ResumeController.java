@@ -123,16 +123,4 @@ public class ResumeController implements ResumeApiController {
 
         return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
-
-    // 멤버 모듈에서 호출할 이력서 및 경력/경험 일괄 삭제
-    @DeleteMapping("/internal/member/{memberCode}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Empty>> deleteResumesForUnregister(
-            @PathVariable String memberCode) {
-
-        // 해당 회원의 이력서 및 종속된 경력/경험 정보만 Soft Delete 처리합니다.
-        resumeService.deleteResumesByMemberCode(memberCode);
-
-        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
-    }
 }
