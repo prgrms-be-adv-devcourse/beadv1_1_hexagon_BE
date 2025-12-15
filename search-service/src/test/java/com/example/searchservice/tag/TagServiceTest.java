@@ -43,4 +43,13 @@ class TagServiceTest {
             System.out.println("code: " + dto.code() + ", skill: " + dto.skill());
         }
     }
+
+    @Test
+    void findTagsByCodesTest() {
+        List<String> codes = List.of("3f7c6e8e-9b41-4c4f-9f4c-5f4b3b4e1a01", "b1a0c6c4-3c7a-4d2a-9f2c-0c7f8a4c1b02");
+        List<String> skills = tagService.findTagsByCode(codes);
+        for (String skill : skills) {
+            System.out.println("skill = " + skill);
+        }
+    }
 }
