@@ -12,11 +12,7 @@ public interface CommissionService {
 
     public List<String> getSuggestions(String query, int size);
 
-    public void saveAll(List<CommissionDocumentEntity> commissions);
-
-    public void save(CommissionDocumentEntity commission);
-
-    public void update(CommissionDocumentEntity commission);
+    public void upsert(CommissionDocumentEntity commission);
 
     public void delete(String code);
 

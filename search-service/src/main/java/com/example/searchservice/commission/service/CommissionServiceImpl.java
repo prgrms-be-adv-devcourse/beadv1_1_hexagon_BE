@@ -61,17 +61,7 @@ public class CommissionServiceImpl implements CommissionService {
     }
 
     @Override
-    public void saveAll(List<CommissionDocumentEntity> commissions) {
-        commissionRepository.saveAll(commissions);
-    }
-
-    @Override
-    public void save(CommissionDocumentEntity commission) {
-        commissionRepository.save(commission);
-    }
-
-    @Override
-    public void update(CommissionDocumentEntity commission) {
+    public void upsert(CommissionDocumentEntity commission) {
         commissionRepository.save(commission);
     }
 
