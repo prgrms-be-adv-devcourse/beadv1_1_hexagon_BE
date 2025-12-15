@@ -5,13 +5,13 @@ import java.time.LocalDate;
 import java.util.List;
 import org.hexagon.core.vo.PaymentType;
 
-public record CommissionUpdatedEvent(
+public record CommissionUpsertEvent(
         String code,
         String title,
         String content,
         String memberCode,
         String memberNickname,
-        List<String> tags,
+        List<String> tagCodes,
         LocalDate startedAt,
         LocalDate endedAt,
         PaymentType paymentType,
