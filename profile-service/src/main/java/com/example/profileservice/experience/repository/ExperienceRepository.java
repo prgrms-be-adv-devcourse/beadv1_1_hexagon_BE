@@ -1,7 +1,6 @@
 package com.example.profileservice.experience.repository;
 
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +16,5 @@ public interface ExperienceRepository extends JpaRepository<ExperienceEntity, Lo
     Optional<ExperienceEntity> findByCodeAndResumeCodeAndIsDeletedFalse(String experienceCode, String resumeCode);
 
     // 특정 이력서 코드 목록에 속하는 모든 활성 경력/경험 항목을 조회 (일괄 삭제에 사용)
-    List<ExperienceEntity> findAllByResumeCodeAndIsDeletedFalse(Collection<String> resumeCodes);
+    List<ExperienceEntity> findAllByResumeCodeAndIsDeletedFalse(String resumeCode);
 }

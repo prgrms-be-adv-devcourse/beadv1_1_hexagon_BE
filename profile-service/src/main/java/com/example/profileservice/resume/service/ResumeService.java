@@ -210,8 +210,10 @@ public class ResumeService {
                 .map(ResumeEntity::getCode)
                 .collect(Collectors.toList());
 
+        String singleResumeCode = resumeCodesToDelete.get(0);
+
         // 3. 종속된 모든 경력/경험 항목 조회
-        List<ExperienceEntity> experiencesToDelete = experienceRepository.findAllByResumeCodeAndIsDeletedFalse(resumeCodesToDelete);
+        List<ExperienceEntity> experiencesToDelete = experienceRepository.findAllByResumeCodeAndIsDeletedFalse(singleResumeCode);
 
         // 4. 경력/경험 Soft Delete 처리
         experiencesToDelete.forEach(ExperienceEntity::delete);

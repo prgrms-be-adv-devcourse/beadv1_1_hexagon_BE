@@ -2,9 +2,6 @@ package com.example.profileservice.common.model.vo.util;
 
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
-import org.hexagon.s3service.dto.PresignedDownloadListResponse;
-import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
-import org.hexagon.s3service.dto.StoreKeysRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
