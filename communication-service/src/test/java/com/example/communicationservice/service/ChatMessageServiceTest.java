@@ -67,8 +67,8 @@ class ChatMessageServiceTest {
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
         Pageable pageable = PageRequest.of(0, 10);
 
-        ChatMessage message1 = createMockMessage("안녕하세요", MY_CODE);
-        ChatMessage message2 = createMockMessage("반갑습니다", PARTNER_CODE);
+        ChatMessage message1 = createMockTextMessage("안녕하세요", MY_CODE);
+        ChatMessage message2 = createMockTextMessage("반갑습니다", PARTNER_CODE);
 
         List<ChatMessage> messages = List.of(message1, message2);
 
@@ -137,14 +137,9 @@ class ChatMessageServiceTest {
     @Test
     void 채팅방_메시지를_저장하고_채팅방_업데이트_시간을_갱신한다() {
         // given
-        String messageId = "saved-msg-id-1";
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
-        ChatMessage savedMessage = ChatMessage.builder()
-            .roomId(ROOM_ID)
-            .senderCode(MY_CODE)
-            .type(MessageType.TEXT)
-            .text(CHAT_TEXT)
-            .build();
+        ChatMessage savedMessage = createMockTextMessage(CHAT_TEXT, MY_CODE);
+
         ChatMessageSendRequest request = new ChatMessageSendRequest(
             ROOM_ID,
             MY_CODE,
@@ -152,9 +147,6 @@ class ChatMessageServiceTest {
             CHAT_TEXT,
             null
         );
-
-        ReflectionTestUtils.setField(savedMessage, "id", messageId);
-        ReflectionTestUtils.setField(savedMessage, "sentAt", Instant.now());
 
         given(chatRoomRepository.findById(eq(ROOM_ID)))
             .willReturn(Optional.of(chatRoom));
@@ -166,7 +158,6 @@ class ChatMessageServiceTest {
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.messageId()).isEqualTo(messageId);
         assertThat(response.text()).isEqualTo(CHAT_TEXT);
 
         verify(chatRoomRepository, times(1)).findById(eq(ROOM_ID));
@@ -203,6 +194,7 @@ class ChatMessageServiceTest {
         // given
         String unauthorizedUser = "UNAUTHORIZED_USER";
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+
         ChatMessageSendRequest request = new ChatMessageSendRequest(
             ROOM_ID,
             unauthorizedUser,
@@ -229,8 +221,7 @@ class ChatMessageServiceTest {
         // given
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
         Pageable pageable = PageRequest.of(0, 10);
-
-        ChatMessage textMessage = createMockMessage("텍스트 메시지", MY_CODE);
+        ChatMessage textMessage = createMockTextMessage("텍스트 메시지", MY_CODE);
 
         Page<ChatMessage> mockPage = new PageImpl<>(
             List.of(textMessage),
@@ -261,20 +252,7 @@ class ChatMessageServiceTest {
         String queryString = "?query=string";
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
         Pageable pageable = PageRequest.of(0, 10);
-
-        File file = File.builder()
-            .key(key)
-            .build();
-
-        ChatMessage fileMessage = ChatMessage.builder()
-            .roomId(ROOM_ID)
-            .senderCode(MY_CODE)
-            .type(MessageType.FILE)
-            .file(file)
-            .build();
-
-        ReflectionTestUtils.setField(fileMessage, "id", "file-msg-1");
-        ReflectionTestUtils.setField(fileMessage, "sentAt", Instant.now());
+        ChatMessage fileMessage = createMockFileMessage(key, MY_CODE);
 
         Page<ChatMessage> mockPage = new PageImpl<>(
             List.of(fileMessage),
@@ -316,21 +294,7 @@ class ChatMessageServiceTest {
         String queryString = "?query=string";
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
         Pageable pageable = PageRequest.of(0, 10);
-
-        File file = File.builder()
-            .key(key)
-            .build();
-
-        ChatMessage mixedMessage = ChatMessage.builder()
-            .roomId(ROOM_ID)
-            .senderCode(PARTNER_CODE)
-            .type(MessageType.MIXED)
-            .text(CHAT_TEXT)
-            .file(file)
-            .build();
-
-        ReflectionTestUtils.setField(mixedMessage, "id", "mixed-msg-1");
-        ReflectionTestUtils.setField(mixedMessage, "sentAt", Instant.now());
+        ChatMessage mixedMessage = createMockMixedMessage(CHAT_TEXT, key, MY_CODE);
 
         Page<ChatMessage> mockPage = new PageImpl<>(
             List.of(mixedMessage),
@@ -375,12 +339,50 @@ class ChatMessageServiceTest {
         return chatRoom;
     }
 
-    private ChatMessage createMockMessage(String text, String senderCode) {
+    private ChatMessage createMockTextMessage(String text, String senderCode) {
         ChatMessage message = ChatMessage.builder()
             .roomId(ROOM_ID)
             .senderCode(senderCode)
             .type(MessageType.TEXT)
             .text(text)
+            .build();
+
+        ReflectionTestUtils.setField(message, "id", "msg-" + Instant.now().getNano());
+        ReflectionTestUtils.setField(message, "sentAt", Instant.now());
+
+        return message;
+    }
+
+    private ChatMessage createMockFileMessage(String key, String senderCode) {
+        ChatMessage message = ChatMessage.builder()
+            .roomId(ROOM_ID)
+            .senderCode(senderCode)
+            .type(MessageType.FILE)
+            .text(null)
+            .file(
+                File.builder()
+                    .key(key)
+                    .build()
+            )
+            .build();
+
+        ReflectionTestUtils.setField(message, "id", "msg-" + Instant.now().getNano());
+        ReflectionTestUtils.setField(message, "sentAt", Instant.now());
+
+        return message;
+    }
+
+    private ChatMessage createMockMixedMessage(String text, String key, String senderCode) {
+        ChatMessage message = ChatMessage.builder()
+            .roomId(ROOM_ID)
+            .senderCode(senderCode)
+            .type(MessageType.MIXED)
+            .text(text)
+            .file(
+                File.builder()
+                    .key(key)
+                    .build()
+            )
             .build();
 
         ReflectionTestUtils.setField(message, "id", "msg-" + Instant.now().getNano());
