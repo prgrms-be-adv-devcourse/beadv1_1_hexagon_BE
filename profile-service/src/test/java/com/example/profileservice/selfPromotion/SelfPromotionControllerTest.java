@@ -16,6 +16,7 @@ import com.example.profileservice.common.model.vo.util.InternalMemberInfo;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.common.model.vo.util.MemberInfoOutput;
+import com.example.profileservice.common.model.vo.util.S3FeignClient;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
@@ -29,7 +30,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.vo.FileType;
 import org.hexagon.core.vo.PaymentType;
+import org.hexagon.s3service.dto.PresignedDownloadListResponse;
+import org.hexagon.s3service.dto.PresignedDownloadRequestByCode;
+import org.hexagon.s3service.dto.PresignedDownloadResponse;
+import org.hexagon.s3service.dto.StoreKeysRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,6 +78,9 @@ public class SelfPromotionControllerTest {
 
     @MockitoBean
     private KafkaProducer kafkaProducer;
+
+    @MockitoBean
+    private S3FeignClient s3FeignClient;
 
     private SelfPromotionEntity initialPromotion;
     private SelfPromotionEntity otherPromotion;
@@ -119,6 +128,26 @@ public class SelfPromotionControllerTest {
         // 4. Kafka Producer Mocking
         doNothing().when(kafkaProducer).send(any(String.class), any());
 
+        // 4. S3 Feign Client Mocking
+        // 4-1. storeKeys (새 파일 영구 저장) 모킹: 성공 반환
+        Mockito.doReturn(ResponseDto.success())
+                .when(s3FeignClient).storeKeys(Mockito.any(StoreKeysRequest.class));
+
+        // 4-2. updateKeys (수정/삭제 동기화) 모킹: 성공 반환
+        Mockito.doReturn(ResponseDto.success())
+                .when(s3FeignClient).updateKeys(Mockito.any(StoreKeysRequest.class));
+
+        // 4-3. getDownloadUrlByCode (다운로드 URL 조회) 모킹:
+        // 실제 URL이 필요한 테스트는 없으나, toResponse 헬퍼 메서드가 항상 호출하므로 Mocking 필요.
+        // '가짜 다운로드 URL'을 하나 반환하도록 설정
+        PresignedDownloadResponse mockDownloadResponse =
+                new PresignedDownloadResponse("self_promotions/code-key.pdf", "?X-Amz-Signature=mock", FileType.PDF);
+        PresignedDownloadListResponse mockListResponse =
+                new PresignedDownloadListResponse(List.of(mockDownloadResponse));
+
+        Mockito.doReturn(ResponseDto.success(mockListResponse))
+                .when(s3FeignClient).getDownloadUrlByCode(Mockito.any(PresignedDownloadRequestByCode.class));
+
         // 5. 유효한 이력서 (연결 가능하도록)
         validResume = ResumeEntity.builder()
                 .memberCode(TEST_MEMBER_CODE)
@@ -133,7 +162,8 @@ public class SelfPromotionControllerTest {
                 "기본 내용",
                 PaymentType.MONTHLY,
                 5000000L,
-                validResume.getCode()
+                validResume.getCode(),
+                null
         );
         selfPromotionRepository.save(initialPromotion);
 
@@ -144,6 +174,7 @@ public class SelfPromotionControllerTest {
                 "타인 내용",
                 PaymentType.PER_JOB,
                 500000L,
+                null,
                 null
         );
         selfPromotionRepository.save(otherPromotion);
@@ -219,7 +250,7 @@ public class SelfPromotionControllerTest {
     void createPromotion_WithResume_Success() throws Exception {
         // given
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
-                "새 프로모션 제목", "어필 내용", PaymentType.PER_JOB, 100000L, validResume.getCode());
+                "새 프로모션 제목", "어필 내용", PaymentType.PER_JOB, 100000L, validResume.getCode(), null);
 
         // when & then
         mockMvc.perform(post(BASE_URL)
@@ -237,7 +268,7 @@ public class SelfPromotionControllerTest {
     void createPromotion_WithoutResume_Success() throws Exception {
         // given
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
-                "연결 없는 프로모션", "내용", PaymentType.MONTHLY, 3000000L, null);
+                "연결 없는 프로모션", "내용", PaymentType.MONTHLY, 3000000L, null, null);
 
         // when & then
         mockMvc.perform(post(BASE_URL)
@@ -254,7 +285,7 @@ public class SelfPromotionControllerTest {
         // given
         String invalidResumeCode = UUID.randomUUID().toString();
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
-                "잘못된 연결", "내용", PaymentType.MONTHLY, 3000000L, invalidResumeCode);
+                "잘못된 연결", "내용", PaymentType.MONTHLY, 3000000L, invalidResumeCode, null);
 
         // when & then
         mockMvc.perform(post(BASE_URL)
@@ -272,7 +303,7 @@ public class SelfPromotionControllerTest {
     void updatePromotion_Success() throws Exception {
         // given
         SelfPromotionUpdateRequest request = new SelfPromotionUpdateRequest(
-                "수정된 제목", "수정된 내용", PaymentType.PER_JOB, 100000L, null);
+                "수정된 제목", "수정된 내용", PaymentType.PER_JOB, 100000L, null, null);
 
         // when & then
         mockMvc.perform(patch(BASE_URL + "/{promotionCode}", initialPromotion.getCode())
@@ -292,7 +323,7 @@ public class SelfPromotionControllerTest {
     void updatePromotion_Partial_Success() throws Exception {
         // given: title만 수정 요청 (나머지는 null)
         SelfPromotionUpdateRequest request = new SelfPromotionUpdateRequest(
-                "부분 수정 제목", null, null, null, null);
+                "부분 수정 제목", null, null, null, null, null);
 
         // when & then
         mockMvc.perform(patch(BASE_URL + "/{promotionCode}", initialPromotion.getCode())
@@ -311,7 +342,7 @@ public class SelfPromotionControllerTest {
     @DisplayName("PATCH /api/self-promotions/{promotionCode} - 타인 프로모션 수정 시 403 Forbidden")
     void updatePromotion_Unauthorized_Failure() throws Exception {
         // given
-        SelfPromotionUpdateRequest request = new SelfPromotionUpdateRequest("수정 제목", "내용", PaymentType.PER_JOB, 1000L, null);
+        SelfPromotionUpdateRequest request = new SelfPromotionUpdateRequest("수정 제목", "내용", PaymentType.PER_JOB, 1000L, null, null);
 
         // when & then: 타인 프로모션에 본인 코드로 수정 시도
         mockMvc.perform(patch(BASE_URL + "/{promotionCode}", otherPromotion.getCode())
@@ -371,7 +402,7 @@ public class SelfPromotionControllerTest {
                 .when(memberFeignClient).existMemberByCode(anyList());
 
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
-                "제목", "내용", PaymentType.MONTHLY, 3000000L, validResume.getCode());
+                "제목", "내용", PaymentType.MONTHLY, 3000000L, validResume.getCode(), null);
 
         // when & then: 유효하지 않은 코드로 프로모션 등록 시도
         mockMvc.perform(post(BASE_URL)
