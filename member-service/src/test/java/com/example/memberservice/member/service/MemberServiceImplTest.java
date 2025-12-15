@@ -37,6 +37,7 @@ import com.example.memberservice.socialmember.repository.SocialMemberJpaReposito
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
@@ -92,6 +93,8 @@ class MemberServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        Executor testExecutor = Runnable::run;
+
         memberService = new MemberServiceImpl(
             memberJpaRepository,
             socialMemberJpaRepository,
@@ -100,7 +103,8 @@ class MemberServiceImplTest {
             contractServiceClient,
             s3ServiceClient,
             tagServiceClient,
-            ratingServiceClient
+            ratingServiceClient,
+            testExecutor
         );
 
         when(s3ServiceClient.getDownloadUrlByCode(any())).thenReturn(ResponseDto.success(new PresignedDownloadListResponse(List.of())));
@@ -118,7 +122,7 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("getMemberByCode: 코드 없으면 예외")
     void getMemberByCode_noCode() {
-        MemberGetInput input = new MemberGetInput("", "");
+        MemberGetInput input = new MemberGetInput("");
 
         assertThatThrownBy(() -> service.getMemberByCode(input))
             .isInstanceOf(BusinessException.class)
