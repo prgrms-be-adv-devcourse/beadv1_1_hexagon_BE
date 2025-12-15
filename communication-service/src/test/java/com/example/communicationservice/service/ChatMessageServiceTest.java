@@ -1,5 +1,9 @@
 package com.example.communicationservice.service;
 
+import com.example.communicationservice.client.S3ServiceClient;
+import com.example.communicationservice.client.dto.input.FileDownloadUrlGenerateInput;
+import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
+import com.example.communicationservice.client.dto.output.FileDownloadUrlListGenerateOutput;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
@@ -7,9 +11,12 @@ import com.example.communicationservice.controller.dto.response.ChatMessageListR
 import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
+import com.example.communicationservice.entity.File;
 import com.example.communicationservice.repository.ChatMessageRepository;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import com.example.communicationservice.type.MessageType;
+import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.vo.FileType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -50,6 +57,9 @@ class ChatMessageServiceTest {
 
     @Mock
     private ChatMessageRepository chatMessageRepository;
+
+    @Mock
+    private S3ServiceClient s3ServiceClient;
 
     @Test
     void 채팅방_메시지_목록을_페이징하여_조회한다() {
@@ -212,6 +222,146 @@ class ChatMessageServiceTest {
 
         verify(chatMessageRepository, times(0)).save(any());
         verify(chatRoomRepository, times(0)).save(any(ChatRoom.class));
+    }
+
+    @Test
+    void TEXT_타입_메시지를_조회하는_경우_파일_다운로드_URL을_발급받지_않는다() {
+        // given
+        ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        ChatMessage textMessage = createMockMessage("텍스트 메시지", MY_CODE);
+
+        Page<ChatMessage> mockPage = new PageImpl<>(
+            List.of(textMessage),
+            pageable,
+            1
+        );
+
+        given(chatRoomRepository.findById(eq(ROOM_ID)))
+            .willReturn(Optional.of(chatRoom));
+        given(chatMessageRepository.findAllByRoomId(eq(ROOM_ID), eq(pageable)))
+            .willReturn(mockPage);
+
+        // when
+        ChatMessageListReadResponse response =
+            chatMessageService.findMessagesByRoomId(ROOM_ID, MY_CODE, pageable);
+
+        // then
+        assertThat(response.messages()).hasSize(1);
+        assertThat(response.messages().get(0).file()).isNull();
+
+        verify(s3ServiceClient, times(0)).generateDownloadUrl(any());
+    }
+
+    @Test
+    void FILE_타입_메시지를_조회하는_경우_파일_다운로드_URL을_발급받는다() {
+        // given
+        String key = "file-key-1";
+        String queryString = "?query=string";
+        ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        File file = File.builder()
+            .key(key)
+            .build();
+
+        ChatMessage fileMessage = ChatMessage.builder()
+            .roomId(ROOM_ID)
+            .senderCode(MY_CODE)
+            .type(MessageType.FILE)
+            .file(file)
+            .build();
+
+        ReflectionTestUtils.setField(fileMessage, "id", "file-msg-1");
+        ReflectionTestUtils.setField(fileMessage, "sentAt", Instant.now());
+
+        Page<ChatMessage> mockPage = new PageImpl<>(
+            List.of(fileMessage),
+            pageable,
+            1
+        );
+
+        FileDownloadUrlGenerateOutput urlOutput =
+            new FileDownloadUrlGenerateOutput(key, queryString, FileType.IMAGE);
+
+        FileDownloadUrlListGenerateOutput listOutput =
+            new FileDownloadUrlListGenerateOutput(List.of(urlOutput));
+
+        given(chatRoomRepository.findById(eq(ROOM_ID)))
+            .willReturn(Optional.of(chatRoom));
+        given(chatMessageRepository.findAllByRoomId(eq(ROOM_ID), eq(pageable)))
+            .willReturn(mockPage);
+        given(s3ServiceClient.generateDownloadUrl(any()))
+            .willReturn(ResponseDto.success(listOutput));
+
+        // when
+        ChatMessageListReadResponse response =
+            chatMessageService.findMessagesByRoomId(ROOM_ID, MY_CODE, pageable);
+
+        // then
+        assertThat(response.messages()).hasSize(1);
+        assertThat(response.messages().get(0).file()).isNotNull();
+        assertThat(response.messages().get(0).file().key()).isEqualTo(key);
+        assertThat(response.messages().get(0).file().queryString()).isEqualTo(queryString);
+
+        verify(s3ServiceClient, times(1))
+            .generateDownloadUrl(any(FileDownloadUrlGenerateInput.class));
+    }
+
+    @Test
+    void MIXED_타입_메시지를_조회하는_경우_파일_다운로드_URL을_발급받는다() {
+        // given
+        String key = "file-key-1";
+        String queryString = "?query=string";
+        ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        File file = File.builder()
+            .key(key)
+            .build();
+
+        ChatMessage mixedMessage = ChatMessage.builder()
+            .roomId(ROOM_ID)
+            .senderCode(PARTNER_CODE)
+            .type(MessageType.MIXED)
+            .text(CHAT_TEXT)
+            .file(file)
+            .build();
+
+        ReflectionTestUtils.setField(mixedMessage, "id", "mixed-msg-1");
+        ReflectionTestUtils.setField(mixedMessage, "sentAt", Instant.now());
+
+        Page<ChatMessage> mockPage = new PageImpl<>(
+            List.of(mixedMessage),
+            pageable,
+            1
+        );
+
+        FileDownloadUrlGenerateOutput urlOutput =
+            new FileDownloadUrlGenerateOutput(key, queryString, FileType.IMAGE);
+
+        FileDownloadUrlListGenerateOutput listOutput =
+            new FileDownloadUrlListGenerateOutput(List.of(urlOutput));
+
+        given(chatRoomRepository.findById(eq(ROOM_ID)))
+            .willReturn(Optional.of(chatRoom));
+        given(chatMessageRepository.findAllByRoomId(eq(ROOM_ID), eq(pageable)))
+            .willReturn(mockPage);
+        given(s3ServiceClient.generateDownloadUrl(any()))
+            .willReturn(ResponseDto.success(listOutput));
+
+        // when
+        ChatMessageListReadResponse response =
+            chatMessageService.findMessagesByRoomId(ROOM_ID, MY_CODE, pageable);
+
+        // then
+        assertThat(response.messages()).hasSize(1);
+        assertThat(response.messages().get(0).file().key()).isEqualTo(key);
+        assertThat(response.messages().get(0).file().queryString()).isEqualTo(queryString);
+
+        verify(s3ServiceClient, times(1))
+            .generateDownloadUrl(any());
     }
 
     private ChatRoom createMockChatRoom(List<String> memberCodes) {
