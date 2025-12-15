@@ -38,14 +38,13 @@ public class AuthService {
         refreshTokenRepository.saveRefreshToken(memberCode, newRefreshToken);
 
         Optional<Members> optionalMembers = memberJpaRepository.findByCode(memberCode);
-        
 
-        Members members = optionalMembers.orElse(null);
-        String newAccessToken = (members != null)
-            //회원 가입 한 사용자의 경우 memberRole을 claims 에 추가
-            ? jwtTokenGenerator.generateAccessToken(members.getCode(), true, members.getRole())
-            //회원 가입 안한 사용자의 경우 memberRole을 claims 에 추가 안함.
-            : jwtTokenGenerator.generateAccessToken(memberCode, false);
+
+        String newAccessToken = optionalMembers
+            .map(members -> // Optional 안에 값이 존재할 때 실행할 로직
+                jwtTokenGenerator.generateAccessToken(members.getCode(), true, members.getRole()))
+            .orElseGet(() -> // Optional 안에 값이 존재하지 않을 때 실행할 로직
+                jwtTokenGenerator.generateAccessToken(memberCode, false));
 
         return new TokensOutput(newAccessToken, newRefreshToken);
     }
