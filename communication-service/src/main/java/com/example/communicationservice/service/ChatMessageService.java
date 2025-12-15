@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,39 +60,10 @@ public class ChatMessageService {
         Page<ChatMessage> messagePage = chatMessageRepository.findAllByRoomId(roomId, pageable);
 
         // 파일이 포함된 메시지에서 key 추출 후 리스트에 저장
-        List<String> keys = messagePage.getContent().stream()
-            .filter(message ->
-                MessageType.FILE == message.getType() ||
-                MessageType.MIXED == message.getType()
-            ) // 파일이 포함된 메시지만 필터링
-            .map(ChatMessage::getFile)
-            .filter(Objects::nonNull)
-            .map(File::getKey) // key 추출
-            .distinct() // 동일 파일 중복 방지
-            .toList();
+        List<String> keys = extractFileKeys(messagePage.getContent());
 
         // key: 파일 key, value: pre-signed download URL 생성 응답
-        // lambda 함수에서 참조되는 read-only 데이터이므로 final 선언
-        final Map<String, FileDownloadUrlGenerateOutput> keyToDownloadUrl;
-
-        if (!keys.isEmpty()) {
-            // feign client 요청 dto 생성
-            FileDownloadUrlGenerateInput input = new FileDownloadUrlGenerateInput(keys);
-
-            // S3 service에 pre-signed download URL 발급 요청
-            FileDownloadUrlListGenerateOutput output = s3ServiceClient.generateDownloadUrl(input).data();
-
-            // 파일 key에 pre-signed download URL 생성 응답 매핑
-            keyToDownloadUrl = output.urls().stream()
-                .collect(
-                    Collectors.toMap(
-                        FileDownloadUrlGenerateOutput::key, // key
-                        Function.identity() // value // 입력으로 받은 FileDownloadUrlGenerateOutput을 그대로 반환
-                    )
-                );
-        } else {
-            keyToDownloadUrl = Map.of();
-        }
+        Map<String, FileDownloadUrlGenerateOutput> keyToDownloadUrl = generateDownloadUrlMap(keys);
 
         // 엔티티 -> dto 변환
         List<ChatMessageReadResponse> messages = messagePage.getContent().stream()
@@ -131,29 +103,74 @@ public class ChatMessageService {
         chatRoom.setUpdatedAt(Instant.now());
         chatRoomRepository.save(chatRoom);
 
+        FileDownloadUrlGenerateOutput output = null;
+
         // pre-signed download URL 생성
-        FileDownloadUrlListGenerateOutput output = generateDownloadUrl(request);
+        if (hasFile(request.type())) {
+            output = generateSingleDownloadUrl(request.file().key()).orElse(null);
+        }
 
         return ChatMapper.toSendResponse(savedChatMessage, output);
     }
 
+    private boolean hasFile(MessageType type) {
+        return MessageType.FILE == type || MessageType.MIXED == type;
+    }
+
     /**
-     * s3 service와 통신해 pre-signed download URL을 생성합니다.
-     * @param request 저장할 채팅 메시지 전송 요청
+     * s3 service와 통신해 단일 파일에 대한 pre-signed download URL을 생성합니다.
+     * @param key pre-signed download URL을 생성할 파일 key
      * @return pre-signed download URL 생성 응답
      */
-    private FileDownloadUrlListGenerateOutput generateDownloadUrl(ChatMessageSendRequest request) {
-        // 파일이 포함되지 않은 메시지인 경우 early return
-        if (MessageType.FILE != request.type() && MessageType.MIXED != request.type()) {
-            return null;
-        }
-
+    private Optional<FileDownloadUrlGenerateOutput> generateSingleDownloadUrl(String key) {
         // feign client 요청 dto 생성
-        String key = request.file().key();
         FileDownloadUrlGenerateInput input = new FileDownloadUrlGenerateInput(List.of(key));
 
         // S3 service에 pre-signed download URL 발급 요청
-        return s3ServiceClient.generateDownloadUrl(input).data();
+        FileDownloadUrlListGenerateOutput output = s3ServiceClient.generateDownloadUrl(input).data();
+
+        return output.urls().stream().findFirst();
+    }
+
+    /**
+     * 채팅 메시지 목록에서 파일이 포함된 메시지의 파일 key를 추출합니다.
+     * @param messages 채팅 메시지 목록
+     * @return 파일이 포함된 메시지에서 추출한 파일 key 목록
+     */
+    private List<String> extractFileKeys(List<ChatMessage> messages) {
+        return messages.stream()
+            .filter(message -> hasFile(message.getType())) // 파일이 포함된 메시지만 필터링
+            .map(ChatMessage::getFile)
+            .filter(Objects::nonNull)
+            .map(File::getKey) // key 추출
+            .distinct() // 동일 파일 중복 방지
+            .toList();
+    }
+
+    /**
+     * S3 service와 통신해 다중 파일에 대한 pre-signed download URL 매핑 정보를 생성합니다.
+     * @param keys pre-signed download URL을 생성할 파일 key 목록
+     * @return 파일 key 기반 pre-signed download URL 매핑 정보
+     */
+    private Map<String, FileDownloadUrlGenerateOutput> generateDownloadUrlMap(List<String> keys) {
+        if (keys.isEmpty()) {
+            return Map.of();
+        }
+
+        // feign client 요청 dto 생성
+        FileDownloadUrlGenerateInput input = new FileDownloadUrlGenerateInput(keys);
+
+        // S3 service에 pre-signed download URL 발급 요청
+        FileDownloadUrlListGenerateOutput output = s3ServiceClient.generateDownloadUrl(input).data();
+
+        // 파일 key에 pre-signed download URL 생성 응답 매핑
+        return output.urls().stream()
+            .collect(
+                Collectors.toMap(
+                    FileDownloadUrlGenerateOutput::key, // key
+                    Function.identity() // value // 입력으로 받은 FileDownloadUrlGenerateOutput을 그대로 반환
+                )
+            );
     }
 
 }

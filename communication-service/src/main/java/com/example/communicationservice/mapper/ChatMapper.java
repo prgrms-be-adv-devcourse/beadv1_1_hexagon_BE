@@ -1,7 +1,6 @@
 package com.example.communicationservice.mapper;
 
 import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
-import com.example.communicationservice.client.dto.output.FileDownloadUrlListGenerateOutput;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.*;
 import com.example.communicationservice.entity.ChatMessage;
@@ -55,7 +54,7 @@ public abstract class ChatMapper {
 
     public static ChatMessageSendResponse toSendResponse(
         ChatMessage message,
-        FileDownloadUrlListGenerateOutput output
+        FileDownloadUrlGenerateOutput output
     ) {
         return new ChatMessageSendResponse(
             message.getId(),
@@ -63,7 +62,7 @@ public abstract class ChatMapper {
             message.getSenderCode(),
             message.getType(),
             message.getText(),
-            output != null ? FileMapper.toSendResponse(output.urls().get(0)) : null,
+            output != null ? FileMapper.toSendResponse(output) : null,
             message.getSentAt()
         );
     }
