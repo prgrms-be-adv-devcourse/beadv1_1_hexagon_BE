@@ -3,7 +3,7 @@ package org.hexagon.core.events.selfpromotion;
 import java.time.Instant;
 import org.hexagon.core.vo.PaymentType;
 
-public record SelfPromotionUpdatedEvent(
+public record SelfPromotionUpsertEvent(
         String code,
         String title,
         String content,
