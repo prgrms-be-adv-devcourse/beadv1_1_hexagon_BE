@@ -16,6 +16,7 @@ import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
 import com.example.memberservice.member.model.enums.MemberRole;
+import java.util.concurrent.CompletableFuture;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
@@ -70,6 +71,8 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberGetResponse getMemberByCode(MemberGetInput input) {
 
+        long startTime = System.nanoTime(); // ⏱ 시작
+
         String findMemberCode =input.memberCode();
 
         if (findMemberCode == null || findMemberCode.isBlank()) {
@@ -86,17 +89,32 @@ public class MemberServiceImpl implements MemberService {
 
         List<MemberTag> memberTags = null;
 
-        memberRating = getMemberRating(findMemberCode);
+        CompletableFuture<MemberRating> ratingFuture =
+            CompletableFuture.supplyAsync(() -> getMemberRating(findMemberCode));
 
-        memberTags = getMemberTags(findMemberCode);
+        CompletableFuture<List<MemberTag>> tagsFuture =
+            CompletableFuture.supplyAsync(() -> getMemberTags(findMemberCode));
 
-        ResponseDto<PresignedDownloadListResponse> downloadUrlByCode = s3ServiceClient.getDownloadUrlByCode(
-            new PresignedDownloadRequestByCode(
-                existMembers.getCode()
-            )
-        );
+        CompletableFuture<ResponseDto<PresignedDownloadListResponse>> downloadFuture =
+            CompletableFuture.supplyAsync(() ->
+                s3ServiceClient.getDownloadUrlByCode(
+                    new PresignedDownloadRequestByCode(existMembers.getCode())
+                )
+            );
+
+        memberRating = ratingFuture.join();
+
+        memberTags = tagsFuture.join();
+
+        ResponseDto<PresignedDownloadListResponse> downloadUrlByCode = downloadFuture.join();
 
         List<PresignedDownloadResponse> urls = downloadUrlByCode.data().urls();
+
+        long endTime = System.nanoTime();
+        long elapsedMs = (endTime - startTime) / 1_000_000;
+
+        log.info("[getMemberByCode] memberCode={}, elapsed={}ms",
+            input.memberCode(), elapsedMs);
 
         return new MemberGetResponse(memberInfo, memberRating, memberTags, urls);
     }
