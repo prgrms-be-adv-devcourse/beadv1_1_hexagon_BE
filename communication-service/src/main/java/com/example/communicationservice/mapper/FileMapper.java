@@ -13,15 +13,11 @@ public abstract class FileMapper {
 
     private FileMapper() {} // 인스턴스화 방지
 
-    public static ChatFileReadResponse from(File file) {
-        if (file == null) {
-            return null;
-        }
-
+    public static ChatFileReadResponse toReadResponse(FileDownloadUrlGenerateOutput output) {
         return new ChatFileReadResponse(
-            file.getKey(),
-            null, // queryString
-            null // fileType
+            output.key(),
+            output.queryString(),
+            output.fileType()
         );
     }
 
@@ -42,7 +38,7 @@ public abstract class FileMapper {
         );
     }
 
-    public static ChatFileSendResponse from(FileDownloadUrlGenerateOutput output) {
+    public static ChatFileSendResponse toSendResponse(FileDownloadUrlGenerateOutput output) {
         return new ChatFileSendResponse(
             output.key(),
             output.queryString(),

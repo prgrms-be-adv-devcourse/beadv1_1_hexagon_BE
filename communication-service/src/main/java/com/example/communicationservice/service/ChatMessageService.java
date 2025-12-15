@@ -2,6 +2,7 @@ package com.example.communicationservice.service;
 
 import com.example.communicationservice.client.S3ServiceClient;
 import com.example.communicationservice.client.dto.input.FileDownloadUrlGenerateInput;
+import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
 import com.example.communicationservice.client.dto.output.FileDownloadUrlListGenerateOutput;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
@@ -12,6 +13,7 @@ import com.example.communicationservice.controller.dto.response.ChatMessageSendR
 import com.example.communicationservice.controller.dto.response.PageInfo;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
+import com.example.communicationservice.entity.File;
 import com.example.communicationservice.mapper.ChatMapper;
 import com.example.communicationservice.mapper.PageMapper;
 import com.example.communicationservice.repository.ChatMessageRepository;
@@ -24,6 +26,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,12 +58,47 @@ public class ChatMessageService {
 
         Page<ChatMessage> messagePage = chatMessageRepository.findAllByRoomId(roomId, pageable);
 
-        // 엔티티 -> DTO 변환
-        List<ChatMessageReadResponse> messages = messagePage.getContent().stream()
-            .map(ChatMapper::toReadResponse)
+        // 파일이 포함된 메시지에서 key 추출 후 리스트에 저장
+        List<String> keys = messagePage.getContent().stream()
+            .filter(message ->
+                MessageType.FILE == message.getType() ||
+                MessageType.MIXED == message.getType()
+            ) // 파일이 포함된 메시지만 필터링
+            .map(ChatMessage::getFile)
+            .filter(Objects::nonNull)
+            .map(File::getKey) // key 추출
+            .distinct() // 동일 파일 중복 방지
             .toList();
 
-        // Page 정보 추출 및 DTO 생성
+        // key: 파일 key, value: pre-signed download URL 생성 응답
+        // lambda 함수에서 참조되는 read-only 데이터이므로 final 선언
+        final Map<String, FileDownloadUrlGenerateOutput> keyToDownloadUrl;
+
+        if (!keys.isEmpty()) {
+            // feign client 요청 dto 생성
+            FileDownloadUrlGenerateInput input = new FileDownloadUrlGenerateInput(keys);
+
+            // S3 service에 pre-signed download URL 발급 요청
+            FileDownloadUrlListGenerateOutput output = s3ServiceClient.generateDownloadUrl(input).data();
+
+            // 파일 key에 pre-signed download URL 생성 응답 매핑
+            keyToDownloadUrl = output.urls().stream()
+                .collect(
+                    Collectors.toMap(
+                        FileDownloadUrlGenerateOutput::key, // key
+                        Function.identity() // value // 입력으로 받은 FileDownloadUrlGenerateOutput을 그대로 반환
+                    )
+                );
+        } else {
+            keyToDownloadUrl = Map.of();
+        }
+
+        // 엔티티 -> dto 변환
+        List<ChatMessageReadResponse> messages = messagePage.getContent().stream()
+            .map(message -> ChatMapper.toReadResponse(message, keyToDownloadUrl))
+            .toList();
+
+        // Page 정보 추출 및 dto 생성
         PageInfo pageInfo = PageMapper.toPageInfo(messagePage);
 
         return new ChatMessageListReadResponse(messages, pageInfo);

@@ -1,13 +1,14 @@
 package com.example.communicationservice.mapper;
 
+import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
 import com.example.communicationservice.client.dto.output.FileDownloadUrlListGenerateOutput;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
-import com.example.communicationservice.controller.dto.response.ChatMessageReadResponse;
-import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
-import com.example.communicationservice.controller.dto.response.ChatRoomCreateResponse;
-import com.example.communicationservice.controller.dto.response.ChatRoomReadResponse;
+import com.example.communicationservice.controller.dto.response.*;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
+import com.example.communicationservice.type.MessageType;
+
+import java.util.Map;
 
 // dto <-> entity 또는 dto <-> dto 변환 로직 전담
 public abstract class ChatMapper {
@@ -26,13 +27,28 @@ public abstract class ChatMapper {
             .build();
     }
 
-    public static ChatMessageReadResponse toReadResponse(ChatMessage message) {
+    public static ChatMessageReadResponse toReadResponse(
+        ChatMessage message,
+        Map<String, FileDownloadUrlGenerateOutput> keyToDownloadUrl
+    ) {
+        ChatFileReadResponse file = null;
+        MessageType type = message.getType();
+
+        if (message.getFile() != null && (MessageType.FILE == type || MessageType.MIXED == type)) {
+            String key = message.getFile().getKey();
+            FileDownloadUrlGenerateOutput output = keyToDownloadUrl.get(key);
+
+            if (output != null) {
+                file = FileMapper.toReadResponse(output);
+            }
+        }
+
         return new ChatMessageReadResponse(
             message.getId(),
             message.getSenderCode(),
             message.getType(),
             message.getText(),
-            FileMapper.from(message.getFile()),
+            file,
             message.getSentAt()
         );
     }
@@ -47,7 +63,7 @@ public abstract class ChatMapper {
             message.getSenderCode(),
             message.getType(),
             message.getText(),
-            output != null ? FileMapper.from(output.urls().get(0)) : null,
+            output != null ? FileMapper.toSendResponse(output.urls().get(0)) : null,
             message.getSentAt()
         );
     }
