@@ -16,6 +16,7 @@ import com.example.searchservice.saga.mapper.TagMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.vo.Tag;
 import org.springframework.stereotype.Service;
@@ -79,5 +80,17 @@ public class TagServiceImpl implements TagService {
     @Override
     public void saveAll(List<TagDocumentEntity> tags) {
         tagRepository.saveAll(tags);
+    }
+
+    @Override
+    public List<String> findTagsByCodes(List<String> tagCodes) {
+        if (tagCodes == null || tagCodes.isEmpty()) {
+            return List.of();
+        }
+
+        return StreamSupport
+                .stream(tagRepository.findAllById(tagCodes).spliterator(), false) // code를 id로 사용하기 때문에 findAllById 사용
+                .map(TagDocumentEntity::getSkill)
+                .toList();
     }
 }
