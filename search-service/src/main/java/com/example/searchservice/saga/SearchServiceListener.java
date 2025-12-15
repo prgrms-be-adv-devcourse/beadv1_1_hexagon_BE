@@ -14,10 +14,9 @@ import com.example.searchservice.tag.service.TagService;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.hexagon.core.events.commission.CommissionCreatedEvent;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
 import org.hexagon.core.events.commission.CommissionInitEvent;
-import org.hexagon.core.events.commission.CommissionUpdatedEvent;
+import org.hexagon.core.events.commission.CommissionUpsertEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionInitEvent;
@@ -89,24 +88,20 @@ public class SearchServiceListener {
         selfPromotionService.delete(event.code());
     }
 
-    @KafkaHandler
-    public void handleEvent(@Payload CommissionInitEvent event) {
-        List<CommissionDocumentEntity> docs = event.commissions().stream()
-                .map(CommissionMapper::toCommissionDocument)
-                .toList();
-
-        commissionService.saveAll(docs);
-    }
-
-    @KafkaHandler
-    public void handleEvent(@Payload CommissionCreatedEvent event) {
-        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event);
-        commissionService.save(doc);
-    }
+    // TODO: 의뢰글 인덱싱 Python 코드 작성 후 삭제
+//    @KafkaHandler
+//    public void handleEvent(@Payload CommissionInitEvent event) {
+//        List<CommissionDocumentEntity> docs = event.commissions().stream()
+//                .map(CommissionMapper::toCommissionDocument)
+//                .toList();
+//
+//        commissionService.saveAll(docs);
+//    }
 
     @KafkaHandler
-    public void handleEvent(@Payload CommissionUpdatedEvent event) {
-        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event);
+    public void handleEvent(@Payload CommissionUpsertEvent event) {
+        List<String> tags = tagService.findTagsByCodes(event.tagCodes());
+        CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event, tags);
         commissionService.update(doc);
     }
 
