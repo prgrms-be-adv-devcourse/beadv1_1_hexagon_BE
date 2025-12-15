@@ -144,19 +144,18 @@ public class ContractRepository {
         return orderSpecifiers.toArray(OrderSpecifier<?>[]::new);
     }
 
-    public long countClientContractBy(String memberCode) {
-        return countContract(memberCode, this::getClientWhereClause);
+    public boolean existsClientContractBy(String memberCode) {
+        return findFirstContract(memberCode, this::getClientWhereClause) != null;
     }
 
-    public long countFreelancerContractBy(String memberCode) {
-        return countContract(memberCode, this::getFreelancerWhereClause);
+    public boolean existsFreelancerContractBy(String memberCode) {
+        return findFirstContract(memberCode, this::getFreelancerWhereClause) != null;
     }
 
-    private Long countContract(String memberCode, BiFunction<QContractEntity, String, Predicate> whereClause) {
+    private ContractEntity findFirstContract(String memberCode, BiFunction<QContractEntity, String, Predicate> whereClause) {
         QContractEntity qContractEntity = QContractEntity.contractEntity;
 
-        return queryFactory.select(qContractEntity.count())
-                .from(qContractEntity)
+        return queryFactory.selectFrom(qContractEntity)
                 .where(whereClause.apply(qContractEntity, memberCode))
                 .fetchOne();
     }

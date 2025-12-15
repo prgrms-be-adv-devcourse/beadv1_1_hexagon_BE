@@ -111,10 +111,10 @@ public class ContractService {
     }
 
     public MemberRoleStatusResponse getMemberRoleStatus(String memberCode) {
-        long clientContractNum = contractRepository.countClientContractBy(memberCode);
-        long freelancerContractNum = contractRepository.countFreelancerContractBy(memberCode);
+        boolean hasClientContracts = contractRepository.existsClientContractBy(memberCode);
+        boolean hasFreelancerContracts = contractRepository.existsFreelancerContractBy(memberCode);
 
-        return new MemberRoleStatusResponse(clientContractNum > 0, freelancerContractNum > 0);
+        return new MemberRoleStatusResponse(hasClientContracts, hasFreelancerContracts);
     }
 
     private void validateCancelRequest(String xCode, Contract contract) {
