@@ -12,13 +12,11 @@ import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.exception.TagErrorCode;
 import com.example.searchservice.tag.exception.TagException;
 import com.example.searchservice.tag.repository.TagRepository;
-import com.example.searchservice.saga.mapper.TagMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
-import org.hexagon.core.vo.Tag;
 import org.springframework.stereotype.Service;
 
 @Service
