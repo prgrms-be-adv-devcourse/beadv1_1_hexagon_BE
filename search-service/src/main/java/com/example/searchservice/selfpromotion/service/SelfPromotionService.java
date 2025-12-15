@@ -12,11 +12,7 @@ public interface SelfPromotionService {
 
     public List<String> getSuggestions(String query, int size);
 
-    public void saveAll(List<SelfPromotionDocumentEntity> selfPromotions);
-
-    public void save(SelfPromotionDocumentEntity selfPromotion);
-
-    public void update(SelfPromotionDocumentEntity selfPromotion);
+    public void upsert(SelfPromotionDocumentEntity selfPromotion);
 
     public void delete(String code);
 }
