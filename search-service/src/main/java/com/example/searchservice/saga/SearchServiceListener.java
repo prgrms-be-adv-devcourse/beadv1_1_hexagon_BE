@@ -102,7 +102,7 @@ public class SearchServiceListener {
     public void handleEvent(@Payload CommissionUpsertEvent event) {
         List<String> tags = tagService.findTagsByCodes(event.tagCodes());
         CommissionDocumentEntity doc = CommissionMapper.toCommissionDocument(event, tags);
-        commissionService.update(doc);
+        commissionService.upsert(doc);
     }
 
     @KafkaHandler
