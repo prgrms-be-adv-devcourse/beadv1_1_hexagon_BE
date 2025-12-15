@@ -8,5 +8,7 @@ public interface TagService {
     public List<TagResponseDto> getSuggestions(String prefix, int size);
 
     public void saveAll(List<TagDocumentEntity> tags);
+
+    public List<String> findTagsByCodes(List<String> tagCodes);
 }
 
