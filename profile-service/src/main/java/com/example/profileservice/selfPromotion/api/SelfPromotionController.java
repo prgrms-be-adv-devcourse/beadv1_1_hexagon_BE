@@ -34,15 +34,15 @@ public class SelfPromotionController implements SelfPromotionApiController {
     }
 
 
-    // 내 프로모션 목록 조회
+    // 내 프로모션 조회
     @Override
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<List<SelfPromotionResponse>>> getMyPromotions(
+    public ResponseEntity<ResponseDto<SelfPromotionResponse>> getMyPromotions(
             @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode
     ) {
-        List<SelfPromotionResponse> promotions = selfPromotionService.getMyPromotions(memberCode);
+        SelfPromotionResponse promotion = selfPromotionService.getMyPromotions(memberCode);
 
-        return ResponseEntity.ok(ResponseDto.success(promotions));
+        return ResponseEntity.ok(ResponseDto.success(promotion));
     }
 
     // 프로모션 등록

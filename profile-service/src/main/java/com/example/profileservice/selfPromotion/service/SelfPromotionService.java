@@ -19,7 +19,6 @@ import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionU
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.model.entity.SelfPromotionEntity;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,16 +56,14 @@ public class SelfPromotionService {
                 .collect(Collectors.toList());
     }
 
-    // 특정 회원이 작성한 셀프 프로모션 게시글 목록을 최신순으로 조회
+    // 특정 회원이 작성한 셀프 프로모션 게시글을 조회
     @Transactional(readOnly = true)
-    public List<SelfPromotionResponse> getMyPromotions(String memberCode) {
-        // 1:1 관계 강제에 따라 단건 조회
+    public SelfPromotionResponse getMyPromotions(String memberCode) {
+        // 단건 조회
         Optional<SelfPromotionEntity> myPromotion = selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode);
 
-        // API 호환성을 위해 List로 래핑하여 반환
-        return myPromotion.map(this::toResponse)
-                .map(List::of)
-                .orElse(Collections.emptyList());
+        // 단일 객체 응답
+        return myPromotion.map(this::toResponse).orElse(null);
     }
 
     // 특정 셀프 프로모션 게시글의 상세 정보를 조회
@@ -86,17 +83,10 @@ public class SelfPromotionService {
         // 2. 이력서 유효성 검증
         validateResumeCode(request.resumeCode());
 
-        // 3. 기존 활성 프로모션 확인 및 Soft Delete 처리
+        // 3. 기존 활성 프로모션 확인 및 등록 차단
         selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
                 .ifPresent(existingPromotion -> {
-                    // 기존 활성 프로모션이 있다면 논리적으로 삭제 처리 (isDeleted = true)
-                    log.info("기존 활성 프로모션({})을 비활성화 처리합니다. (memberCode: {})", existingPromotion.getCode(), memberCode);
-                    existingPromotion.delete(); // BaseEntity의 isDeleted 필드를 true로 변경하는 메서드 가정
-                    selfPromotionRepository.save(existingPromotion);
-
-                    // 기존 프로모션 삭제 이벤트 발행 (AI/Search 모듈 인덱스 업데이트용)
-                    SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(existingPromotion.getCode());
-                    kafkaProducer.send(selfPromotionTopic, existingPromotion.getCode(), deletedEvent);
+                    throw new CustomException(ErrorCode.PROMOTION_ALREADY_EXISTS);
                 });
 
         // 4. S3 리소스 영구 저장 및 Code 생성
