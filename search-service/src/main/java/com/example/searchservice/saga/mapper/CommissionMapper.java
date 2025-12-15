@@ -1,14 +1,15 @@
 package com.example.searchservice.saga.mapper;
 
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
-import org.hexagon.core.events.commission.CommissionCreatedEvent;
-import org.hexagon.core.events.commission.CommissionUpdatedEvent;
+import java.util.List;
+import org.hexagon.core.events.commission.CommissionUpsertEvent;
 import org.hexagon.core.vo.Commission;
 
 public class CommissionMapper {
 
-    public static CommissionDocumentEntity toCommissionDocument(Commission commission) {
+    public static CommissionDocumentEntity toCommissionDocument(CommissionUpsertEvent upsertEvent, List<String> tags) {
         return CommissionDocumentEntity.builder()
+<<<<<<< HEAD
                 .code(commission.code())
                 .title(commission.title())
                 .content(commission.content())
@@ -55,6 +56,20 @@ public class CommissionMapper {
                 .payAmount(updatedEvent.payAmount())
                 .isOpen(updatedEvent.isOpen())
                 .updatedAt(updatedEvent.updatedAt())
+=======
+                .code(upsertEvent.code())
+                .title(upsertEvent.title())
+                .content(upsertEvent.content())
+                .memberCode(upsertEvent.memberCode())
+                .memberNickname(upsertEvent.memberNickname())
+                .tags(tags)
+                .startedAt(upsertEvent.startedAt())
+                .endedAt(upsertEvent.endedAt())
+                .paymentType(upsertEvent.paymentType())
+                .payAmount(upsertEvent.payAmount())
+                .isClosed(upsertEvent.isClosed())
+                .updatedAt(upsertEvent.updatedAt())
+>>>>>>> 024615f (feat(search): 사용하지 않는 Mapper 메소드 삭제 및 CommissionUpsertEvent + tags -> CommissionDocumentEntity 변환 메소드 구현)
                 .build();
     }
 }
