@@ -5,6 +5,8 @@ import com.example.searchservice.commission.exception.CommissionException;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.controller.swagger.SelfPromotionControllerSwagger;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
+import com.example.searchservice.selfpromotion.exception.SelfPromotionErrorCode;
+import com.example.searchservice.selfpromotion.exception.SelfPromotionException;
 import com.example.searchservice.selfpromotion.service.SelfPromotionService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -39,7 +41,7 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
             @RequestParam(defaultValue = "20") @Min(1) @Max(30) int size) {
 
         if(paymentType == null && maxPay != null) {
-            throw new CommissionException(CommissionErrorCode.COMMISSION_PAY_FILTER_ERROR);
+            throw new SelfPromotionException(SelfPromotionErrorCode.SELF_PROMOTION_PAY_FILTER_ERROR);
         }
 
         Page<SelfPromotionResponseDto> result;
