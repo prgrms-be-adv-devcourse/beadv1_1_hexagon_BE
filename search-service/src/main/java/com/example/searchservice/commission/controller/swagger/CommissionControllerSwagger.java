@@ -2,7 +2,6 @@ package com.example.searchservice.commission.controller.swagger;
 
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.vo.OpenStatus;
-import com.example.searchservice.common.vo.Pagination;
 import com.example.searchservice.common.vo.SearchScope;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,7 +13,6 @@ import java.time.LocalDate;
 import java.util.List;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 

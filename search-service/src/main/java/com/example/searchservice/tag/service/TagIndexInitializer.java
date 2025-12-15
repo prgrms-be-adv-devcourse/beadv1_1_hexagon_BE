@@ -3,12 +3,10 @@ package com.example.searchservice.tag.service;
 import com.example.searchservice.tag.entity.TagDocumentEntity;
 import com.example.searchservice.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.elasticsearch.core.suggest.Completion;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
