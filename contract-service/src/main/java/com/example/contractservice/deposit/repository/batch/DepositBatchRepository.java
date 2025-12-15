@@ -29,8 +29,10 @@ public class DepositBatchRepository {
                 WHERE code = ? AND updated_at = ?
                 """;
 
+        Instant batchTime = Instant.now();
+
         List<Object[]> args = memberDepositMap.values().stream()
-                .map(deposit -> new Object[]{deposit.getAmount(), Instant.now(), deposit.getCode(), deposit.getUpdatedAt()}).toList();
+                .map(deposit -> new Object[]{deposit.getAmount(), batchTime, deposit.getCode(), deposit.getUpdatedAt()}).toList();
 
         int[] updatedCounts = jdbcTemplate.batchUpdate(sql, args);
 

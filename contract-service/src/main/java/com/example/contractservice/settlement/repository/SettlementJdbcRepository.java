@@ -20,6 +20,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class SettlementJdbcRepository {
+
+    private static final int EXPECTED_UPDATED_NUM = 1;
     private final JdbcTemplate jdbcTemplate;
 
     public SettlementEntity findById(Long lastSettlementId) {
@@ -86,7 +88,7 @@ public class SettlementJdbcRepository {
         }).toList();
 
         int[] updatedCounts = jdbcTemplate.batchUpdate(sql, args);
-        boolean allUpdated = Arrays.stream(updatedCounts).allMatch(i -> i == 1);
+        boolean allUpdated = Arrays.stream(updatedCounts).allMatch(i -> i == EXPECTED_UPDATED_NUM);
 
         if (!allUpdated) {
             throw new SettlementException(SettlementErrorCode.SETTLEMENT_BATCH_UPDATE_FAILED);
