@@ -23,13 +23,13 @@ public interface CommissionControllerSwagger {
     @Operation(summary = "의뢰글 검색", description = "조건(검색어, 태그, 급여, 기간 등)을 기반으로 의뢰글을 검색합니다.")
     @Parameters({
             @Parameter(name = "query", description = "검색어", required = false),
-            @Parameter(name = "scope", description = "검색 범위 (all(default) | title | content)"),
+            @Parameter(name = "scope", description = "검색 범위 (ALL(default) | TITLE | CONTENT)"),
             @Parameter(name = "tags", description = "태그 목록", required = false),
             @Parameter(name = "payment-type", description = "급여 지급 방식 (MONTHLY | PER_JOB)", required = false),
             @Parameter(name = "min-pay", description = "최소 급여", required = false),
             @Parameter(name = "started-at", description = "프로젝트 시작일 (yyyy-MM-dd)", required = false),
             @Parameter(name = "ended-at", description = "프로젝트 종료일 (yyyy-MM-dd)", required = false),
-            @Parameter(name = "open-status", description = "마감 여부(all | open(default) | closed"),
+            @Parameter(name = "open-status", description = "마감 여부(ALL | OPEN(default) | CLOSED"),
             @Parameter(name = "page", description = "페이지 번호(0부터 시작)", required = false),
             @Parameter(name = "size", description = "페이지 크기(1 ~ 30)", required = false)
     })

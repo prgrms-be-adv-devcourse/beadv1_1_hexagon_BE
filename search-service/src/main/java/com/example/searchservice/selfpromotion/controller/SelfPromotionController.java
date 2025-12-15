@@ -32,7 +32,7 @@ public class SelfPromotionController implements SelfPromotionControllerSwagger {
     @GetMapping
     public ResponseDto<Page<SelfPromotionResponseDto>> search(
             @RequestParam(required = false) String query,
-            @RequestParam(defaultValue = "all") SearchScope scope,
+            @RequestParam(defaultValue = "ALL") SearchScope scope,
             @RequestParam(name = "payment-type", required = false) PaymentType paymentType,
             @RequestParam(name = "max-pay", required = false) Long maxPay,
             @RequestParam(defaultValue = "0") @Min(0) int page,

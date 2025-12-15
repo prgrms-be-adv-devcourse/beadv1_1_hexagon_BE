@@ -76,7 +76,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                 .withQuery(q -> q.bool(b -> {
                     if(hasQuery) { // 검색문이 있는 경우 must 쿼리 추가
                         switch (scope) {
-                            case all -> b.must(
+                            case ALL -> b.must(
                                     MultiMatchQuery.of(m -> m
                                             .query(query)
                                             .fields("title^2", "content")
@@ -84,7 +84,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                                             .fuzziness("1")
                                     )._toQuery()
                             );
-                            case title -> b.must(
+                            case TITLE -> b.must(
                                     MatchQuery.of(m -> m
                                             .field("title")
                                             .query(query)
@@ -92,7 +92,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                                             .fuzziness("1")
                                     )._toQuery()
                             );
-                            case content -> b.must(
+                            case CONTENT -> b.must(
                                     MatchQuery.of(m -> m
                                             .field("content")
                                             .query(query)

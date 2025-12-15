@@ -35,13 +35,13 @@ public class CommissionController implements CommissionControllerSwagger {
     @GetMapping
     public ResponseDto<Page<CommissionResponseDto>> search(
             @RequestParam(required = false) String query,
-            @RequestParam(defaultValue = "all") SearchScope scope,
+            @RequestParam(defaultValue = "ALL") SearchScope scope,
             @RequestParam(required = false) List<String> tags,
             @RequestParam(name = "payment-type", required = false) PaymentType paymentType,
             @RequestParam(name = "min-pay", required = false) Long minPay,
             @RequestParam(name = "started-at", required = false) LocalDate startedAt,
             @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
-            @RequestParam(name = "open-status", defaultValue = "open") OpenStatus openStatus,
+            @RequestParam(name = "open-status", defaultValue = "OPEN") OpenStatus openStatus,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(30) int size
     ) {

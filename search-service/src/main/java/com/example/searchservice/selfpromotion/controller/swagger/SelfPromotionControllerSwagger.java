@@ -21,7 +21,7 @@ public interface SelfPromotionControllerSwagger {
     @Operation(summary = "Self Promotion 검색", description = "검색어, 검색 범위를 기반으로 Self Promotion을 검색합니다.")
     @Parameters({
             @Parameter(name = "query", description = "검색어", required = false),
-            @Parameter(name = "scope", description = "검색 범위 (all(default) | title | content)"),
+            @Parameter(name = "scope", description = "검색 범위 (ALL(default) | TITLE | CONTENT)"),
             @Parameter(name = "payment-type", description = "급여 지급 방식 (MONTHLY | PER_JOB)", required = false),
             @Parameter(name = "max-pay", description = "최대 급여", required = false),
             @Parameter(name = "page", description = "페이지 번호", required = false),

@@ -67,26 +67,26 @@ public class CommissionServiceImpl implements CommissionService {
 
                     // openStaus는 반드시 요청에 포함(Not Null)되기 때문에 맨 위에서 처리했습니다.
                     switch (openStatus) { // 마감 상태에 따른 filter 쿼리 추가
-                        case open -> boolQuery.filter(
+                        case OPEN -> boolQuery.filter(
                                 TermQuery.of(t -> t
                                         .field("is_open")
                                         .value(true)
                                 )._toQuery()
                         );
-                        case closed -> boolQuery.filter(
+                        case CLOSED -> boolQuery.filter(
                                 TermQuery.of(t -> t
                                         .field("is_open")
                                         .value(false)
                                 )._toQuery()
                         );
-                        case all -> {
+                        case ALL -> {
                             // 마감 상태 필터 x (open + closed 모두)
                         }
                     }
 
                     if (hasQuery) { // 검색문이 있는 경우 must 쿼리 추가
                         switch (scope) {
-                            case all -> boolQuery.must(
+                            case ALL -> boolQuery.must(
                                     MultiMatchQuery.of(m -> m
                                             .query(query)
                                             .fields("title^2", "content")
@@ -94,7 +94,7 @@ public class CommissionServiceImpl implements CommissionService {
                                             .fuzziness("1")
                                     )._toQuery()
                             );
-                            case title -> boolQuery.must(
+                            case TITLE -> boolQuery.must(
                                     MatchQuery.of(m -> m
                                             .field("title")
                                             .query(query)
@@ -102,7 +102,7 @@ public class CommissionServiceImpl implements CommissionService {
                                             .fuzziness("1")
                                     )._toQuery()
                             );
-                            case content -> boolQuery.must(
+                            case CONTENT -> boolQuery.must(
                                     MatchQuery.of(m -> m
                                             .field("content")
                                             .query(query)
