@@ -1,0 +1,217 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: cartpost-swagger-ui
+              uri: lb://CARTPOST-SERVICE
+              predicates:
+                - Path=/api/commissions/swagger-ui,/api/commissions/v3/api-docs,/api/commissions/swagger-ui/**,/api/commissions/v3/api-docs/**
+
+            - id: communication-swagger-ui
+              uri: lb://COMMUNICATION-SERVICE
+              predicates:
+                - Path=/api/chatrooms/swagger-ui,/api/chatrooms/v3/api-docs,/api/chatrooms/swagger-ui/**,/api/chatrooms/v3/api-docs/**
+
+            - id: contract-swagger-ui
+              uri: lb://CONTRACT-SERVICE
+              predicates:
+                - Path=/api/contracts/swagger-ui,/api/contracts/v3/api-docs,/api/contracts/swagger-ui/**,/api/contracts/v3/api-docs/**
+
+            - id: member-swagger-ui
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members/swagger-ui,/api/members/v3/api-docs,/api/members/swagger-ui/**,/api/members/v3/api-docs/**
+
+            - id: payment-swagger-ui
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/swagger-ui,/api/payments/v3/api-docs,/api/payments/swagger-ui/**,/api/payments/v3/api-docs/**
+
+            - id: profile-swagger-ui
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/profiles/swagger-ui,/api/profiles/v3/api-docs,/api/profiles/swagger-ui/**,/api/profiles/v3/api-docs/**
+
+            - id: search-swagger-ui
+              uri: lb://SEARCH-SERVICE
+              predicates:
+                - Path=/api/search/swagger-ui,/api/search/swagger-ui/**,/api/search/v3/api-docs,/api/search/v3/api-docs/**
+
+            #######
+            # CARTPOST SERVICE
+            #######
+            - id: cartpost-service
+              uri: lb://CARTPOST-SERVICE
+              predicates:
+                - Path=/api/commissions/{comissions_code}
+                - Method=GET
+
+
+            #######
+            # CARTPOST SERVICE
+            #######
+            - id: cartpost-service
+              uri: lb://CARTPOST-SERVICE
+              predicates:
+                - Path=/api/commissions/{comissions_code}
+                - Method=GET
+
+
+            #######
+            # CARTPOST AUTH SERVICE - auth
+            #######
+            - id: cartpost-service-need-auth
+              uri: lb://CARTPOST-SERVICE
+              predicates:
+                - Path=/api/commissions/**,/api/commissions,/api/carts/**
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
+            #######
+            # COMMUNICATION SERVICE
+            #######
+            - id: communication-service
+              uri: lb://COMMUNICATION-SERVICE
+              predicates:
+                - Path=/ws/chat
+
+            #######
+            # COMMUNICATION SERVICE - auth
+            #######
+            - id: communication-service-need-auth
+              uri: lb://COMMUNICATION-SERVICE
+              predicates:
+                - Path=/api/chatrooms/**,/api/chatrooms
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
+            #######
+            # CONTRACT SERVICE -auth
+            #######
+            - id: contract-service-need-auth
+              uri: lb://CONTRACT-SERVICE
+              predicates:
+                - Path=/api/contracts/**,/api/contracts,/api/deposits/**,/api/deposits
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
+            #######
+            # Member SERVICE
+            #######
+            - id: member-service-get
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members
+                - Method=GET
+
+            #######
+            # Member SERVICE
+            #######
+            - id: member-service-sign
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members/healthCheck,/api/members
+                - Method=POST,GET
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+
+            #######
+            # Member SERVICE
+            #######
+            - id: member-service-need-auth
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
+
+            #######
+            # MEMBER SERVICE
+            #######
+            - id: member-service
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members/**,/api/members,/oauth2/**,/login/**,/login,/api/auth,/api/auth/**
+
+            #######
+            # MEMBER SERVICE - INTERNAL (PROFILE -> MEMBER 통신용)
+            #######
+            - id: member-service-internal
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/internal/members/**
+
+            #######
+            # PAYMENT SERVICE - auth
+            #######
+            - id: payment-service
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/**,/api/payments
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
+            #######
+            # PROFILE SERVICE
+            #######
+            - id: profile-service
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                #                - Path=/api/experiences/**,/api/experiences,/api/ratings/**,/api/ratings,/api/resumes/**,/api/resumes,/api/self-promotions/**,/api/self-promotions,/api/tags/**,/api/tags
+                - Path=/api/tags,/api/ratings/{memberCode},/api/ratings,/api/self-promotions/{promotion-code}
+
+            #######
+            # PROFILE SERVICE - auth
+            #######
+            - id: profile-service-need-auth
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/resumes,/api/resumes/**,/api/self-promotions,/api/self-promotions/**,/api/tags/**,/api/ratings/**
+
+            #######
+            # SEARCH SERVICE
+            #######
+            - id: search-service
+              uri: lb://SEARCH-SERVICE
+              predicates:
+                - Path=/api/search/**
+
+cors:
+  allowed:
+    origin: "http://localhost:8000,http://localhost:3000"
+
+jwt:
+  access-token:
+    secret: ${JWT_ACCESS_SECRET}
+  claims:
+    member-code: member-code
+    is-sign: is-signed-up
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-gateway-service

@@ -1,6 +1,5 @@
 package com.example.contractservice.deposit.service.mapper;
 
-import com.example.contractservice.deposit.domain.Deposit;
 import com.example.contractservice.deposit.domain.DepositHistory;
 import com.example.contractservice.deposit.domain.vo.DepositChange;
 import com.example.contractservice.deposit.entity.DepositHistoryEntity;
@@ -15,15 +14,21 @@ public abstract class DepositHistoryMapper {
         return DepositHistoryEntity.builder()
                 .code(depositHistory.getCode())
                 .depositCode(depositHistory.getDepositCode())
+                .contractCode(depositHistory.getContractCode())
                 .changeAmount(depositChange.changeAmount())
                 .resultAmount(depositChange.resultAmount())
                 .summary(depositHistory.getSummary())
                 .build();
     }
 
-    public static DepositHistory toDomain(Deposit deposit, Long changeAmount, String summary) {
-        DepositChange depositChange = new DepositChange(changeAmount, deposit.getAmount());
+    public static DepositHistory toDomain(DepositHistoryEntity historyEntity) {
+        DepositChange depositChange = new DepositChange(historyEntity.getChangeAmount(), historyEntity.getResultAmount());
 
-        return new DepositHistory(deposit.getCode(), depositChange, summary);
+        return new DepositHistory(historyEntity.getCode(),
+                historyEntity.getDepositCode(),
+                historyEntity.getContractCode(),
+                depositChange,
+                historyEntity.getSummary(),
+                historyEntity.getCreatedAt());
     }
 }

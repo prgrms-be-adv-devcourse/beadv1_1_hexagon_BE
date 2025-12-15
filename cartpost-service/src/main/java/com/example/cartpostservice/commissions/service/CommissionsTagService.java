@@ -4,9 +4,9 @@ import com.example.cartpostservice.commissions.model.CommissionsTagEntity;
 import com.example.cartpostservice.commissions.repository.CommissionsTagRepository;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,28 +35,39 @@ public class CommissionsTagService implements CrudService<TagServiceCommand, Tag
         List<CommissionsTagEntity> tags = commissionsTagRepository.findByCommissionCode(commissionCode);
 
         List<String> tagCodes = tags.stream()
-                .map(entity -> entity.getTagCode())
+                .map(CommissionsTagEntity::getTagCode)
                 .toList();
 
-        TagServiceResult result = new TagServiceResult(
+        return new TagServiceResult(
                 commissionCode,
                 tagCodes
         );
-
-        return result;
     }
 
     @Override
     public void update(TagServiceCommand requestDto, String commissionCode) {
-        commissionsTagRepository.deleteByCommissionCode(commissionCode);
+        List<CommissionsTagEntity> savedTags = commissionsTagRepository.findByCommissionCode(commissionCode);
 
-        for (String tagCode : requestDto.tagCodes()) {
-            CommissionsTagEntity commissionsTagEntity = CommissionsTagEntity.builder()
-                    .commissionCode(requestDto.commissionsCode())
-                    .tagCode(tagCode).build();
+        Set<String> requestedTagCodes = new HashSet<>(requestDto.tagCodes());
 
-            commissionsTagRepository.save(commissionsTagEntity);
-        }
+        List<CommissionsTagEntity> toDeleteTags = savedTags.stream()
+                .filter(tag -> !requestedTagCodes.contains(tag.getTagCode()))
+                .toList();
+
+        Set<String> existingCodes = savedTags.stream()
+                .map(CommissionsTagEntity::getTagCode)
+                .collect(Collectors.toSet());
+
+        List<CommissionsTagEntity> toSaveTags = requestDto.tagCodes().stream()
+                .filter(tagCode -> !existingCodes.contains(tagCode))
+                .map(tagCode -> CommissionsTagEntity.builder()
+                        .commissionCode(commissionCode)
+                        .tagCode(tagCode)
+                        .build())
+                .toList();
+
+        commissionsTagRepository.deleteAll(toDeleteTags);
+        commissionsTagRepository.saveAll(toSaveTags);
     }
 
     @Override

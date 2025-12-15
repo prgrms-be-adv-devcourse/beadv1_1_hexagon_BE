@@ -1,7 +1,7 @@
 package com.example.contractservice.contract.service.batch.writer;
 
 import com.example.contractservice.contract.common.ContractStatus;
-import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.repository.ContractRepository;
 import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,12 +16,14 @@ public class ContractDoneWriter extends ContractStatusWriter {
     }
 
     @Override
-    protected void changeStatus(ContractEntity contractEntity) {
-        contractEntity.updateStatus(ContractStatus.DONE);
+    protected void changeStatus(Contract contractEntity) {
+        contractEntity.done();
     }
 
     @Override
-    protected void publishEvent(ContractEntity contractEntity) {
-        applicationEventPublisher.publishEvent(new ContractEvent(contractEntity.getRequestorCode(), contractEntity.getCode(), contractEntity.getCreatedAt(), ContractStatus.DONE.name()));
+    protected void publishEvent(Contract contractEntity) {
+        applicationEventPublisher.publishEvent(
+                new ContractEvent(contractEntity.getInfo().clientCode(), contractEntity.getCode(),
+                        contractEntity.getCreatedAt(), ContractStatus.DONE.name()));
     }
 }

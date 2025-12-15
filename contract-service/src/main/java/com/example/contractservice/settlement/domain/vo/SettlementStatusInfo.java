@@ -18,8 +18,8 @@ public record SettlementStatusInfo(
 
     public SettlementStatusInfo settle(BigDecimal settlementRate) {
         BigDecimal preAmount = BigDecimal.valueOf(originalAmount);
-        Long calculatedSettledAmount = settlementRate.multiply(preAmount).longValue(); // 곱셈 후 소숫점 이하 버림
+        Long calculatedFeeAmount = settlementRate.multiply(preAmount).longValue(); // 곱셈 후 소숫점 이하 버림
 
-        return new SettlementStatusInfo(originalAmount, originalAmount - calculatedSettledAmount, DONE, settlementRate);
+        return new SettlementStatusInfo(originalAmount, originalAmount - calculatedFeeAmount, DONE, settlementRate);
     }
 }

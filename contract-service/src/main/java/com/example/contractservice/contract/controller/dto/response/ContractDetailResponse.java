@@ -1,14 +1,16 @@
 package com.example.contractservice.contract.controller.dto.response;
 
-import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.domain.Contract;
+import com.example.contractservice.contract.domain.vo.ContractContent;
+import com.example.contractservice.contract.domain.vo.ContractInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
 public record ContractDetailResponse(
-    @Schema(description = "계약 요청 회원 이름", example = "계약 요청 회원")
-    String requestorName,
-    @Schema(description = "계약 성립자 회원 이름", example = "계약 성립 회원")
-    String contractorName,
+    @Schema(description = "클라이언트 회원 이름", example = "김회원")
+    String clientName,
+    @Schema(description = "프리랜서 회원 이름", example = "프리랜서")
+    String freelancerName,
     @Schema(description = "계약 생성 일시", example = "2023-08-31T01:07:25.295Z")
     Instant createdAt,
     @Schema(description = "프로젝트 시작일", example = "2023-08-31T01:07:25.295Z")
@@ -27,17 +29,20 @@ public record ContractDetailResponse(
     String body
 ) {
 
-    public static ContractDetailResponse of(ContractEntity contractEntity, String requestorName, String contractorName) {
+    public static ContractDetailResponse of(Contract contract, String clientName, String freelancerName) {
+        ContractInfo contractInfo = contract.getInfo();
+        ContractContent contractContent = contract.getContent();
+
         return new ContractDetailResponse(
-                requestorName,
-                contractorName,
-                contractEntity.getCreatedAt(),
-                contractEntity.getStartedAt(),
-                contractEntity.getEndedAt(),
-                contractEntity.getPaymentType().name(),
-                contractEntity.getStatus().name(),
-                contractEntity.getName(),
-                contractEntity.getBody()
+                clientName,
+                freelancerName,
+                contract.getCreatedAt(),
+                contractInfo.startedAt(),
+                contractInfo.endedAt(),
+                contractInfo.paymentType().name(),
+                contractInfo.status().name(),
+                contractContent.name(),
+                contractContent.body()
         );
     }
 }

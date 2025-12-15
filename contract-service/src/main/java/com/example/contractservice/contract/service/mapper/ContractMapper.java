@@ -15,8 +15,7 @@ public abstract class ContractMapper {
 
         return ContractEntity.builder()
                 .code(contract.getCode())
-                .requestorCode(contractInfo.requestorCode())
-                .contractorCode(contractInfo.contractorCode())
+                .clientCode(contractInfo.clientCode())
                 .freelancerCode(contractInfo.freelancerCode())
                 .status(contractInfo.status())
                 .startedAt(contractInfo.startedAt())
@@ -30,9 +29,9 @@ public abstract class ContractMapper {
 
     public static Contract toDomain(ContractEntity contractEntity) {
         ContractInfo contractInfo = new ContractInfo(
-                contractEntity.getRequestorCode(),
-                contractEntity.getContractorCode(),
+                contractEntity.getClientCode(),
                 contractEntity.getFreelancerCode(),
+                contractEntity.getCommissionCode(),
                 contractEntity.getStartedAt(),
                 contractEntity.getEndedAt(),
                 contractEntity.getPaymentType(),

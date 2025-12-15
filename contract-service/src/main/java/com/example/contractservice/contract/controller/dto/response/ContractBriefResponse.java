@@ -1,6 +1,7 @@
 package com.example.contractservice.contract.controller.dto.response;
 
-import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.domain.Contract;
+import com.example.contractservice.contract.domain.vo.ContractInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
@@ -21,14 +22,16 @@ public record ContractBriefResponse(
         String name
 ) {
 
-    public static ContractBriefResponse from(ContractEntity contractEntity) {
+    public static ContractBriefResponse from(Contract contract) {
+        ContractInfo contractInfo = contract.getInfo();
+
         return new ContractBriefResponse(
-                contractEntity.getCode(),
-                contractEntity.getCreatedAt(),
-                contractEntity.getStartedAt(),
-                contractEntity.getEndedAt(),
-                contractEntity.getStatus().name(),
-                contractEntity.getName()
+                contract.getCode(),
+                contract.getCreatedAt(),
+                contractInfo.startedAt(),
+                contractInfo.endedAt(),
+                contractInfo.status().name(),
+                contract.getContent().name()
         );
     }
 }

@@ -4,6 +4,7 @@ import com.example.communicationservice.client.MemberServiceClient;
 import com.example.communicationservice.client.dto.MemberExistOutput;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
+import com.example.communicationservice.controller.dto.request.ChatRoomCreateRequest;
 import com.example.communicationservice.controller.dto.response.ChatRoomCreateResponse;
 import com.example.communicationservice.controller.dto.response.ChatRoomListReadResponse;
 import com.example.communicationservice.controller.dto.response.PageInfo;
@@ -65,13 +66,15 @@ class ChatRoomServiceTest {
             .memberCodes(memberCodes)
             .build();
 
+        ChatRoomCreateRequest request = new ChatRoomCreateRequest(roomName, memberCodes);
+
         ReflectionTestUtils.setField(savedChatRoom, "id", roomId); // 리플렉션으로 아이디 추가
 
         given(chatRoomRepository.save(any(ChatRoom.class)))
             .willReturn(savedChatRoom);
 
         // when
-        ChatRoomCreateResponse response = chatRoomService.createChatRoom(roomName, memberCodes, myCode);
+        ChatRoomCreateResponse response = chatRoomService.createChatRoom(request, myCode);
 
         // then
         assertThat(response).isNotNull();
@@ -84,11 +87,13 @@ class ChatRoomServiceTest {
     void 채팅방_참여자_수가_2명이_아니면_채팅방_생성에_실패한다() {
         // given
         String myCode = "USER_A";
+        String roomName = "CHAT_ROOM";
         List<String> memberCodes = List.of(myCode);
+        ChatRoomCreateRequest request = new ChatRoomCreateRequest(roomName, memberCodes);
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatRoomService.createChatRoom("채팅방", memberCodes, myCode));
+            () -> chatRoomService.createChatRoom(request, myCode));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_INVALID_MEMBER_COUNT);
     }
@@ -97,11 +102,13 @@ class ChatRoomServiceTest {
     void 채팅방_생성_요청자가_채팅방_참여자_목록에_없으면_채팅방_생성에_실패한다() {
         // given
         String myCode = "USER_A";
+        String roomName = "CHAT_ROOM";
         List<String> memberCodes = List.of("USER_B", "USER_C");
+        ChatRoomCreateRequest request = new ChatRoomCreateRequest(roomName, memberCodes);
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatRoomService.createChatRoom("채팅방", memberCodes, myCode));
+            () -> chatRoomService.createChatRoom(request, myCode));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_NOT_INCLUDE_SELF);
     }
@@ -111,7 +118,9 @@ class ChatRoomServiceTest {
         // given
         String myCode = "USER_A";
         String unknownCode = "USER_UNKNOWN";
+        String roomName = "CHAT_ROOM";
         List<String> memberCodes = List.of(myCode, unknownCode);
+        ChatRoomCreateRequest request = new ChatRoomCreateRequest(roomName, memberCodes);
 
         MemberExistOutput mockOutput = new MemberExistOutput(List.of(myCode), List.of(unknownCode));
 
@@ -120,7 +129,7 @@ class ChatRoomServiceTest {
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatRoomService.createChatRoom("채팅방", memberCodes, myCode));
+            () -> chatRoomService.createChatRoom(request, myCode));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_INVALID_MEMBER);
     }
@@ -128,7 +137,9 @@ class ChatRoomServiceTest {
     @Test
     void 채팅방_참여자_사이에_이미_채팅방이_존재하면_채팅방_생성에_실패한다() {
         // given
+        String roomName = "CHAT_ROOM";
         List<String> memberCodes = List.of("USER_A", "USER_B");
+        ChatRoomCreateRequest request = new ChatRoomCreateRequest(roomName, memberCodes);
 
         MemberExistOutput mockOutput = new MemberExistOutput(memberCodes, List.of());
 
@@ -140,7 +151,7 @@ class ChatRoomServiceTest {
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatRoomService.createChatRoom("채팅방", memberCodes, "USER_A"));
+            () -> chatRoomService.createChatRoom(request, "USER_A"));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_ALREADY_EXISTS);
     }

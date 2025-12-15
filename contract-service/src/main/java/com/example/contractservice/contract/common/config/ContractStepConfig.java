@@ -1,5 +1,6 @@
 package com.example.contractservice.contract.common.config;
 
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.service.batch.writer.ContractStatusWriter;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +15,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @RequiredArgsConstructor
-public class ContractStepConfig { // TODO: 실패, 에러 시 리스너 추가
+public class ContractStepConfig { // TODO: 실패, 에러 시 리스너 추가 + ContractEntity 제거
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
 
     private final ItemReader<ContractEntity> contractInProgressReader;
     private final ItemReader<ContractEntity> contractPaidReader;
-    private final ItemReader<ContractEntity> contractConfirmedReader;
+    private final ItemReader<ContractEntity> contractRequestedReader;
 
     private final ContractStatusWriter contractDoneWriter;
     private final ContractStatusWriter contractInProgressWriter;
@@ -32,7 +33,7 @@ public class ContractStepConfig { // TODO: 실패, 에러 시 리스너 추가
     @Bean
     public Step contractToDoneBatchStep() { // IN_PROGRESS -> DONE
         return new StepBuilder("contractToDoneBatchStep", jobRepository)
-                .<ContractEntity, ContractEntity>chunk(chunkSize, transactionManager)
+                .<ContractEntity, Contract>chunk(chunkSize, transactionManager)
                 .reader(contractInProgressReader)
                 .writer(contractDoneWriter)
                 .build();
@@ -41,17 +42,17 @@ public class ContractStepConfig { // TODO: 실패, 에러 시 리스너 추가
     @Bean
     public Step contractToInProgressBatchStep() { // PAID -> IN_PROGRESS
         return new StepBuilder("contractToInProgressBatchStep", jobRepository)
-                .<ContractEntity, ContractEntity>chunk(chunkSize, transactionManager)
+                .<ContractEntity, Contract>chunk(chunkSize, transactionManager)
                 .reader(contractPaidReader)
                 .writer(contractInProgressWriter)
                 .build();
     }
 
     @Bean
-    public Step contractToCancelledBatchStep() { // CONFIRMED -> CANCELLED
+    public Step contractToCancelledBatchStep() { // REQUESTED -> CANCELLED
         return new StepBuilder("contractToCancelledBatchStep", jobRepository)
-                .<ContractEntity, ContractEntity>chunk(chunkSize, transactionManager)
-                .reader(contractConfirmedReader)
+                .<ContractEntity, Contract>chunk(chunkSize, transactionManager)
+                .reader(contractRequestedReader)
                 .writer(contractCancelledWriter)
                 .build();
     }

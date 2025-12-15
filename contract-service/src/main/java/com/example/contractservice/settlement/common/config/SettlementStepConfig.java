@@ -1,6 +1,7 @@
 package com.example.contractservice.settlement.common.config;
 
 import com.example.contractservice.deposit.domain.exception.DepositException;
+import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.entity.SettlementEntity;
 import com.example.contractservice.settlement.service.batch.processor.SettlementDataProcessor;
 import com.example.contractservice.settlement.service.batch.reader.SettlementDataReader;
@@ -33,7 +34,7 @@ public class SettlementStepConfig {
     @Bean
     public Step processSettlementStep() {
         return new StepBuilder("processSettlementStep", jobRepository)
-                .<SettlementEntity, SettlementEntity>chunk(batchSize, transactionManager)
+                .<SettlementEntity, Settlement>chunk(batchSize, transactionManager)
                 .reader(settlementDataReader)
                 .processor(settlementDataProcessor)
                 .writer(settlementDataWriter)

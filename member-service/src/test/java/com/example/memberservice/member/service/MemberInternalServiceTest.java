@@ -2,8 +2,8 @@ package com.example.memberservice.member.service;
 
 
 import com.example.memberservice.common.security.model.vo.Provider;
-import com.example.memberservice.member.entity.Members;
-import com.example.memberservice.member.entity.vo.Gender;
+import com.example.memberservice.member.model.entity.Members;
+import com.example.memberservice.member.model.enums.Gender;
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;

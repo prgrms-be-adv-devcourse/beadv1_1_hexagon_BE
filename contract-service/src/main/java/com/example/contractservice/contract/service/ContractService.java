@@ -1,31 +1,22 @@
 package com.example.contractservice.contract.service;
 
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
-import static com.example.contractservice.contract.service.mapper.ContractMapper.*;
 
-import com.example.contractservice.common.UriConstructor;
-import com.example.contractservice.contract.common.ContractStatus;
+import com.example.contractservice.common.util.UriConstructor;
+import com.example.contractservice.common.domain.exception.DomainException;
+import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
-import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
+import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
-import com.example.contractservice.contract.domain.vo.ContractInfo;
-import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractRepository;
-import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
+import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
-import com.example.contractservice.contract.service.mapper.ContractMapper;
-import com.example.contractservice.contract.service.mapper.ContractSettlementMapper;
-import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
-import com.example.contractservice.deposit.service.DepositService;
-import com.example.contractservice.settlement.service.SettlementService;
-import com.example.contractservice.settlement.service.dto.request.SettlementSaveRequest;
 import java.net.URI;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,35 +25,34 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.hexagon.core.events.contract.ContractEvent;
-import org.springframework.context.ApplicationEventPublisher;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ContractService {
-    private static final String PAYMENT_COMMENT = "계약 결제";
+    private static final int CONTRACT_MEMBER_NUM = 2;
 
-    private final SettlementService settlementService;
-    private final DepositService depositService;
     private final ContractRepository contractRepository;
     private final RestTemplate restTemplate;
-    private final ApplicationEventPublisher applicationEventPublisher;
     private final UriConstructor uriConstructor;
+    private final ContractPayService contractPayService;
+    private final ContractCancelService contractCancelService;
 
     public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
-        // 코드를 기반으로 모든 ContractEntity를 한 번에 조회
-        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(codes);
+        // 코드를 기반으로 모든 Contract를 한 번에 조회
+        List<Contract> contracts = contractRepository.findAllByCodes(codes);
 
-        if (contractEntities.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
+        if (contracts.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
             return Collections.emptyList();
         }
 
-        // 계약 목록에서 요청자(requestor)와 계약자(contractor)의 code를 모두 수집 (중복 제거)
-        Set<String> memberCodes = contractEntities.stream()
-                .flatMap(entity -> Stream.of(entity.getRequestorCode(), entity.getContractorCode()))
+        // 계약 목록에서 클라이언트, 프리랜서 code 수집
+        Set<String> memberCodes = contracts.stream()
+                .flatMap(contract -> Stream.of(contract.getInfo().clientCode(), contract.getInfo().freelancerCode()))
                 .collect(Collectors.toSet());
 
         // member 모듈로부터 정보 가져오기
@@ -73,156 +63,106 @@ public class ContractService {
         Map<String, String> membersByCode = memberInfos.stream()
                 .collect(Collectors.toMap(MemberInfo::code, MemberInfo::name)); // code별로 info 분류
 
-        return contractEntities.stream()
-                .map(contractEntity -> convertToBriefResponse(contractEntity, membersByCode))
+        return contracts.stream()
+                .map(contract -> convertToBriefResponse(contract, membersByCode))
                 .toList();
     }
 
     @Transactional
     public ContractCreateResponse requestContract(ContractCreateRequest request) {
-        isValidMember(List.of(request.requestorCode(), request.contractorCode()));
+        isValidMember(request.clientCode(), request.freelancerCode());
 
         Contract createdContract = request.toContract();
 
-        ContractEntity contractEntity = contractRepository.saveContract(toEntity(createdContract));
-        Contract savedContract = toDomain(contractEntity);
+        Contract contract = contractRepository.saveContract(createdContract);
 
-        return ContractCreateResponse.of(savedContract.getCode());
+        return ContractCreateResponse.of(contract.getCode());
     }
 
-    @Transactional
-    public ContractInfoResponse confirmContract(ContractConfirmRequest request) { // TODO: 동시성 테스트 필요
-        ContractEntity contractEntity = contractRepository.findByCode(request.contractCode());
-        Contract contract = toDomain(contractEntity);
+    /** 계약 코드를 받아 결제를 수행합니다. 다음 단계로 수행될 수 있습니다. <br />
+     * 1. 계약들을 리포지터리에서 가져옵니다. <br />
+     * 2. 계약들을 하나씩 확인하며 결제를 합니다. <br />
+     * &nbsp 2-1. 의뢰글 마감 카프카 이벤트가 발행될 수 있습니다. <br />
+     * &nbsp 2-2. 정산 데이터가 삽입됩니다.
+     * <br />
+     *
+     * @param request 계약 결제를 위한 정보를 담는 DTO
+     * @return 결제에 성공/실패한 계약 정보
+     */
+    public ContractPayResponse payContracts(ContractPayServiceRequest request) {
+        Map<Boolean, List<ContractPayProcessRequest>> resultSet = request.contractCodes()
+                .stream()
+                .map(contractCode -> new ContractPayProcessRequest(request.xCode(), contractCode))
+                .collect(Collectors.partitioningBy(this::pay));
 
-        validateConfirm(request.xCode(), contract.getInfo());
-        contract.confirm();
+        List<String> success = resultSet.get(true).stream().map(ContractPayProcessRequest::contractCode).toList();
+        List<String> fail = resultSet.get(false).stream().map(ContractPayProcessRequest::contractCode).toList();
 
-        ContractMapper.applyToEntity(contract, contractEntity);
-
-        contractRepository.saveContract(contractEntity);
-
-        applicationEventPublisher.publishEvent(new ContractEvent(contract.getInfo().requestorCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.CONFIRMED.name()));
-
-        return ContractInfoResponse.of(contract.getCode(), contract.getInfo().status().name());
+        return new ContractPayResponse(success, fail);
     }
 
-    @Transactional
-    public List<ContractInfoResponse> payContracts(ContractPayProcessRequest request) {
-        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(request.contractCodes());
-        List<Contract> contracts = contractEntities.stream()
-                .map(ContractMapper::toDomain)
-                .toList();
+    public void cancelContract(ContractCancelRequest request) {
+        Contract contract = contractRepository.findByCode(request.contractCode());
 
-        validatePayments(request.xCode(), contracts);
+        validateCancelRequest(request.xCode(), contract);
 
-        withdrawDeposit(request, contracts);
-
-        changeStatusToPay(contracts, contractEntities);
-
-        saveSettlements(contracts);
-
-        contracts.forEach(contract -> applicationEventPublisher.publishEvent(new ContractEvent(request.xCode(), contract.getCode(), contract.getCreatedAt(), ContractStatus.PAID.name())));
-
-        return contracts.stream()
-                .map(contract -> ContractInfoResponse.of(contract.getCode(), contract.getInfo().status().name()))
-                .toList();
+        contractCancelService.processCancel(contract);
     }
 
-    private ContractBriefWithNicknameResponse convertToBriefResponse(ContractEntity contractEntity,
+    private void validateCancelRequest(String xCode, Contract contract) {
+        if (!contract.isRelatedWith(xCode)) {
+            throw new ContractException(MEMBER_NOT_RELATED);
+        }
+    }
+
+    private ContractBriefWithNicknameResponse convertToBriefResponse(Contract contract,
             Map<String, String> membersByCode) {
         return ContractBriefWithNicknameResponse.of(
-                contractEntity,
-                membersByCode.get(contractEntity.getRequestorCode()),
-                membersByCode.get(contractEntity.getContractorCode())
+                contract,
+                membersByCode.get(contract.getInfo().clientCode()),
+                membersByCode.get(contract.getInfo().freelancerCode())
         );
     }
 
-    private void isValidMember(List<String> memberCodes) {
-        URI memberInfoUri = uriConstructor.createMemberInfoUrl(memberCodes);
+    private void isValidMember(String clientCode, String freelancerCode) {
+        URI memberInfoUri = uriConstructor.createMemberInfoUrl(List.of(clientCode, freelancerCode));
         MemberInfoResponse memberInfoResponse = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
                 .orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
         List<MemberInfo> memberInfos = memberInfoResponse.members();
 
-        if (memberInfos.size() != memberCodes.size()) {
+        if (memberInfos.size() != CONTRACT_MEMBER_NUM) {
             throw new ContractException(INVALID_MEMBER);
         }
 
-        if (noFreelancer(memberInfos)) {
-            throw new ContractException(NO_FREELANCERS);
+        MemberInfo freelancerInfo = memberInfos.stream()
+                .filter(memberInfo -> memberInfo.code().equals(freelancerCode))
+                .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
+
+        if (!freelancerInfo.canWork()) {
+            throw new ContractException(NOT_FREELANCER);
         }
     }
 
-    private boolean noFreelancer(List<MemberInfo> memberInfos) {
-        return memberInfos.stream()
-                .filter(MemberInfo::canWork)
-                .findFirst()
-                .isEmpty();
-    }
-
-    private void validateConfirm(String xCode, ContractInfo info) {
-        isValidMember(List.of(info.requestorCode(), info.contractorCode()));
-
-        if (!xCode.equals(info.contractorCode())) {
-            throw new ContractException(NOT_CONTRACTOR);
-        }
-
-        if (info.status() != ContractStatus.REQUESTED) {
-            throw new ContractException(NOT_REQUESTED_STATUS);
-        }
-    }
-
-    /**
-     * 1. 로그인 사용자가 모든 계약과 연관되어 있는지 확인
-     * 2. 클라이언트인지 확인
+    /** 실제 결제 로직. 처리 중 예외 발생 시, 실패 결제로 처리되며 로깅합니다.
+     *
+     * @param request 결제를 위한 DTO
+     * @return 메서드 실행 성공 여부
      */
-    private void validatePayments(String xCode, List<Contract> contracts) {
-        boolean isValidUser = contracts.stream() // 모든 계약에 대해
-                .allMatch(contract -> contract.canUserPay(xCode)); // 로그인 유저가 (계약에 관여) && !(일하는 사람)
+    private boolean pay(ContractPayProcessRequest request) {
+        try {
+            contractPayService.processPayment(request);
+        } catch (DomainException e) {
+            log.warn("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: {}", request.contractCode(), e.getErrorCode().getMessage());
 
-        if (!isValidUser) {
-            throw new ContractException(INVALID_PAYMENT_MEMBER);
+            return false;
+        } catch (Exception e) {
+            log.error("계약 코드 {}에 대하여 다음 사유로 결제 처리가 불가능합니다. 사유: ", request.contractCode(), e);
+
+            return false;
         }
 
-        boolean isAnyNotConfirmed = contracts.stream().anyMatch(contract -> !contract.isConfirmed() // CONFIRMED 상태가 아니거나
-                || contract.getInfo().startedAt().isBefore(Instant.now())); // CONFIRMED인데 현재 시간보다 프로젝트 시작일이 이전이라면(실제로는 CANCELLED 상태)
-
-        if (isAnyNotConfirmed) {
-            throw new ContractException(NOT_CONFIRMED_STATUS);
-        }
-
+        return true;
     }
 
-    private void changeStatusToPay(List<Contract> contracts, List<ContractEntity> contractEntities) {
-        Map<String, ContractEntity> entityMapByCode = contractEntities.stream()
-                .collect(Collectors.toMap(ContractEntity::getCode, entity -> entity)); // entity-domain 연결에 사용
-
-        contracts.forEach(Contract::pay);
-
-        contracts.forEach(contract -> {
-            ContractEntity entity = entityMapByCode.get(contract.getCode());
-
-            ContractMapper.applyToEntity(contract, entity);
-        });
-
-        entityMapByCode.values().forEach(contractRepository::saveContract);
-    }
-
-    private void withdrawDeposit(ContractPayProcessRequest request, List<Contract> contracts) {
-        Long totalAmount = contracts.stream()
-                .map(contract -> contract.getInfo().unitAmount())
-                .reduce(0L, Long::sum); // 총 금액
-
-        DepositProcessRequest depositProcessRequest = new DepositProcessRequest(request.xCode(), totalAmount, PAYMENT_COMMENT);
-        depositService.withdraw(depositProcessRequest);
-    }
-
-    private void saveSettlements(List<Contract> contracts) {
-        List<SettlementSaveRequest> settlementSaveRequests = contracts.stream()
-                .map(ContractSettlementMapper::toSaveRequest)
-                .toList();
-
-        settlementService.savePaidSettlements(settlementSaveRequests);
-    }
 }

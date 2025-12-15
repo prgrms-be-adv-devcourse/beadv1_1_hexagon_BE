@@ -63,4 +63,16 @@ public class CommissionsEntity extends BaseEntity {
     public void closed() {
         this.isOpen = false;
     }
+
+    public void update(String memberCode, String title, String content, PaymentType paymentType,
+            String unitAmount, LocalDate startedAt, LocalDate endedAt, String writerName){
+        this.memberCode = memberCode;
+        this.title = title;
+        this.content = content;
+        this.paymentType = paymentType;
+        this.unitAmount = unitAmount;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.writerName = writerName;
+    }
 }

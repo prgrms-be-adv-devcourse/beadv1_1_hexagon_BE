@@ -1,6 +1,6 @@
 package com.example.contractservice.settlement.service.batch.writer;
 
-import com.example.contractservice.settlement.entity.SettlementEntity;
+import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.repository.SettlementRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class SettlementDataWriter implements ItemWriter<SettlementEntity> {
+public class SettlementDataWriter implements ItemWriter<Settlement> {
     public final SettlementRepository settlementRepository;
 
     @Override
-    public void write(Chunk<? extends SettlementEntity> chunk) {
-        settlementRepository.saveAll((List<SettlementEntity>) chunk.getItems());
+    public void write(Chunk<? extends Settlement> chunk) {
+        settlementRepository.saveAll((List<Settlement>) chunk.getItems());
     }
 }

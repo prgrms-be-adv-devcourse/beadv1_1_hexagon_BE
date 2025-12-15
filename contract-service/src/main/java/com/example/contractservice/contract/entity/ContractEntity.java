@@ -20,17 +20,17 @@ import org.hexagon.core.vo.PaymentType;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ContractEntity extends BaseEntity {
 
-    @Column(name = "requestor_code", nullable = false, columnDefinition = "CHAR(36)")
-    private String requestorCode;
-
-    @Column(name = "contractor_code", nullable = false, columnDefinition = "CHAR(36)")
-    private String contractorCode;
+    @Column(name = "client_code", nullable = false, columnDefinition = "CHAR(36)")
+    private String clientCode;
 
     @Column(name = "freelancer_code", nullable = false, columnDefinition = "CHAR(36)")
     private String freelancerCode;
 
     @Column(name = "code", nullable = false, columnDefinition = "CHAR(36)")
     private String code;
+
+    @Column(name = "commission_code", nullable = false, columnDefinition = "CHAR(36)")
+    private String commissionCode;
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
@@ -56,13 +56,13 @@ public class ContractEntity extends BaseEntity {
     private String body;
 
     @Builder
-    private ContractEntity(String requestorCode, String contractorCode, String freelancerCode, String code,
+    private ContractEntity(String clientCode, String freelancerCode, String code, String commissionCode,
             Instant startedAt, Instant endedAt,
             PaymentType paymentType, Long unitAmount, ContractStatus status, String name, String body) {
-        this.requestorCode = requestorCode;
-        this.contractorCode = contractorCode;
+        this.clientCode = clientCode;
         this.freelancerCode = freelancerCode;
         this.code = code;
+        this.commissionCode = commissionCode;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
         this.paymentType = paymentType;

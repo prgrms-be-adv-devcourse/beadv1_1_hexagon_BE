@@ -1,8 +1,8 @@
 package com.example.memberservice.common.security.handler;
 
 
+import com.example.memberservice.auth.token.repository.RefreshTokenRedisRepository;
 import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.redis.service.RedisSingleDataService;
 import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.model.dto.CustomOAuth2UserDto;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final RedisSingleDataService redisSingleDataService;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     private final JwtTokenGenerator tokenGenerator;
 
@@ -59,7 +59,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
         log.info("TOKEN:%s".formatted(memberCode));
         try {
-            redisSingleDataService.setSingleData(memberCode, refreshToken, jwtProperties.getRefreshTokenTtl());
+            refreshTokenRedisRepository.saveRefreshToken(memberCode, refreshToken);
 
         } catch (BusinessException e) {
             oAuthLoginFailureHandler.onAuthenticationFailure(request, response,

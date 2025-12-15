@@ -2,7 +2,7 @@ package com.example.memberservice.member.controller.dto.request;
 
 import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.example.memberservice.member.entity.vo.Gender;
+import com.example.memberservice.member.model.enums.Gender;
 
 
 public record MemberCreateRequest(

@@ -1,6 +1,6 @@
 package com.example.contractservice.contract.controller.dto.response;
 
-import com.example.contractservice.contract.entity.ContractEntity;
+import com.example.contractservice.contract.domain.Contract;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
@@ -17,7 +17,7 @@ public record ContractListWithCursorResponse(
         boolean hasNext
 ) {
 
-    public static ContractListWithCursorResponse of(List<ContractEntity> contractEntities, int pageSize) {
+    public static ContractListWithCursorResponse of(List<Contract> contractEntities, int pageSize) {
         List<ContractBriefResponse> briefResponses = contractEntities.stream()
                 .map(ContractBriefResponse::from)
                 .toList();
