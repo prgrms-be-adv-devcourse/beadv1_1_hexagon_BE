@@ -10,6 +10,9 @@ import com.example.cartpostservice.commissions.controller.internal.dto.response.
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
+import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExternalServerException;
 import lombok.RequiredArgsConstructor;
@@ -49,9 +52,15 @@ public class OrchestrationService {
         return new CommissionCreateResponse(commissionCode);
     }
 
-    public CommissionElementReadResponse readCommission(String commissionCode) {
+    public CommissionElementResult readCommission(String commissionCode) {
+        CommissionAndTagReadResult commissionAndTagReadResult = domainCompositeService.readCommission(commissionCode);
+        RecruitsInfoResult recruitsInfoResult = null;
 
-        return null;
+        if (commissionAndTagReadResult.lastSyncTime() == null) {
+            recruitsInfoResult = internalService.readRecruitsInfo(commissionCode);
+        }
+
+        return new CommissionElementResult(commissionAndTagReadResult, recruitsInfoResult);
     }
 
     public Page<CommissionReadResponse> readOwnCommissions(String code, Pageable pageable) {

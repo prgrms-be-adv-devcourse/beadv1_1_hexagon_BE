@@ -9,6 +9,8 @@ import com.example.cartpostservice.commissions.controller.external.dto.response.
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.service.OrchestrationService;
+import com.example.cartpostservice.commissions.service.mapper.CommissionResponseAssembler;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommissionsController implements CommissionsApi {
 
     private final OrchestrationService orchestrationService;
+    private final CommissionResponseAssembler commissionResponseAssembler;
 
     @Override
     @PostMapping
@@ -51,7 +54,8 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<CommissionElementReadResponse>> readCommission(
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        CommissionElementReadResponse response = orchestrationService.readCommission(commissionCode);
+        CommissionElementResult result = orchestrationService.readCommission(commissionCode);
+        CommissionElementReadResponse response = commissionResponseAssembler.toReadResponse(result);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
                 CustomStatusCode.SUCCESS.getStatus());

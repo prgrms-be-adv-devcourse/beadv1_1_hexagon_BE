@@ -3,11 +3,15 @@ package com.example.cartpostservice.commissions.service;
 import com.example.cartpostservice.commissions.infra.client.internal.ContractClient;
 import com.example.cartpostservice.commissions.infra.client.internal.FileManagementClient;
 import com.example.cartpostservice.commissions.infra.client.internal.MemberClient;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.request.DownloadFileComponentRequest;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.FilesRequestDto;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.request.TotalPeopleInfoRequestDto;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.DownloadFileComponentResponse;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.InternalMemberInfo;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.MemberInfoOutput;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PeopleInfoResponseDto;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExceptionLogService;
@@ -51,7 +55,7 @@ public class InternalService {
     public void saveFileAndRecruitsInfo(CommissionInternalInfoCommand internalInfoCommand) {
         // 파일 저장 s3 모듈 요청 및 사람 인원 정보 저장 계약 모듈 요청
         try {
-            sendContractInfo(internalInfoCommand.commissionCode(), internalInfoCommand.plannedHires(),
+            sendPeopleInfo(internalInfoCommand.commissionCode(), internalInfoCommand.plannedHires(),
                     internalInfoCommand.eligibleApplicants());
 
             sendFileKeyComponents(internalInfoCommand.commissionCode(), internalInfoCommand.fileKeys());
@@ -63,7 +67,19 @@ public class InternalService {
         }
     }
 
-    private void sendContractInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
+    public RecruitsInfoResult readRecruitsInfo(String commissionCode) {
+        try {
+            PeopleInfoResponseDto peopleInfoResponseDto = getPeopleInfo(commissionCode);
+
+            return RecruitsInfoResult.from(peopleInfoResponseDto);
+        } catch (Exception e) {
+            exceptionLogService.logExternalServerException(e, "InternalService.readRecruitsInfo");
+            
+            return null;
+        }
+    }
+
+    private void sendPeopleInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
         TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionCode,
                 plannedHires, eligibleApplicants);
         ResponseDto<Empty> contractClientResponse = contractClient.upsertNumberOfPeople(totalPeopleInfoRequestDto);
@@ -83,4 +99,23 @@ public class InternalService {
             }
         }
     }
+
+    private PeopleInfoResponseDto getPeopleInfo(String commissionCode) {
+        ResponseDto<PeopleInfoResponseDto> applicantsResponse = contractClient.getNumberOfPeople(commissionCode);
+
+        if (applicantsResponse == null) {
+            throw new ExternalServerException(CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR, "응답 없음");
+        }
+
+        return applicantsResponse.data();
+    }
+
+    private DownloadFileComponentResponse getDownloadFileComponent(String commissionCode) {
+        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(commissionCode);
+        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
+                downloadFileComponentRequest);
+
+        return downloadFileComponents.data();
+    }
+
 }

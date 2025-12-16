@@ -14,7 +14,7 @@ public record CommissionElementReadResponse(
 
         PaymentType paymentType,
 
-        String unitAmount,
+        Long unitAmount,
 
         LocalDate startedAt,
 
