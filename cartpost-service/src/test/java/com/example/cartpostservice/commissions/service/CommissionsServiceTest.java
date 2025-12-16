@@ -17,7 +17,7 @@ class CommissionsServiceTest {
     private CommissionsRepository commissionsRepository;
 
     @InjectMocks
-    private CommissionsManagerService commissionsService;
+    private DomainCompositeService commissionsService;
 
     private String xCode;
     private String commissionCode;

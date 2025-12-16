@@ -29,7 +29,7 @@ public record CommissionCreateRequest(
 
         @Schema(description = "단위 금액", example = "50000")
         @NotBlank(message = "unitAmount는 반드시 입력해야 합니다.")
-        String unitAmount,
+        Long unitAmount,
 
         @Schema(description = "시작 날짜 (yyyy-MM-dd)", example = "2025-01-01")
         @NotNull(message = "startedAt은 반드시 입력해야 합니다.")
@@ -43,7 +43,7 @@ public record CommissionCreateRequest(
 
         @Schema(description = "태그 코드 리스트", example = "[\"tag-uuid-1\", \"tag-uuid-2\"]")
         @NotNull(message = "tagCode 리스트는 반드시 입력해야 합니다.")
-        List<String> tagCode,
+        List<String> tagCodes,
 
         @Schema(description = "고용 예정 인원 수", example = "10")
         @NotNull(message = "고용 예정 인원 수를 반드시 입력해야 합니다")

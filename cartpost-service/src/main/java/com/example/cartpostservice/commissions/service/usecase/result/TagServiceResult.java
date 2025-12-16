@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.service.dto.response;
+package com.example.cartpostservice.commissions.service.usecase.result;
 
 import java.util.List;
 

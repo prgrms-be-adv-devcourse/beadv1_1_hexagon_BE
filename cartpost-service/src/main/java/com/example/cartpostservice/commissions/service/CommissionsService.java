@@ -3,8 +3,10 @@ package com.example.cartpostservice.commissions.service;
 import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
-import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
-import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionsServiceResult;
+import com.example.cartpostservice.commissions.service.mapper.CommissionMapper;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.util.List;
@@ -21,52 +23,42 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     private final CommissionsRepository commissionsRepository;
 
     @Override
-    public String create(CommissionsServiceCommand requestDto) {
-        CommissionsEntity commissions = CommissionsEntity.builder()
-                .memberCode(requestDto.memberCode())
-                .title(requestDto.title())
-                .content(requestDto.content())
-                .paymentType(requestDto.paymentType())
-                .unitAmount(requestDto.unitAmount())
-                .startedAt(requestDto.startedAt())
-                .endedAt(requestDto.endedAt())
-                .writerName(requestDto.writerName())
-                .recruitmentStatus(RecruitmentStatus.OPEN)
-                .build();
+    public String create(CommissionsServiceCommand createCommand) {
+        CommissionsEntity createdCommission = CommissionMapper.toEntity(createCommand);
 
-        CommissionsEntity saved = commissionsRepository.save(commissions);
+        CommissionsEntity savedCommission = commissionsRepository.save(createdCommission);
 
-        return saved.getCode();
+        return savedCommission.getCode();
     }
 
     @Override
     public CommissionsServiceResult read(String commissionsCode) {
 
         CommissionsEntity commission = commissionsRepository.findByCode(commissionsCode)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION));
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_COMMISSION));
 
-        return new CommissionsServiceResult(
-                commission.getCode(),
-                commission.getMemberCode(),
-                commission.getTitle(),
-                commission.getContent(),
-                commission.getPaymentType(),
-                commission.getUnitAmount(),
-                commission.getStartedAt(),
-                commission.getEndedAt(),
-                commission.getRecruitmentStatus(),
-                commission.getWriterName(),
-                commission.getUpdatedAt()
-        );
+        return null;
+//        return new CommissionsServiceResult(
+//                commission.getCode(),
+//                commission.getMemberCode(),
+//                commission.getTitle(),
+//                commission.getContent(),
+//                commission.getPaymentType(),
+//                commission.getUnitAmount(),
+//                commission.getStartedAt(),
+//                commission.getEndedAt(),
+//                commission.getRecruitmentStatus(),
+//                commission.getWriterName(),
+//                commission.getUpdatedAt()
+//        );
     }
 
     @Override
-    @Transactional
     public void update(CommissionsServiceCommand commissionsServiceCommand, String commissionsCode) {
         List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(
                 commissionsServiceCommand.memberCode());
         if (commissions.isEmpty()) {
-            throw new BusinessException(CustomStatusCode.NOT_FOUND_COMMISSION);
+            throw new BusinessException(CustomStatusCode.BAD_REQUEST_COMMISSION);
         }
 
         CommissionsEntity foundEntity = commissions.stream()
@@ -101,21 +93,30 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
 
         Page<CommissionsEntity> commissions = commissionsRepository.findPageByMemberCode(memberCode, pageable);
 
-        return commissions.map(commission ->
-                new CommissionsServiceResult(
-                        commission.getCode(),
-                        commission.getMemberCode(),
-                        commission.getTitle(),
-                        commission.getContent(),
-                        commission.getPaymentType(),
-                        commission.getUnitAmount(),
-                        commission.getStartedAt(),
-                        commission.getEndedAt(),
-                        commission.getRecruitmentStatus(),
-                        commission.getWriterName(),
-                        commission.getUpdatedAt()
-                )
-        );
+        return null;
+//        return commissions.map(commission ->
+//                new CommissionsServiceResult(
+//                        commission.getCode(),
+//                        commission.getMemberCode(),
+//                        commission.getTitle(),
+//                        commission.getContent(),
+//                        commission.getPaymentType(),
+//                        commission.getUnitAmount(),
+//                        commission.getStartedAt(),
+//                        commission.getEndedAt(),
+//                        commission.getRecruitmentStatus(),
+//                        commission.getWriterName(),
+//                        commission.getUpdatedAt()
+//                )
+//        );
+    }
+
+
+    public void updateCacheInfo(CommissionCacheCreatedCommand cacheCommand) {
+        CommissionsEntity commission = commissionsRepository.findByCode(cacheCommand.commissionCode())
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
+
+        commission.updatePersonInfo(cacheCommand.eligibleApplicants(), 0, cacheCommand.eligibleApplicants(), 0);
     }
 
     public boolean isOwner(String memberCode, String commissionsCode) {
@@ -145,4 +146,6 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
 
         commission.openRecruitmentStatus();
     }
+
+
 }

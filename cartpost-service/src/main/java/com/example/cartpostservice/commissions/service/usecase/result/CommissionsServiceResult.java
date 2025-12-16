@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.service.dto.response;
+package com.example.cartpostservice.commissions.service.usecase.result;
 
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import java.time.Instant;

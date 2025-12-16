@@ -2,8 +2,8 @@ package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.model.CommissionsTagEntity;
 import com.example.cartpostservice.commissions.repository.CommissionsTagRepository;
-import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
-import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
+import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.TagServiceResult;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

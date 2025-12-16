@@ -8,7 +8,7 @@ import com.example.cartpostservice.commissions.controller.external.dto.response.
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
-import com.example.cartpostservice.commissions.service.CommissionsManagerService;
+import com.example.cartpostservice.commissions.service.OrchestrationService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +32,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommissionsController implements CommissionsApi {
 
-    private final CommissionsManagerService commissionsManagerService;
+    private final OrchestrationService orchestrationService;
 
     @Override
     @PostMapping
     public ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code,
             @Valid @RequestBody CommissionCreateRequest commissionCreateRequest) {
 
-        CommissionCreateResponse response = commissionsManagerService.createCommission(code, commissionCreateRequest);
+        CommissionCreateResponse response = orchestrationService.createCommission(code, commissionCreateRequest);
         CustomStatusCode createdStatus = CustomStatusCode.CREATED;
 
         return new ResponseEntity<>(getSuccessResponse(createdStatus, response),
@@ -51,7 +51,7 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<CommissionElementReadResponse>> readCommission(
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        CommissionElementReadResponse response = commissionsManagerService.readCommission(commissionCode);
+        CommissionElementReadResponse response = orchestrationService.readCommission(commissionCode);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
                 CustomStatusCode.SUCCESS.getStatus());
@@ -65,7 +65,7 @@ public class CommissionsController implements CommissionsApi {
             @Valid @RequestBody CommissionUpdateRequest commissionUpdateRequest
     ) {
 
-        CommissionUpdateResponse response = commissionsManagerService.updateCommission(code, commissionCode,
+        CommissionUpdateResponse response = orchestrationService.updateCommission(code, commissionCode,
                 commissionUpdateRequest);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
@@ -78,7 +78,7 @@ public class CommissionsController implements CommissionsApi {
             @RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        commissionsManagerService.deleteCommission(code, commissionCode);
+        orchestrationService.deleteCommission(code, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
@@ -90,7 +90,7 @@ public class CommissionsController implements CommissionsApi {
             @RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        commissionsManagerService.finishCommission(code, commissionCode);
+        orchestrationService.finishCommission(code, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
@@ -100,7 +100,7 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
             String commissionCode) {
 
-        commissionsManagerService.openCommission(memberCode, commissionCode);
+        orchestrationService.openCommission(memberCode, commissionCode);
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
     }
@@ -112,7 +112,7 @@ public class CommissionsController implements CommissionsApi {
             @RequestHeader("X-CODE") String code,
             Pageable pageable) {
 
-        Page<CommissionReadResponse> responses = commissionsManagerService.readOwnCommissions(code, pageable);
+        Page<CommissionReadResponse> responses = orchestrationService.readOwnCommissions(code, pageable);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, responses));
@@ -123,7 +123,7 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<Empty>> canAccessCommission(@RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        commissionsManagerService.canAccessCommission(code, commissionCode);
+        orchestrationService.canAccessCommission(code, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
