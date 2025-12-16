@@ -21,33 +21,33 @@ public class S3ResourceService {
     private String s3BaseUrl;
 
     // S3 Resource Code를 사용하여 S3 모듈에 영구 저장 요청 (Create 시)
-    public void storeS3Keys(String pdfCode, List<String> keys) {
-        StoreKeysRequest request = new StoreKeysRequest(pdfCode, keys);
+    public void storeS3Keys(String resourceOwnerCode, List<String> keys) {
+        StoreKeysRequest request = new StoreKeysRequest(resourceOwnerCode, keys);
 
         try {
             s3FeignClient.storeKeys(request);
         } catch (Exception e) {
-            log.error("Failed to store S3 keys for code: {}", pdfCode, e);
+            log.error("Failed to store S3 keys for code: {}", resourceOwnerCode, e);
             throw new CustomException(ErrorCode.S3_RESOURCE_SAVE_FAILED);
         }
     }
 
     // S3 Resource Code를 사용하여 S3 모듈에 동기화 요청 (Update/Delete 시)
-    public void syncS3Keys(String pdfCode, List<String> keys) {
-        StoreKeysRequest request = new StoreKeysRequest(pdfCode, keys);
+    public void syncS3Keys(String resourceOwnerCode, List<String> keys) {
+        StoreKeysRequest request = new StoreKeysRequest(resourceOwnerCode, keys);
 
         try {
             s3FeignClient.updateKeys(request);
         } catch (Exception e) {
-            log.error("Failed to sync S3 keys for code: {}", pdfCode, e);
+            log.error("Failed to sync S3 keys for code: {}", resourceOwnerCode, e);
             throw new CustomException(ErrorCode.S3_RESOURCE_SYNC_FAILED);
         }
     }
 
     // PDF 다운로드 Presigned URL 생성
-    public String getPdfDownloadUrl(String pdfCode) {
+    public String getPdfDownloadUrl(String resourceOwnerCode) {
         try {
-            PresignedDownloadRequestByCode request = new PresignedDownloadRequestByCode(pdfCode);
+            PresignedDownloadRequestByCode request = new PresignedDownloadRequestByCode(resourceOwnerCode);
 
             ResponseDto<PresignedDownloadListResponse> responseDto = s3FeignClient.getDownloadUrlByCode(request);
 
@@ -58,11 +58,11 @@ public class S3ResourceService {
                 // S3 Service가 key + queryString만 반환하므로, S3 버킷의 URL 베이스를 사용
                 return s3BaseUrl + downloadResponse.key() + downloadResponse.queryString();
             }
-            log.warn("Failed to get download URL for code: {}", pdfCode);
+            log.warn("Failed to get download URL for code: {}", resourceOwnerCode);
             return null;
 
         } catch (Exception e) {
-            log.error("Error calling S3 Feign Client for download URL: {}", pdfCode, e);
+            log.error("Error calling S3 Feign Client for download URL: {}", resourceOwnerCode, e);
             // 조회 실패 시 null을 반환하도록 기존 로직 유지
             return null;
         }
