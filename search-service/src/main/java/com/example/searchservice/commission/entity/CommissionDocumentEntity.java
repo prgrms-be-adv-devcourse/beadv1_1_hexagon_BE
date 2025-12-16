@@ -42,10 +42,10 @@ public class CommissionDocumentEntity {
     @Field(type = FieldType.Text, analyzer = "commission_index_analyzer", searchAnalyzer = "commission_search_analyzer")
     private String content;
 
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Keyword, name = "member_code")
     private String memberCode;
 
-    @Field(type = FieldType.Keyword, name = "member_nickname")
+    @Field(type = FieldType.Keyword, name = "writer_name")
     private String memberNickname;
 
     @Field(type = FieldType.Keyword)
