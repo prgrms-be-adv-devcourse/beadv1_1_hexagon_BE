@@ -110,7 +110,7 @@ public class SelfPromotionService {
         // 5. 이벤트 발행 (CREATE)
         SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
 
-        SelfPromotionCreatedEvent createdEvent = new SelfPromotionCreatedEvent(
+        SelfPromotionUpsertedEvent createdEvent = new SelfPromotionUpsertedEvent(
                 selfPromotionVo.code(), selfPromotionVo.title(), selfPromotionVo.content(),
                 selfPromotionVo.memberCode(), selfPromotionVo.memberNickname(),
                 selfPromotionVo.paymentType(), selfPromotionVo.payAmount(), selfPromotionVo.updatedAt()
@@ -167,7 +167,7 @@ public class SelfPromotionService {
         // 5. 이벤트 발행 (UPDATE)
         SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
 
-        SelfPromotionUpdatedEvent updatedEvent = new SelfPromotionUpdatedEvent(
+        SelfPromotionUpsertedEvent updatedEvent = new SelfPromotionUpsertedEvent(
                 selfPromotionVo.code(), selfPromotionVo.title(), selfPromotionVo.content(),
                 selfPromotionVo.memberCode(), selfPromotionVo.memberNickname(),
                 selfPromotionVo.paymentType(), selfPromotionVo.payAmount(), selfPromotionVo.updatedAt()
