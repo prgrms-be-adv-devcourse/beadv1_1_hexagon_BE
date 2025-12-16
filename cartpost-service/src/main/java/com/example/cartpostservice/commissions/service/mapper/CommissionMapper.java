@@ -33,7 +33,12 @@ public class CommissionMapper {
                 commission.getEndedAt(),
                 commission.getRecruitmentStatus(),
                 commission.getWriterName(),
-                commission.getUpdatedAt()
+                commission.getUpdatedAt(),
+                commission.getCacheApplyCapacity(),
+                commission.getCacheAppliedCount(),
+                commission.getCacheSelectionCapacity(),
+                commission.getCacheSelectedCount(),
+                commission.getLastSyncTime()
         );
     }
 

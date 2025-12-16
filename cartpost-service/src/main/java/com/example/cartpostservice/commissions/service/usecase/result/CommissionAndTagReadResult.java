@@ -29,6 +29,16 @@ public record CommissionAndTagReadResult(
 
         Instant updatedAt,
 
+        int plannedHires,
+
+        int selectedCount,
+
+        int eligibleApplicants,
+
+        int appliedCount,
+
+        Instant lastSyncTime,
+
         List<String> tagCodes
 
 ) {
@@ -47,6 +57,11 @@ public record CommissionAndTagReadResult(
                 commissionReadResult.recruitmentStatus(),
                 commissionReadResult.writerName(),
                 commissionReadResult.updatedAt(),
+                commissionReadResult.plannedHires(),
+                commissionReadResult.selectedCount(),
+                commissionReadResult.eligibleApplicants(),
+                commissionReadResult.appliedCount(),
+                commissionReadResult.lastSyncTime(),
                 tagsReadResult.tagCodes()
         );
     }

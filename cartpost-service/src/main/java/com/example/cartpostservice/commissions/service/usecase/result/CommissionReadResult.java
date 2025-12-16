@@ -26,7 +26,17 @@ public record CommissionReadResult(
 
         String writerName,
 
-        Instant updatedAt
+        Instant updatedAt,
+
+        int plannedHires,
+
+        int selectedCount,
+
+        int eligibleApplicants,
+
+        int appliedCount,
+
+        Instant lastSyncTime
 ) {
 
 }
