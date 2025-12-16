@@ -52,18 +52,21 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     }
 
     @Override
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendDeletedEvent(
         MemberDeletedEvent event) {
         return kafkaTemplate.send(memberDeletedTopicName, event.memberCode(), event);
     }
 
     @Override
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendDeletedClientRoleEvent(
         MemberDeletedClientRoleEvent event) {
         return kafkaTemplate.send(memberClientRoleDeletedTopicName, event.memberCode(), event);
     }
 
     @Override
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendDeletedFreelancerRoleEvent(
         MemberDeletedFreelancerRoleEvent event) {
         return kafkaTemplate.send(memberFreelancerRoleDeletedTopicName, event.memberCode(), event);

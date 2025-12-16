@@ -12,7 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
+import com.example.memberservice.common.client.RatingServiceClient;
 import com.example.memberservice.common.client.S3ServiceClient;
+import com.example.memberservice.common.client.TagServiceClient;
 import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
 import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadListResponse;
 import com.example.memberservice.common.exception.BusinessException;
@@ -35,6 +37,7 @@ import com.example.memberservice.socialmember.repository.SocialMemberJpaReposito
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
@@ -66,13 +69,7 @@ class MemberServiceImplTest {
     private MemberServiceImpl service;
 
     @MockitoBean
-    private RestTemplate restTemplate; // 외부 API는 Mock
-
-    @MockitoBean
     private MemberKafkaEventProducer memberKafkaEventProducer;
-
-    @MockitoBean
-    private RequestURIGenerator requestURIGenerator;
 
     @MockitoBean
     private KafkaAdmin kafkaAdmin;
@@ -86,19 +83,28 @@ class MemberServiceImplTest {
     @MockitoBean
     private S3ServiceClient s3ServiceClient;
 
+    @MockitoBean
+    private TagServiceClient tagServiceClient;
+
+    @MockitoBean
+    private RatingServiceClient ratingServiceClient;
+
     private MemberService memberService;
 
     @BeforeEach
     void setUp() {
+        Executor testExecutor = Runnable::run;
+
         memberService = new MemberServiceImpl(
             memberJpaRepository,
             socialMemberJpaRepository,
-            restTemplate,
             memberKafkaEventProducer,
-            requestURIGenerator,
             emailAuthRepository,
             contractServiceClient,
-            s3ServiceClient
+            s3ServiceClient,
+            tagServiceClient,
+            ratingServiceClient,
+            testExecutor
         );
 
         when(s3ServiceClient.getDownloadUrlByCode(any())).thenReturn(ResponseDto.success(new PresignedDownloadListResponse(List.of())));
@@ -116,7 +122,7 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("getMemberByCode: 코드 없으면 예외")
     void getMemberByCode_noCode() {
-        MemberGetInput input = new MemberGetInput("", "");
+        MemberGetInput input = new MemberGetInput("");
 
         assertThatThrownBy(() -> service.getMemberByCode(input))
             .isInstanceOf(BusinessException.class)

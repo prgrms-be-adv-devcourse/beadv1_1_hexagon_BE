@@ -44,7 +44,7 @@ public class IsFreelancerCheckFilter extends AbstractGatewayFilterFactory<Config
 
             if (!ALLOWED_ROLES.contains(role.toUpperCase())) {
                 log.info("FREELANCER 권한이 없음. role={}", role);
-                throw new BusinessException(ErrorCode.FORBIDDEN_FREELANCER);
+                throw new BusinessException(ErrorCode.REQUIRED_FREELANCER_ROLE);
             }
 
             return chain.filter(exchange);

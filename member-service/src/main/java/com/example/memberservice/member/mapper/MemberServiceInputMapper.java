@@ -3,20 +3,22 @@ package com.example.memberservice.member.mapper;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
 import com.example.memberservice.member.controller.dto.request.MemberRoleUpdateRequest;
 import com.example.memberservice.member.controller.dto.request.MemberUpdateRequest;
+import com.example.memberservice.member.model.enums.MemberRole;
 import com.example.memberservice.member.service.model.dto.input.MemberCreateInput;
 import com.example.memberservice.member.service.model.dto.input.MemberDeleteInput;
 import com.example.memberservice.member.service.model.dto.input.MemberExistByNameInput;
 import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateRoleStateInput;
+import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 
 public final class MemberServiceInputMapper {
 
     private MemberServiceInputMapper() {
     }
 
-    public static MemberGetInput toGetMemberInput(String xCode, String paramCode) {
-        return new MemberGetInput(xCode, paramCode);
+    public static MemberGetInput toGetMemberInput(String memberCode) {
+        return new MemberGetInput(memberCode);
     }
 
     public static MemberCreateInput toCreateMemberInput(String memberCode,
@@ -49,9 +51,9 @@ public final class MemberServiceInputMapper {
     }
 
     //TODO(Profile 에서 카프카 메세지 구현 이후 의존)
-//    public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(MemberRoleEvent event){
-//        return new MemberUpdateRoleStateInput(memberCode, event.role)
-//    }
+    public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(SelfPromotionCreatedEvent event){
+        return new MemberUpdateRoleStateInput(event.memberCode(), MemberRole.FREELANCER);
+    }
 
     public static MemberDeleteInput toDeleteMemberInput(String memberCode) {
         return new MemberDeleteInput(memberCode);
