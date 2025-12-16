@@ -35,34 +35,6 @@ public class SearchServiceListener {
     private final CommissionService commissionService;
     private final TagService tagService;
 
-    // TODO: 태그 인덱싱 Python 코드 작성 후 삭제
-//    @KafkaHandler
-//    public void handleEvent(@Payload TagInitEvent event) {
-//        List<Tag> tags = event.tags();
-//        List<TagDocumentEntity> docs = new ArrayList<>();
-//
-//        for (Tag tag : tags) {
-//            // 별칭 사전(json)에서 별칭 데이터 불러옴
-//            List<String> aliases = tagAliasLoadService.getTagAlias(tag.skill());
-//
-//            // Completion 필드에 별칭 데이터 추가
-//            TagDocumentEntity document = TagMapper.toDocument(tag, aliases);
-//            docs.add(document);
-//        }
-//
-//        tagService.saveAll(docs);
-//    }
-
-    // TODO: 의뢰글 인덱싱 Python 코드 작성 후 삭제
-//    @KafkaHandler
-//    public void handleEvent(@Payload SelfPromotionInitEvent event) {
-//        List<SelfPromotionDocumentEntity> docs = event.selfPromotions().stream()
-//                .map(SelfPromotionMapper::toSelfPromotionDocument)
-//                .toList();
-//
-//        selfPromotionService.saveAll(docs);
-//    }
-
     @KafkaHandler
     public void handleEvnet(@Payload SelfPromotionUpsertEvent event) {
         SelfPromotionDocumentEntity doc = SelfPromotionMapper.toSelfPromotionDocument(event);
@@ -73,16 +45,6 @@ public class SearchServiceListener {
     public void handleEvent(@Payload SelfPromotionDeletedEvent event) {
         selfPromotionService.delete(event.code());
     }
-
-    // TODO: 의뢰글 인덱싱 Python 코드 작성 후 삭제
-//    @KafkaHandler
-//    public void handleEvent(@Payload CommissionInitEvent event) {
-//        List<CommissionDocumentEntity> docs = event.commissions().stream()
-//                .map(CommissionMapper::toCommissionDocument)
-//                .toList();
-//
-//        commissionService.saveAll(docs);
-//    }
 
     @KafkaHandler
     public void handleEvent(@Payload CommissionUpsertEvent event) {
