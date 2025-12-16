@@ -1,0 +1,31 @@
+name: search-service ci/cd
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 's3-service/**'
+
+jobs:
+
+  releasing:
+    uses: ./.github/workflows/release-workflow.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      attestations: write
+      packages: write
+      id-token: write
+    with:
+      service-name: hexagon-search-service
+      service-dir: ./search-service
+      file-name: Dockerfile_search
+
+  deploying:
+    needs: releasing
+    uses: ./.github/workflows/deploy-workflow.yml
+    secrets: inherit
+    with:
+      service-name: hexagon-search-service
+      image-tag: ${{ needs.releasing.outputs.tag_name }}
