@@ -8,6 +8,7 @@ import org.hexagon.core.vo.PaymentType;
 public record CommissionResponseDto(
         String code,
         String title,
+        String content,
         String memberCode,
         String memberNickname,
         List<String> tags,
@@ -21,6 +22,7 @@ public record CommissionResponseDto(
         return new CommissionResponseDto(
                 commissionDocumentEntity.getCode(),
                 commissionDocumentEntity.getTitle(),
+                commissionDocumentEntity.getContent(),
                 commissionDocumentEntity.getMemberCode(),
                 commissionDocumentEntity.getMemberNickname(),
                 commissionDocumentEntity.getTags(),
