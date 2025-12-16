@@ -1,18 +1,12 @@
 package com.example.profileservice.selfPromotion.service;
 
-import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
-
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.common.model.vo.util.MemberInfoOutput;
-import com.example.profileservice.common.model.vo.util.PresignedDownloadListResponse;
-import com.example.profileservice.common.model.vo.util.PresignedDownloadRequestByCode;
-import com.example.profileservice.common.model.vo.util.PresignedDownloadResponse;
-import com.example.profileservice.common.model.vo.util.S3FeignClient;
-import com.example.profileservice.common.model.vo.util.StoreKeysRequest;
+import com.example.profileservice.common.model.vo.util.S3ResourceService;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
@@ -24,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
@@ -33,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SelfPromotionService {
@@ -41,7 +37,7 @@ public class SelfPromotionService {
     private final ResumeRepository resumeRepository;
     private final KafkaProducer kafkaProducer;
     private final MemberFeignClient memberFeignClient;
-    private final S3FeignClient s3FeignClient;
+    private final S3ResourceService s3ResourceService;
 
     // Search Service에서 사용할 토픽 이름
     @Value("${topics.selfpromotion-events:selfpromotion-events}")
@@ -93,7 +89,7 @@ public class SelfPromotionService {
         String pdfCode = null;
         if (request.pdfKey() != null && !request.pdfKey().isEmpty()) {
             pdfCode = UUID.randomUUID().toString(); // 새로운 Code 생성
-            storeS3Keys(pdfCode, List.of(request.pdfKey())); // S3 모듈에 영구 저장 요청
+            s3ResourceService.storeS3Keys(pdfCode, List.of(request.pdfKey())); // S3 모듈에 영구 저장 요청
         }
 
         // 5. SelfPromotion 엔티티 생성 및 저장
@@ -145,10 +141,10 @@ public class SelfPromotionService {
         if (currentPortfolioCode == null && !updatedKeysList.isEmpty()) {
             // 새롭게 pdf를 등록하는 경우
             newPortfolioCode = UUID.randomUUID().toString();
-            storeS3Keys(newPortfolioCode, updatedKeysList);
+            s3ResourceService.storeS3Keys(newPortfolioCode, updatedKeysList);
         } else if (currentPortfolioCode != null) {
-            // 기존 pdf를 수정/삭제하는 경우 (syncAttachments API 사용)
-            syncS3Keys(currentPortfolioCode, updatedKeysList);
+            // 기존 pdf를 수정/삭제하는 경우
+            s3ResourceService.syncS3Keys(currentPortfolioCode, updatedKeysList);
 
             // 키가 완전히 제거되었다면(updatedKeysList.isEmpty()), code도 null로 설정
             if (updatedKeysList.isEmpty()) {
@@ -191,7 +187,7 @@ public class SelfPromotionService {
         // 2. 연결된 S3 파일 메타데이터 삭제
         // syncAttachments를 빈 키 리스트로 호출하여 DB에서 S3 Resource 메타데이터를 삭제하고 S3 오브젝트도 삭제
         if (promotion.getPdfKey() != null) {
-            syncS3Keys(promotion.getPdfKey(), List.of());
+            s3ResourceService.syncS3Keys(promotion.getPdfKey(), List.of());
         }
 
         // 3. Soft Delete 처리 및 이벤트 발행
@@ -274,57 +270,6 @@ public class SelfPromotionService {
         log.info("Soft Deleted SelfPromotion: {}", promotion.getCode());
     }
 
-    // 헬퍼 메서드: S3 Resource Code를 사용하여 S3 모듈에 영구 저장 요청
-    private void storeS3Keys(String pdfCode, List<String> keys) {
-        StoreKeysRequest request = new StoreKeysRequest(pdfCode, keys);
-
-        try {
-            s3FeignClient.storeKeys(request);
-        } catch (Exception e) {
-            log.error("Failed to store S3 keys for code: {}", pdfCode, e);
-            throw new CustomException(ErrorCode.S3_RESOURCE_SAVE_FAILED);
-        }
-    }
-
-    // 헬퍼 메서드: S3 Resource Code를 사용하여 S3 모듈에 동기화 요청 (수정/삭제 시)
-    private void syncS3Keys(String pdfCode, List<String> keys) {
-        StoreKeysRequest request = new StoreKeysRequest(pdfCode, keys);
-
-        try {
-            s3FeignClient.updateKeys(request);
-        } catch (Exception e) {
-            log.error("Failed to sync S3 keys for code: {}", pdfCode, e);
-            throw new CustomException(ErrorCode.S3_RESOURCE_SYNC_FAILED);
-        }
-    }
-
-    // 헬퍼 메서드: pdf 다운로드 URL 생성
-    private String getPdfDownloadUrl(String pdfCode) {
-        try {
-            // S3 모듈의 Download by Code API가 필요하지만, DTO가 없으므로 가정
-            PresignedDownloadRequestByCode request = new PresignedDownloadRequestByCode(pdfCode);
-
-            ResponseDto<PresignedDownloadListResponse> responseDto = s3FeignClient.getDownloadUrlByCode(request);
-
-            if (responseDto.data() != null && responseDto.data().urls() != null && !responseDto.data().urls().isEmpty()) {
-                // 단일 포트폴리오 파일을 가정하고 리스트의 첫 번째 요소를 사용
-                PresignedDownloadResponse downloadResponse = responseDto.data().urls().get(0);
-
-                // S3 Service가 key + queryString만 반환하므로, S3 버킷의 URL 베이스를 하드코딩 또는 설정으로 주입받아야 합니다.
-                // 여기서는 "{S3_BASE_URL}"을 사용합니다.
-                String s3BaseUrl = "https://your-s3-bucket-region.amazonaws.com/"; // 실제 URL로 교체 필요
-
-                return s3BaseUrl + downloadResponse.key() + downloadResponse.queryString();
-            }
-            log.warn("Failed to get download URL for code: {}", pdfCode);
-            return null;
-
-        } catch (Exception e) {
-            log.error("Error calling S3 Feign Client for download URL: {}", pdfCode, e);
-            return null;
-        }
-    }
-
     // SelfPromotionService.java 내부에 SelfPromotion VO 변환 헬퍼
     private SelfPromotion toSelfPromotionVo(SelfPromotionEntity entity) {
         // 1. 회원 닉네임 조회 (기존 getMemberNickname 재사용)
@@ -350,7 +295,7 @@ public class SelfPromotionService {
         // 2. pdf 다운로드 URL 생성
         String downloadUrl = null;
         if (entity.getPdfKey() != null) {
-            downloadUrl = getPdfDownloadUrl(entity.getPdfKey());
+            downloadUrl = s3ResourceService.getPdfDownloadUrl(entity.getPdfKey());
         }
 
         return new SelfPromotionResponse(
