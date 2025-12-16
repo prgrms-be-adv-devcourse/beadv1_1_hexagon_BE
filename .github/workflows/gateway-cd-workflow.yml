@@ -3,7 +3,7 @@ name: gateway-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/208-1
     paths:
       - 'gateway-service/**'
 
