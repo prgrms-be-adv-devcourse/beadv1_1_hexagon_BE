@@ -143,11 +143,11 @@ public class SelfPromotionService {
         List<String> updatedKeysList = updatedKey != null && !updatedKey.isBlank() ? List.of(updatedKey) : List.of();
 
         if (currentPortfolioCode == null && !updatedKeysList.isEmpty()) {
-            // 새롭게 포트폴리오를 등록하는 경우
+            // 새롭게 pdf를 등록하는 경우
             newPortfolioCode = UUID.randomUUID().toString();
             storeS3Keys(newPortfolioCode, updatedKeysList);
         } else if (currentPortfolioCode != null) {
-            // 기존 포트폴리오를 수정/삭제하는 경우 (syncAttachments API 사용)
+            // 기존 pdf를 수정/삭제하는 경우 (syncAttachments API 사용)
             syncS3Keys(currentPortfolioCode, updatedKeysList);
 
             // 키가 완전히 제거되었다면(updatedKeysList.isEmpty()), code도 null로 설정
@@ -194,13 +194,8 @@ public class SelfPromotionService {
             syncS3Keys(promotion.getPdfKey(), List.of());
         }
 
-        // 3. Soft Delete 처리
-        promotion.delete();
-
-        // 4. 이벤트 발행 (DELETE)
-        SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotionCode);
-
-        kafkaProducer.send(selfPromotionTopic, promotionCode, deletedEvent);
+        // 3. Soft Delete 처리 및 이벤트 발행
+        performSoftDeleteAndPublishEvent(promotion);
     }
 
     // 회원 코드로 닉네임을 조회하는 헬퍼 메서드
@@ -255,23 +250,28 @@ public class SelfPromotionService {
     }
 
     // 멤버 모듈의 요청을 받아 해당 프리랜서의 모든 활성 Self Promotion을 논리적으로 삭제
+    @Transactional
     public void deletePromotionsByMemberCode(String memberCode) {
         log.info("프리랜서 등록 취소 - Self Promotion 삭제 시작. memberCode: {}", memberCode);
 
         // Optional로 조회
         selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
-                .ifPresent(promotion -> {
-                    promotion.delete(); // Soft Delete 처리
-                    selfPromotionRepository.save(promotion); // 변경 사항 저장
-
-                    // 삭제 이벤트 발행
-                    SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotion.getCode());
-                    kafkaProducer.send(selfPromotionTopic, promotion.getCode(), deletedEvent);
-
-                    log.info("삭제된 활성 SelfPromotion: {}", promotion.getCode());
-                });
+                .ifPresent(this::performSoftDeleteAndPublishEvent);
 
         log.info("프리랜서 등록 취소 - Self Promotion 삭제 완료.");
+    }
+
+    // Self Promotion Soft Delete 및 이벤트 발행
+    private void performSoftDeleteAndPublishEvent(SelfPromotionEntity promotion) {
+        // 1. Soft Delete 처리
+        promotion.delete();
+        selfPromotionRepository.save(promotion); // 변경 사항 저장
+
+        // 2. 삭제 이벤트 발행
+        SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotion.getCode());
+        kafkaProducer.send(selfPromotionTopic, promotion.getCode(), deletedEvent);
+
+        log.info("Soft Deleted SelfPromotion: {}", promotion.getCode());
     }
 
     // 헬퍼 메서드: S3 Resource Code를 사용하여 S3 모듈에 영구 저장 요청
@@ -298,7 +298,7 @@ public class SelfPromotionService {
         }
     }
 
-    // 헬퍼 메서드: 포트폴리오 다운로드 URL 생성
+    // 헬퍼 메서드: pdf 다운로드 URL 생성
     private String getPdfDownloadUrl(String pdfCode) {
         try {
             // S3 모듈의 Download by Code API가 필요하지만, DTO가 없으므로 가정
@@ -347,7 +347,7 @@ public class SelfPromotionService {
         // 1. 회원 닉네임 조회
         String memberNickname = getMemberNickname(entity.getMemberCode());
 
-        // 2. 포트폴리오 다운로드 URL 생성
+        // 2. pdf 다운로드 URL 생성
         String downloadUrl = null;
         if (entity.getPdfKey() != null) {
             downloadUrl = getPdfDownloadUrl(entity.getPdfKey());
