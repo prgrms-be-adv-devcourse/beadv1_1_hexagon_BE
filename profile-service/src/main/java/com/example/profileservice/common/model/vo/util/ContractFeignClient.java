@@ -1,6 +1,5 @@
 package com.example.profileservice.common.model.vo.util;
 
-import com.example.contractservice.contract.domain.vo.ContractInfo;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

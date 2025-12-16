@@ -22,16 +22,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ResumeController implements ResumeApiController {
 
-    // Gateway 환경이 구축되지 않았을 때를 위한 임시 기본값
-    private static final String DEFAULT_MEMBER_CODE = "member-uuid-code-001";
-
     private final ResumeService resumeService;
 
     // 이력서 목록 조회
     @Override
     @GetMapping("/me")
     public ResponseEntity<ResponseDto<List<ResumeSimpleResponse>>> getMyResumes(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode
+            @RequestHeader(value = "X-CODE") String memberCode
     ) {
         List<ResumeSimpleResponse> resumes = resumeService.getMyResumes(memberCode);
 
@@ -42,7 +39,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @PostMapping
     public ResponseEntity<ResponseDto<ResumeDetailResponse>> createResume(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @Valid @RequestBody ResumeCreateRequest request) {
         ResumeDetailResponse response = resumeService.createResume(memberCode, request);
 
@@ -53,7 +50,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @GetMapping("/{resumeCode}")
     public ResponseEntity<ResponseDto<ResumeDetailResponse>> getResumeDetail(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode) {
         ResumeDetailResponse response = resumeService.getResumeDetail(memberCode, resumeCode);
 
@@ -64,7 +61,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @PatchMapping("/{resumeCode}")
     public ResponseEntity<ResponseDto<ResumeDetailResponse>> updateResume(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode,
             @Valid @RequestBody ResumeUpdateRequest request) {
         ResumeDetailResponse response = resumeService.updateResume(memberCode, resumeCode, request);
@@ -76,7 +73,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @DeleteMapping("/{resumeCode}")
     public ResponseEntity<ResponseDto<Empty>> deleteResume(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode
     ) {
         resumeService.deleteResume(memberCode, resumeCode);
@@ -88,7 +85,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @PostMapping("/{resumeCode}/experiences")
     public ResponseEntity<ResponseDto<ExperienceResponse>> createExperience(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode,
             @Valid @RequestBody ExperienceRequest request
     ) {
@@ -101,7 +98,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @PatchMapping("/{resumeCode}/experiences/{experienceCode}")
     public ResponseEntity<ResponseDto<ExperienceResponse>> updateExperience(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode,
             @PathVariable String experienceCode,
             @Valid @RequestBody ExperienceRequest request
@@ -115,7 +112,7 @@ public class ResumeController implements ResumeApiController {
     @Override
     @DeleteMapping("/{resumeCode}/experiences/{experienceCode}")
     public ResponseEntity<ResponseDto<Empty>> deleteExperience(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode,
             @PathVariable String experienceCode
     ) {

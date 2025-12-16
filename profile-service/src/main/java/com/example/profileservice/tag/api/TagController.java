@@ -18,9 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TagController implements TagApiController {
 
-    // Gateway 환경이 구축되지 않았을 때를 위한 임시 기본값
-    private static final String DEFAULT_MEMBER_CODE = "member-uuid-code-001";
-
     private final TagService tagService;
 
     // 전체 태그 목록 조회
@@ -45,7 +42,7 @@ public class TagController implements TagApiController {
     @Override
     @GetMapping("/me")
     public ResponseEntity<ResponseDto<List<TagResponse>>> getMyTags(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode
+            @RequestHeader(value = "X-CODE") String memberCode
     ) {
         List<TagResponse> myTags = tagService.getMyTags(memberCode);
 
@@ -56,7 +53,7 @@ public class TagController implements TagApiController {
     @Override
     @PostMapping("/{tagCode}/members/me")
     public ResponseEntity<ResponseDto<Empty>> linkMemberTag(@PathVariable String tagCode,
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode) {
+            @RequestHeader(value = "X-CODE") String memberCode) {
         tagService.linkMemberTag(memberCode, tagCode);
 
         return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
@@ -66,7 +63,7 @@ public class TagController implements TagApiController {
     @Override
     @DeleteMapping("/{tagCode}/members/me")
     public ResponseEntity<ResponseDto<Empty>> unlinkMemberTag(@PathVariable String tagCode,
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode) {
+            @RequestHeader(value = "X-CODE") String memberCode) {
         tagService.unlinkMemberTag(memberCode, tagCode);
 
         return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
@@ -76,7 +73,7 @@ public class TagController implements TagApiController {
     @Override
     @PutMapping("/members/me")
     public ResponseEntity<ResponseDto<Empty>> syncMemberTags(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @RequestBody List<String> tagCodes) {
         tagService.syncMemberTags(memberCode, tagCodes);
 

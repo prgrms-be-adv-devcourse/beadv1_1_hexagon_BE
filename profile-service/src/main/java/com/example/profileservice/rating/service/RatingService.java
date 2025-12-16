@@ -8,11 +8,11 @@ import static com.example.profileservice.common.model.vo.ErrorCode.RATING_ALREAD
 import static com.example.profileservice.common.model.vo.ErrorCode.RATING_MEMBER_NOT_FOUND;
 import static com.example.profileservice.common.model.vo.ErrorCode.UNAUTHORIZED_RATING_ACCESS;
 
-import com.example.contractservice.contract.common.ContractStatus;
-import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.ContractFeignClient;
+import com.example.profileservice.common.model.vo.util.ContractInfo;
+import com.example.profileservice.common.model.vo.util.ContractStatus;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;

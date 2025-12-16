@@ -19,9 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SelfPromotionController implements SelfPromotionApiController {
 
-    // Gateway 환경이 구축되지 않았을 때를 위한 임시 기본값
-    private static final String DEFAULT_MEMBER_CODE = "member-uuid-code-001";
-
     private final SelfPromotionService selfPromotionService;
 
     // 전체 프로모션 목록 조회
@@ -38,7 +35,7 @@ public class SelfPromotionController implements SelfPromotionApiController {
     @Override
     @GetMapping("/me")
     public ResponseEntity<ResponseDto<SelfPromotionResponse>> getMyPromotions(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode
+            @RequestHeader(value = "X-CODE") String memberCode
     ) {
         SelfPromotionResponse promotion = selfPromotionService.getMyPromotions(memberCode);
 
@@ -49,7 +46,7 @@ public class SelfPromotionController implements SelfPromotionApiController {
     @Override
     @PostMapping
     public ResponseEntity<ResponseDto<SelfPromotionResponse>> createPromotion(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @Valid @RequestBody SelfPromotionCreateRequest request) {
 
         SelfPromotionResponse newPromotion = selfPromotionService.createPromotion(memberCode, request);
@@ -71,7 +68,7 @@ public class SelfPromotionController implements SelfPromotionApiController {
     @Override
     @PatchMapping("/{promotionCode}")
     public ResponseEntity<ResponseDto<SelfPromotionResponse>> updatePromotion(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String promotionCode,
             @Valid @RequestBody SelfPromotionUpdateRequest request) {
         SelfPromotionResponse updatedPromotion = selfPromotionService.updatePromotion(memberCode, promotionCode, request);
@@ -83,7 +80,7 @@ public class SelfPromotionController implements SelfPromotionApiController {
     @Override
     @DeleteMapping("/{promotionCode}")
     public ResponseEntity<ResponseDto<Empty>> deletePromotion(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String promotionCode) {
         selfPromotionService.deletePromotion(memberCode, promotionCode);
 
