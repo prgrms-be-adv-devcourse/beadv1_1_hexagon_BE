@@ -21,6 +21,11 @@ public enum ErrorCode {
     // 4xx 클라이언트 에러 - rating (3200 ~ 3299)
     RATING_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 3201, "평가 대상 회원을 찾을 수 없습니다."),
     CANNOT_RATE_MYSELF(HttpStatus.BAD_REQUEST, 3202, "자기 자신을 평가할 수 없습니다."),
+    CONTRACT_NOT_FOUND(HttpStatus.BAD_REQUEST, 3203, "계약 코드가 유효하지 않거나 찾을 수 없습니다."),
+    CONTRACT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, 3204, "계약 상태가 DONE이 아니어서 평가할 수 없습니다."),
+    UNAUTHORIZED_RATING_ACCESS(HttpStatus.BAD_REQUEST, 3205, "평가자가 해당 계약의 당사자가 아니거나, 평가 대상이 계약 상대방이 아닙니다."),
+    RATING_ALREADY_SUBMITTED(HttpStatus.BAD_REQUEST, 3206, "해당 계약에 대해 이미 평가를 완료했습니다."),
+    CONTRACT_FETCH_FAILED(HttpStatus.BAD_REQUEST, 3207, "Contract 모듈 조회 중 통신 오류 발생했습니다."),
 
     // 4xx 클라이언트 에러 - resume (3300 ~ 3399)
     RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, 3301, "요청하신 이력서를 찾을 수 없습니다."),
