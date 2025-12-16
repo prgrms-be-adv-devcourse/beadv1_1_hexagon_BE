@@ -321,10 +321,6 @@ spring:
               uri: lb://s3-service
               predicates:
                 - Path=/api/s3/**,/api/s3
-              filters:
-                - GlobalExceptionHandlingFilter
-                - TokenAuthenticationFilter
-                - IsSignCheckFilter
             #endregion S3_SERVICE_ROUTES
 
             #region AI_SERVICE_ROUTES
