@@ -3,11 +3,15 @@ package com.example.cartpostservice.common.exception;
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getErrorResponse;
 
 import feign.FeignException;
+import feign.RetryableException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -29,14 +33,53 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, customStatusCode.getStatus());
     }
 
-    @ExceptionHandler({FeignException.class, ExternalServerException.class})
+    @ExceptionHandler({
+            FeignException.class,
+            RetryableException.class,
+            ConnectException.class,
+            SocketTimeoutException.class,
+            ExternalServerException.class,})
     public ResponseEntity<ResponseDto<Empty>> handleExternalServerException(Exception ex) {
         log.error("Feign Network Error : {}", ex.getMessage());
 
-        CustomStatusCode errorCode = CustomStatusCode.EXTERNAL_SERVER_ERROR;
+        CustomStatusCode errorCode = CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR;
+        String serviceUrl = "Unknown Feign Service";
+        String logMessage;
+
+        if (ex instanceof FeignException) {
+            FeignException feignException = (FeignException) ex;
+            int status = feignException.status();
+
+            if (feignException.request() != null) {
+                serviceUrl = feignException.request().url();
+            }
+
+            if (status == HttpStatus.NOT_FOUND.value()) {
+                errorCode = CustomStatusCode.NOT_FOUND_INTERNAL_MODULE_SERVER;
+            } else if (status >= 400 && status < 500) {
+                errorCode = CustomStatusCode.BAD_REQUEST_INTERNAL_MODULE_SERVER;
+            } else if (status >= 500) {
+                errorCode = CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR;
+            }
+
+            logMessage = String.format("Feign HTTP Error (Status: %d): %s", status, feignException.getMessage());
+        }
+
+        if (ex instanceof RetryableException || ex instanceof ConnectException
+                || ex instanceof SocketTimeoutException) {
+            errorCode = CustomStatusCode.SERVICE_MODULE_UNAVAILABLE;
+            logMessage = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+        } else {
+            logMessage = "Unknown External Error: " + ex.getMessage();
+        }
+
+        log.error("--- Feign Client Call Failed ---");
+        log.error("Service URL: {}", serviceUrl);
+        log.error("Log Message: {}", logMessage);
+        log.error("Exception Trace: ", ex);
+        log.error("------------------------------");
 
         return new ResponseEntity<>(getErrorResponse(errorCode), errorCode.getStatus());
-
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -47,7 +90,7 @@ public class GlobalExceptionHandler {
         BindingResult bindingResult = ex.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
 
-        CustomStatusCode errorCode = CustomStatusCode.INVALID_REQUEST_PPARAMETER;
+        CustomStatusCode errorCode = CustomStatusCode.BAD_REQUEST_PARAMETER;
         String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : errorCode.getMessage();
 
         return new ResponseEntity<>(getErrorResponse(errorCode, errorMessage), errorCode.getStatus());
@@ -58,7 +101,7 @@ public class GlobalExceptionHandler {
         log.error("handleConstraintViolationException: {}, ", ex.getMessage());
 
         ConstraintViolation<?> violation = ex.getConstraintViolations().iterator().next();
-        CustomStatusCode errorCode = CustomStatusCode.INVALID_REQUEST_PPARAMETER;
+        CustomStatusCode errorCode = CustomStatusCode.BAD_REQUEST_PARAMETER;
         String errorMessage = violation != null ? violation.getMessage() : errorCode.getMessage();
 
         return new ResponseEntity<>(getErrorResponse(errorCode, errorMessage), errorCode.getStatus());

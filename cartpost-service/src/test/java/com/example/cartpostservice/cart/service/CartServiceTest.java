@@ -160,7 +160,7 @@ public class CartServiceTest {
 
         assertThatThrownBy(() -> cartService.deleteCartItems(xCode, itemCode))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining(CustomStatusCode.NOT_FOUND_ITEM.getMessage());
+                .hasMessageContaining(CustomStatusCode.BAD_REQUEST_ITEM.getMessage());
     }
 
     @Test

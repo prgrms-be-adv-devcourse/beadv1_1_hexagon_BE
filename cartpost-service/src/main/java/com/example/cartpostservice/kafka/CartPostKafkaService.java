@@ -51,14 +51,14 @@ public class CartPostKafkaService {
                 List<ContractBriefWithNicknameResponse> contractList = response.data();
 
                 if (contractList == null || contractList.isEmpty()) {
-                    throw new BusinessException(CustomStatusCode.NOT_FOUND_ITEM);
+                    throw new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM);
                 }
 
                 // 4. 리스트 중에서 현재 이벤트의 contractCode와 일치하는 정보 찾기
                 ContractBriefWithNicknameResponse contractInfo = contractList.stream()
                         .filter(info -> info.code().equals(event.contractCode()))
                         .findFirst()
-                        .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_ITEM));
+                        .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM));
 
                 CartItemsEntity item = CartItemsEntity.builder()
                         .contractCode(event.contractCode())
