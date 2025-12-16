@@ -57,6 +57,12 @@ public class CommissionsController implements CommissionsApi {
                 CustomStatusCode.SUCCESS.getStatus());
     }
 
+    public ResponseEntity<ResponseDto<Empty>> readFiles(
+            @PathVariable(name = "commission-code") String commissionCode) {
+        // 의뢰글 관련 파일 읽기만 따로 분리
+        return null;
+    }
+
     @Override
     @PatchMapping("/{commission-code}")
     public ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(

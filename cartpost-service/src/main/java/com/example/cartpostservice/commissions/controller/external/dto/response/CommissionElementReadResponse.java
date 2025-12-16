@@ -32,9 +32,7 @@ public record CommissionElementReadResponse(
 
         int eligibleApplicants,
 
-        int appliedCount,
-
-        List<PresignedUrlComponent> fileUrls
+        int appliedCount
 ) {
 
 }
