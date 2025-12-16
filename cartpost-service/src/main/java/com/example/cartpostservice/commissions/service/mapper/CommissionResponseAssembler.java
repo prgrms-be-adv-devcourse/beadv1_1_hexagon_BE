@@ -1,8 +1,10 @@
 package com.example.cartpostservice.commissions.service.mapper;
 
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.FileComponentReadResponse;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
+import com.example.cartpostservice.commissions.service.usecase.result.FileElementResult;
 import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
 import org.springframework.stereotype.Component;
 
@@ -46,5 +48,9 @@ public class CommissionResponseAssembler {
                 appliedCount
         );
 
+    }
+
+    public FileComponentReadResponse toFileReadResponse(FileElementResult elementResult) {
+        return new FileComponentReadResponse(elementResult.urls());
     }
 }

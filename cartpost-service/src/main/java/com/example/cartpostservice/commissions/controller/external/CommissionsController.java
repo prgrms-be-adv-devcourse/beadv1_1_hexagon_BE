@@ -8,9 +8,11 @@ import com.example.cartpostservice.commissions.controller.external.dto.response.
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.FileComponentReadResponse;
 import com.example.cartpostservice.commissions.service.OrchestrationService;
 import com.example.cartpostservice.commissions.service.mapper.CommissionResponseAssembler;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
+import com.example.cartpostservice.commissions.service.usecase.result.FileElementResult;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,10 +63,14 @@ public class CommissionsController implements CommissionsApi {
                 CustomStatusCode.SUCCESS.getStatus());
     }
 
-    public ResponseEntity<ResponseDto<Empty>> readFiles(
+    public ResponseEntity<ResponseDto<FileComponentReadResponse>> readFiles(
             @PathVariable(name = "commission-code") String commissionCode) {
-        // 의뢰글 관련 파일 읽기만 따로 분리
-        return null;
+
+        FileElementResult elementResult = orchestrationService.readFileComponents(commissionCode);
+        FileComponentReadResponse response = commissionResponseAssembler.toFileReadResponse(elementResult);
+
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
+                CustomStatusCode.SUCCESS.getStatus());
     }
 
     @Override

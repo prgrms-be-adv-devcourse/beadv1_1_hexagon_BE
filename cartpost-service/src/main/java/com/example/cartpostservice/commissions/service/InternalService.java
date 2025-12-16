@@ -11,6 +11,7 @@ import com.example.cartpostservice.commissions.infra.client.internal.dto.respons
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.MemberInfoOutput;
 import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PeopleInfoResponseDto;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.DownloadFileComponentsResult;
 import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
@@ -74,9 +75,17 @@ public class InternalService {
             return RecruitsInfoResult.from(peopleInfoResponseDto);
         } catch (Exception e) {
             exceptionLogService.logExternalServerException(e, "InternalService.readRecruitsInfo");
-            
+
             return null;
         }
+    }
+
+    public DownloadFileComponentsResult readFileComponents(String commissionCode) {
+        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(commissionCode);
+        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
+                downloadFileComponentRequest);
+
+        return new DownloadFileComponentsResult(downloadFileComponents.data().urls());
     }
 
     private void sendPeopleInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
@@ -117,5 +126,6 @@ public class InternalService {
 
         return downloadFileComponents.data();
     }
+
 
 }

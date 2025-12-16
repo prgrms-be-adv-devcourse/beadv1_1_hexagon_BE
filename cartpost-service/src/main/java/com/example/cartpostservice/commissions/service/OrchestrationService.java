@@ -13,6 +13,8 @@ import com.example.cartpostservice.commissions.service.usecase.command.Commissio
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
+import com.example.cartpostservice.commissions.service.usecase.result.DownloadFileComponentsResult;
+import com.example.cartpostservice.commissions.service.usecase.result.FileElementResult;
 import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExternalServerException;
@@ -66,6 +68,12 @@ public class OrchestrationService {
         }
 
         return new CommissionElementResult(commissionAndTagReadResult, recruitsInfoResult);
+    }
+
+    public FileElementResult readFileComponents(String commissionCode) {
+        DownloadFileComponentsResult componentsResult = internalService.readFileComponents(commissionCode);
+
+        return new FileElementResult(componentsResult.urls());
     }
 
     public Page<CommissionReadResponse> readOwnCommissions(String code, Pageable pageable) {
