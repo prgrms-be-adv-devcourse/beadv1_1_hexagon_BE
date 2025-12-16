@@ -5,6 +5,7 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 import com.example.contractservice.contract.controller.dto.response.CommissionCapacityResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
+import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryInfo;
 import com.example.contractservice.deposit.service.DepositService;
@@ -12,6 +13,7 @@ import com.example.contractservice.deposit.service.dto.request.DepositProcessReq
 import com.example.contractservice.settlement.service.SettlementService;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
+import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,12 @@ public class ContractCancelService {
         contract.cancel();
 
         contractRepository.saveContract(contract);
+
+        ContractInfo contractInfo = contract.getInfo();
+        ContractEvent contractEvent = new ContractEvent(contract.getCode(), contractInfo.commissionCode(),
+                contract.getCreatedAt(), contractInfo.status().name());
+
+        applicationEventPublisher.publishEvent(contractEvent);
     }
 
     private void rollbackPaidContract(Contract contract) {

@@ -63,8 +63,8 @@ public class CommissionDocumentEntity {
     @Field(type = FieldType.Long, name = "pay_amount")
     private Long payAmount;
 
-    @Field(type = FieldType.Boolean, name = "is_closed")
-    private Boolean isClosed;
+    @Field(type = FieldType.Boolean, name = "is_open")
+    private Boolean isOpen;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;

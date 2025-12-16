@@ -16,17 +16,35 @@ public class AsyncConfig implements AsyncConfigurer {
     public Executor asyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-        executor.setCorePoolSize(4);          // 기본 스레드 수
-        executor.setMaxPoolSize(10);           // 최대 스레드 수
-        executor.setQueueCapacity(32);        // 큐 용량
-        executor.setThreadNamePrefix("Async-"); // 스레드 이름 prefix
-
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("Async-");
 
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "externalApiExecutor")
+    public Executor externalApiExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(6);
+        executor.setMaxPoolSize(12);
+        executor.setQueueCapacity(50);
+
+        executor.setThreadNamePrefix("External-API-");
+
+        executor.setRejectedExecutionHandler(
+            new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+
+        executor.initialize();
+        return executor;
+    }
+
 
     @Override
     public Executor getAsyncExecutor() {

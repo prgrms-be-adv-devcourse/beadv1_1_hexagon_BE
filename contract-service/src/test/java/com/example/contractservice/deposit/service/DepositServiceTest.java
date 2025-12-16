@@ -133,7 +133,7 @@ class DepositServiceTest {
         DepositHistoryCursorResponse firstResp = depositService.getDepositHistories(
                 new DepositHistoryCursorRequest(memberCode, null, null));
         DepositHistoryCursorResponse secondResp = depositService.getDepositHistories(
-                new DepositHistoryCursorRequest(memberCode, firstResp.CursorDate(), firstResp.cursorCode()));
+                new DepositHistoryCursorRequest(memberCode, firstResp.cursorDate(), firstResp.cursorCode()));
 
         // then
         assertEquals(PAGE_SIZE, firstResp.infos().size());

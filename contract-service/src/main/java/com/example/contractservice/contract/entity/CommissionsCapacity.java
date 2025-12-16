@@ -58,4 +58,13 @@ public class CommissionsCapacity { // TODO: 도메인 엔티티 분리
     public void increaseSelectedCount() {
         this.selectedCount++;
     }
+
+    public void updateInfo(int applyCapacity, int selectionCapacity) {
+        if (applyCapacity < this.applyCapacity || selectionCapacity < this.selectionCapacity) {
+            throw new IllegalArgumentException("지원 인원과 선정 인원은 기존보다 늘리기만 가능합니다.");
+        }
+
+        this.applyCapacity = applyCapacity;
+        this.selectionCapacity = selectionCapacity;
+    }
 }

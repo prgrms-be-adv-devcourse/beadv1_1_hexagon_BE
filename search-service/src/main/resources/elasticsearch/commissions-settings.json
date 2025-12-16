@@ -77,7 +77,7 @@
       },
       "edge_ngram_2_20": {
         "type": "edge_ngram",
-        "min_gram": 2,
+        "min_gram": 1,
         "max_gram": 20
       }
     },
@@ -89,7 +89,7 @@
           "nori_readingform",
           "nori_postfilter",
           "lowercase",
-          "edge_ngram_2_20"
+          "edge_ngram_1_20"
         ]
       },
       "commission_search_analyzer": {

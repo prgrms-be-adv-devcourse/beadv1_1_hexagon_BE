@@ -15,7 +15,7 @@ public record CommissionResponseDto(
         LocalDate endedAt,
         PaymentType paymentType,
         Long payAmount,
-        Boolean isClosed
+        Boolean isOpen
 ) {
     public static CommissionResponseDto from(CommissionDocumentEntity commissionDocumentEntity) {
         return new CommissionResponseDto(
@@ -28,7 +28,7 @@ public record CommissionResponseDto(
                 commissionDocumentEntity.getEndedAt(),
                 commissionDocumentEntity.getPaymentType(),
                 commissionDocumentEntity.getPayAmount(),
-                commissionDocumentEntity.getIsClosed()
+                commissionDocumentEntity.getIsOpen()
         );
     }
 }

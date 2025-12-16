@@ -1,6 +1,8 @@
 package com.example.memberservice.common.security.jwt;
 
+import com.example.memberservice.member.model.enums.MemberRole;
 import io.jsonwebtoken.Jwts;
+import java.lang.reflect.Member;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,13 +13,24 @@ public class JwtTokenGenerator {
 
     private final JwtKeyProvider jwtKeyProvider;
 
-
     private final JwtProperties jwtProperties;
 
     public String generateAccessToken(String memberCode, boolean isSignedUp) {
+            return Jwts.builder()
+                .claim(jwtProperties.getMemberCodeClaims(), memberCode)
+                .claim(jwtProperties.getIsSignedUpClaims(), isSignedUp)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessTokenTtl()))
+                .signWith(jwtKeyProvider.getAccessTokenSignKey())
+                .compact();
+    }
+
+    public String generateAccessToken(String memberCode, boolean isSignedUp,
+        MemberRole memberRole) {
         return Jwts.builder()
             .claim(jwtProperties.getMemberCodeClaims(), memberCode)
             .claim(jwtProperties.getIsSignedUpClaims(), isSignedUp)
+            .claim(jwtProperties.getMemberRoleClaims(), memberRole.toString())
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessTokenTtl()))
             .signWith(jwtKeyProvider.getAccessTokenSignKey())

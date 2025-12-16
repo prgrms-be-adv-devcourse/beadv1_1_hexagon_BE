@@ -19,7 +19,7 @@ public class CommissionMapper {
                 .endedAt(commission.endedAt())
                 .paymentType(commission.paymentType())
                 .payAmount(commission.payAmount())
-                .isClosed(commission.isClosed())
+                .isOpen(commission.isOpen())
                 .updatedAt(commission.updatedAt())
                 .build();
     }
@@ -36,7 +36,7 @@ public class CommissionMapper {
                 .endedAt(createdEvent.endedAt())
                 .paymentType(createdEvent.paymentType())
                 .payAmount(createdEvent.payAmount())
-                .isClosed(createdEvent.isClosed())
+                .isOpen(createdEvent.isOpen())
                 .updatedAt(createdEvent.updatedAt())
                 .build();
     }
@@ -53,7 +53,7 @@ public class CommissionMapper {
                 .endedAt(updatedEvent.endedAt())
                 .paymentType(updatedEvent.paymentType())
                 .payAmount(updatedEvent.payAmount())
-                .isClosed(updatedEvent.isClosed())
+                .isOpen(updatedEvent.isOpen())
                 .updatedAt(updatedEvent.updatedAt())
                 .build();
     }

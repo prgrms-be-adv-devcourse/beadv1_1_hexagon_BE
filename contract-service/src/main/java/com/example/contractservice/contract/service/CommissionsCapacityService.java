@@ -16,6 +16,8 @@ public class CommissionsCapacityService {
         CommissionsCapacity commissionsCapacity = commissionsCapacityRepository.findByCommissionCodeOrCreate(
                 request.commissionCode(), request.applyCapacity(), request.selectionCapacity());
 
+        commissionsCapacity.updateInfo(request.applyCapacity(), request.selectionCapacity());
+
         commissionsCapacityRepository.saveCapacity(commissionsCapacity);
     }
 

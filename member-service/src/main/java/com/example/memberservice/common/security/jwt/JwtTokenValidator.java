@@ -24,8 +24,7 @@ public class JwtTokenValidator {
                 .parseSignedClaims(token)
                 .getPayload();
         } catch (JwtException e) {
-            //TODO JwtToken 관련 비지니스 Exception으로 변경
-            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UN_AUTHORIZATION);
 
         }
     }

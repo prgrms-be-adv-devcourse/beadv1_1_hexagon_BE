@@ -7,7 +7,7 @@ import com.example.memberservice.member.service.model.dto.input.MemberDeleteInpu
 import com.example.memberservice.member.service.model.dto.input.MemberExistByNameInput;
 import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
-import com.example.memberservice.member.service.model.dto.input.MemberUpdateWorkStateInput;
+import com.example.memberservice.member.service.model.dto.input.MemberUpdateRoleStateInput;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,7 +31,13 @@ public interface MemberService {
     /**
      * 회원 판매자 등록 상태 true로 변경
      */
-    void updateMemberWorkState(MemberUpdateWorkStateInput input);
+    void updateMemberRoleState(MemberUpdateRoleStateInput input);
+
+    /**
+     * 회원 판매자 등록 상태 true로 변경
+     */
+    void deleteMemberRoleState(MemberUpdateRoleStateInput input);
+
 
     /**
      * 회원 삭제

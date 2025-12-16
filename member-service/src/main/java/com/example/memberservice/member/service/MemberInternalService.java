@@ -36,7 +36,7 @@ public class MemberInternalService {
                 .map(m -> new InternalMemberInfo(
                     m.getCode(),
                     m.getNickName(),
-                    m.getCanWork()
+                    m.getRole()
                 ))
                 .toList()
         );

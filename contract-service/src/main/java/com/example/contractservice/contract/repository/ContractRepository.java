@@ -1,5 +1,8 @@
 package com.example.contractservice.contract.repository;
 
+import static com.example.contractservice.contract.common.ContractStatus.IN_PROGRESS;
+import static com.example.contractservice.contract.common.ContractStatus.PAID;
+import static com.example.contractservice.contract.common.ContractStatus.REQUESTED;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
 import static com.example.contractservice.contract.service.mapper.ContractMapper.applyToEntity;
 import static com.example.contractservice.contract.service.mapper.ContractMapper.toDomain;
@@ -12,6 +15,7 @@ import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.entity.QContractEntity;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.Instant;
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Repository;
@@ -137,6 +142,30 @@ public class ContractRepository {
         orderSpecifiers.add(qContractEntity.code.asc());
 
         return orderSpecifiers.toArray(OrderSpecifier<?>[]::new);
+    }
+
+    public boolean existsClientContractBy(String memberCode) {
+        return findFirstContract(memberCode, this::getClientWhereClause) != null;
+    }
+
+    public boolean existsFreelancerContractBy(String memberCode) {
+        return findFirstContract(memberCode, this::getFreelancerWhereClause) != null;
+    }
+
+    private ContractEntity findFirstContract(String memberCode, BiFunction<QContractEntity, String, Predicate> whereClause) {
+        QContractEntity qContractEntity = QContractEntity.contractEntity;
+
+        return queryFactory.selectFrom(qContractEntity)
+                .where(whereClause.apply(qContractEntity, memberCode))
+                .fetchOne();
+    }
+
+    private Predicate getClientWhereClause(QContractEntity qContractEntity, String memberCode) {
+        return qContractEntity.clientCode.eq(memberCode).and(qContractEntity.status.in(PAID, IN_PROGRESS));
+    }
+
+    private Predicate getFreelancerWhereClause(QContractEntity qContractEntity, String memberCode) {
+        return qContractEntity.freelancerCode.eq(memberCode).and(qContractEntity.status.in(REQUESTED, PAID, IN_PROGRESS));
     }
 
 }

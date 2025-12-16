@@ -58,8 +58,9 @@ public class SettlementEntity {
     private BigDecimal settlementRate;
 
     @Builder
-    public SettlementEntity(String code, String receiverCode, String contractCode, Long originalAmount,
+    public SettlementEntity(Long id, String code, String receiverCode, String contractCode, Long originalAmount,
             SettlementStatus status, Instant progressingAt, Instant createdAt) {
+        this.id = id;
         this.code = code;
         this.receiverCode = receiverCode;
         this.contractCode = contractCode;
