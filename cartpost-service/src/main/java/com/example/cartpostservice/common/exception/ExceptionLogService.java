@@ -18,8 +18,7 @@ public class ExceptionLogService {
         String serviceUrl = "Unknown Feign Service";
         String logMessage;
 
-        if (ex instanceof FeignException) {
-            FeignException feignException = (FeignException) ex;
+        if (ex instanceof FeignException feignException) {
             int status = feignException.status();
 
             if (feignException.request() != null) {
