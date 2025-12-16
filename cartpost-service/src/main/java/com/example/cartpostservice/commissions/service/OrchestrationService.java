@@ -7,6 +7,7 @@ import com.example.cartpostservice.commissions.controller.external.dto.response.
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionAndTagPartitionInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
@@ -38,10 +39,14 @@ public class OrchestrationService {
         String commissionCode = domainCompositeService.createCommission(
                 CommissionTotalInfoCommand.from(memberCode, nickName, request));
 
+        CommissionAndTagPartitionInfoCommand partitionInfoCommand = CommissionAndTagPartitionInfoCommand.from(
+                domainCompositeService.readCommission(commissionCode));
+
         try {
             internalService.saveFileAndRecruitsInfo(CommissionInternalInfoCommand.from(commissionCode, request));
 
-            domainCompositeService.createCacheInfo(CommissionCacheCreatedCommand.from(commissionCode, request));
+            domainCompositeService.createCacheInfo(CommissionCacheCreatedCommand.from(commissionCode, request),
+                    partitionInfoCommand);
         } catch (Exception e) {
             log.error(e.getMessage());
             domainCompositeService.hardDeleteCommission(commissionCode, memberCode);

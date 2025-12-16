@@ -10,7 +10,9 @@ import com.example.cartpostservice.commissions.infra.client.internal.MemberClien
 import com.example.cartpostservice.commissions.infra.kafka.publisher.KafkaCommissionEventPublisher;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.event.CommissionDeleteEventFactory;
+import com.example.cartpostservice.commissions.service.event.CommissionUpsertEventFactory;
 import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionAndTagPartitionInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
@@ -58,8 +60,12 @@ public class DomainCompositeService {
     }
 
     @Transactional
-    public void createCacheInfo(CommissionCacheCreatedCommand cacheCommand) {
+    public void createCacheInfo(CommissionCacheCreatedCommand cacheCommand,
+            CommissionAndTagPartitionInfoCommand partitionInfoCommand) {
+
         commissionsService.updateCacheInfo(cacheCommand);
+
+        applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(partitionInfoCommand));
     }
 
     @Transactional

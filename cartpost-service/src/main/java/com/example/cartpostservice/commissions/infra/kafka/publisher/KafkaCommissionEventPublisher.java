@@ -24,45 +24,11 @@ public class KafkaCommissionEventPublisher {
     @Value("${search.topic.name}")
     private String commissionStatusTopic;
 
-    @Transactional
-    public void createProducer(CommissionServiceMessage createMessage) {
-
-        CommissionCreatedEvent commissionCreatedEvent = new CommissionCreatedEvent(
-                createMessage.code(),
-                createMessage.title(),
-                createMessage.content(),
-                createMessage.memberCode(),
-                createMessage.memberNickname(),
-                createMessage.tags(),
-                createMessage.startedAt(),
-                createMessage.endedAt(),
-                createMessage.paymentType(),
-                createMessage.payAmount(),
-                createMessage.isClosed(),
-                createMessage.updatedAt()
-        );
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void upsertProducer(CommissionCreatedEvent commissionCreatedEvent) {
 
         kafkaTemplate.send(commissionStatusTopic, commissionCreatedEvent);
-    }
-
-    public void updateProducer(CommissionServiceMessage updateMessage) {
-
-        CommissionUpdatedEvent commissionUpdatedEvent = new CommissionUpdatedEvent(
-                updateMessage.code(),
-                updateMessage.title(),
-                updateMessage.content(),
-                updateMessage.memberCode(),
-                updateMessage.memberNickname(),
-                updateMessage.tags(),
-                updateMessage.startedAt(),
-                updateMessage.endedAt(),
-                updateMessage.paymentType(),
-                updateMessage.payAmount(),
-                updateMessage.isClosed(),
-                updateMessage.updatedAt()
-        );
-
-        kafkaTemplate.send(commissionStatusTopic, commissionUpdatedEvent);
     }
 
     @Async
