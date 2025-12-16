@@ -4,10 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import org.hexagon.core.dto.ResponseDto;
 import com.example.contractservice.common.TestConfig;
+import com.example.contractservice.common.util.feign.MemberClient;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefResponse;
@@ -31,12 +32,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -48,8 +47,8 @@ class ContractReadServiceTest {
     @Autowired
     private ContractReadService contractReadService;
 
-    @MockBean
-    RestTemplate restTemplate;
+    @MockitoBean
+    MemberClient memberClient;
 
     @MockitoBean
     KafkaTemplate<String, String> kafkaTemplate;
@@ -139,10 +138,10 @@ class ContractReadServiceTest {
 
         ContractEntity saved = contractJpaRepository.save(entity);
 
-        when(restTemplate.getForObject(any(), eq(MemberInfoResponse.class)))
-                .thenReturn(new MemberInfoResponse(List.of(
+        when(memberClient.getMemberInfo(any()))
+                .thenReturn(ResponseDto.success(new MemberInfoResponse(List.of(
                         new MemberInfo(memberCode, "멤버 닉네임", MemberRole.FREELANCER),
-                        new MemberInfo(opponentCode, "상대방 닉네임", MemberRole.CLIENT)))
+                        new MemberInfo(opponentCode, "상대방 닉네임", MemberRole.CLIENT))))
                 );
 
         // when
