@@ -21,7 +21,7 @@ public class KafkaCommissionEventPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     // 전송할 토픽 이름 주입 (application.yml/properties 값)
-    @Value("${search.topic.name}")
+    @Value("${kafka.topic.commission.name}")
     private String commissionStatusTopic;
 
     @Async
