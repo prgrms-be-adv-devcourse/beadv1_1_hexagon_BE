@@ -12,9 +12,7 @@ import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -37,12 +35,12 @@ public class ContractReadService {
 
     public ContractDetailResponse findDetailBy(ContractDetailRequest request) {
         Contract contract = contractRepository.findByCode(request.contractCode());
+        ContractInfo contractInfo = contract.getInfo();
 
         validateMember(request.memberCode(), contract);
 
-        List<MemberInfo> memberInfos = Optional.ofNullable(
-                        memberClient.getMemberInfo(Collections.singletonList(request.memberCode())))
-                .orElseThrow(() -> new ContractException(INVALID_MEMBER)).members();
+        List<MemberInfo> memberInfos = memberClient.getMemberInfo(List.of(contractInfo.clientCode(), contractInfo.freelancerCode())).data()
+                .internalMemberInfos();
 
         if (memberInfos.size() != CONTRACT_PARTICIPATION_COUNT) {
             throw new ContractException(INVALID_MEMBER_COUNT);
@@ -51,8 +49,8 @@ public class ContractReadService {
         MemberInfo firstMember = memberInfos.get(0);
         MemberInfo secondMember = memberInfos.get(1);
 
-        String clientName = firstMember.code().equals(contract.getInfo().clientCode()) ? firstMember.name() : secondMember.name();
-        String freelancerCode = firstMember.code().equals(contract.getInfo().freelancerCode()) ? secondMember.name() : firstMember.name();
+        String clientName = firstMember.memberCode().equals(contractInfo.clientCode()) ? firstMember.nickName() : secondMember.nickName();
+        String freelancerCode = secondMember.memberCode().equals(contractInfo.freelancerCode()) ? secondMember.nickName() : firstMember.nickName();
 
         return ContractDetailResponse.of(contract, clientName, freelancerCode);
     }

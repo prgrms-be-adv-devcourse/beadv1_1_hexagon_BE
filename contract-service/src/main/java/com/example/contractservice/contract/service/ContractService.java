@@ -49,17 +49,16 @@ public class ContractService {
             return Collections.emptyList();
         }
 
-        // 계약 목록에서 클라이언트, 프리랜서 code 수집
+        // 계약 목록에서 클라이언트, 프리랜서 memberCode 수집
         Set<String> memberCodes = contracts.stream()
                 .flatMap(contract -> Stream.of(contract.getInfo().clientCode(), contract.getInfo().freelancerCode()))
                 .collect(Collectors.toSet());
 
         // member 모듈로부터 정보 가져오기
-        List<MemberInfo> memberInfos = Optional.ofNullable(memberClient.getMemberInfo(memberCodes.stream().toList()))
-                .orElseThrow(() -> new ContractException(INVALID_MEMBER))
-                .members();
+        List<MemberInfo> memberInfos = memberClient.getMemberInfo(memberCodes.stream().toList()).data()
+                .internalMemberInfos();
         Map<String, String> membersByCode = memberInfos.stream()
-                .collect(Collectors.toMap(MemberInfo::code, MemberInfo::name)); // code별로 info 분류
+                .collect(Collectors.toMap(MemberInfo::memberCode, MemberInfo::nickName)); // code별로 info 분류
 
         return contracts.stream()
                 .map(contract -> convertToBriefResponse(contract, membersByCode))
@@ -109,9 +108,7 @@ public class ContractService {
     }
 
     private void isCommissionOpen(String commissionCode) {
-        boolean isOpen = Optional.ofNullable(commissionClient.getRecruitmentStatus(commissionCode))
-                .orElseThrow(() -> new ContractException(COMMISSION_NOT_AVAILABLE))
-                .isOpen();
+        boolean isOpen = commissionClient.getRecruitmentStatus(commissionCode).data().isOpen();
 
         if (!isOpen) {
             throw new ContractException(COMMISSION_NOT_AVAILABLE);
@@ -134,17 +131,16 @@ public class ContractService {
     }
 
     private void isValidMember(String clientCode, String freelancerCode) {
-        MemberInfoResponse memberInfoResponse = Optional.ofNullable(memberClient.getMemberInfo(List.of(clientCode, freelancerCode)))
-                .orElseThrow(() -> new ContractException(INVALID_MEMBER));
+        MemberInfoResponse memberInfoResponse = memberClient.getMemberInfo(List.of(clientCode, freelancerCode)).data();
 
-        List<MemberInfo> memberInfos = memberInfoResponse.members();
+        List<MemberInfo> memberInfos = memberInfoResponse.internalMemberInfos();
 
         if (memberInfos.size() != CONTRACT_MEMBER_NUM) {
             throw new ContractException(INVALID_MEMBER);
         }
 
         MemberInfo freelancerInfo = memberInfos.stream()
-                .filter(memberInfo -> memberInfo.code().equals(freelancerCode))
+                .filter(memberInfo -> memberInfo.memberCode().equals(freelancerCode))
                 .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
         if (!freelancerInfo.canWork()) {
