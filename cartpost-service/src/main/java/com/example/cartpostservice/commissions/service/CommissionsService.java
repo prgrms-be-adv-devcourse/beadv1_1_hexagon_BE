@@ -20,10 +20,11 @@ import org.springframework.stereotype.Service;
 public class CommissionsService implements CrudService<CommissionsServiceCommand, CommissionReadResult, String> {
 
     private final CommissionsRepository commissionsRepository;
+    private final CommissionMapper commissionMapper;
 
     @Override
     public String create(CommissionsServiceCommand createCommand) {
-        CommissionsEntity createdCommission = CommissionMapper.toEntity(createCommand);
+        CommissionsEntity createdCommission = commissionMapper.toEntity(createCommand);
 
         CommissionsEntity savedCommission = commissionsRepository.save(createdCommission);
 
@@ -36,7 +37,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
         CommissionsEntity commission = commissionsRepository.findByCode(commissionsCode)
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_COMMISSION));
 
-        return CommissionMapper.toDto(commission);
+        return commissionMapper.toDto(commission);
     }
 
     @Override

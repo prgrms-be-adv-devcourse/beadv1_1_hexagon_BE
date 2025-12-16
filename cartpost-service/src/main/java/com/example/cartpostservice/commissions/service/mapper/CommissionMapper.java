@@ -4,10 +4,12 @@ import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CommissionMapper {
 
-    public static CommissionsEntity toEntity(CommissionsServiceCommand command) {
+    public CommissionsEntity toEntity(CommissionsServiceCommand command) {
         return CommissionsEntity.builder()
                 .memberCode(command.memberCode())
                 .title(command.title())
@@ -21,7 +23,7 @@ public class CommissionMapper {
                 .build();
     }
 
-    public static CommissionReadResult toDto(CommissionsEntity commission) {
+    public CommissionReadResult toDto(CommissionsEntity commission) {
         return new CommissionReadResult(
                 commission.getCode(),
                 commission.getMemberCode(),
