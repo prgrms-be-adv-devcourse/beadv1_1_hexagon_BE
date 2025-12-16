@@ -315,15 +315,19 @@ spring:
                 - Path=/api/search/**
 
             #endregion SEARCH_SERVICE_ROUTES
+            - id: s3-service-upload-url
+              uri: lb://s3-service
+              predicates:
+                - Path=/api/s3/upload-url
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
 
             #region S3_SERVICE_ROUTES
             - id: s3-service
               uri: lb://s3-service
               predicates:
                 - Path=/api/s3/**,/api/s3
-              filters:
-                - GlobalExceptionHandlingFilter
-                - TokenAuthenticationFilter
             #endregion S3_SERVICE_ROUTES
 
             #region AI_SERVICE_ROUTES
