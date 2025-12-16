@@ -12,7 +12,11 @@ import static org.mockito.Mockito.when;
 
 import com.example.memberservice.auth.email.repository.EmailAuthRepository;
 import com.example.memberservice.common.client.ContractServiceClient;
-import com.example.memberservice.common.client.dto.response.ContractStateResponse;
+import com.example.memberservice.common.client.RatingServiceClient;
+import com.example.memberservice.common.client.S3ServiceClient;
+import com.example.memberservice.common.client.TagServiceClient;
+import com.example.memberservice.common.client.dto.response.contract.ContractStateResponse;
+import com.example.memberservice.common.client.dto.response.s3.PresignedDownloadListResponse;
 import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.kafka.producer.MemberKafkaEventProducer;
@@ -33,11 +37,11 @@ import com.example.memberservice.socialmember.repository.SocialMemberJpaReposito
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.events.member.MemberCreatedEvent;
 import org.hexagon.core.events.member.MemberUpdatedEvent;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -65,13 +69,7 @@ class MemberServiceImplTest {
     private MemberServiceImpl service;
 
     @MockitoBean
-    private RestTemplate restTemplate; // 외부 API는 Mock
-
-    @MockitoBean
     private MemberKafkaEventProducer memberKafkaEventProducer;
-
-    @MockitoBean
-    private RequestURIGenerator requestURIGenerator;
 
     @MockitoBean
     private KafkaAdmin kafkaAdmin;
@@ -82,19 +80,37 @@ class MemberServiceImplTest {
     @MockitoBean
     private ContractServiceClient contractServiceClient;
 
+    @MockitoBean
+    private S3ServiceClient s3ServiceClient;
+
+    @MockitoBean
+    private TagServiceClient tagServiceClient;
+
+    @MockitoBean
+    private RatingServiceClient ratingServiceClient;
+
     private MemberService memberService;
 
     @BeforeEach
     void setUp() {
+        Executor testExecutor = Runnable::run;
+
         memberService = new MemberServiceImpl(
             memberJpaRepository,
             socialMemberJpaRepository,
-            restTemplate,
             memberKafkaEventProducer,
-            requestURIGenerator,
             emailAuthRepository,
-            contractServiceClient
+            contractServiceClient,
+            s3ServiceClient,
+            tagServiceClient,
+            ratingServiceClient,
+            testExecutor
         );
+
+        when(s3ServiceClient.getDownloadUrlByCode(any())).thenReturn(ResponseDto.success(new PresignedDownloadListResponse(List.of())));
+
+        when(s3ServiceClient.updateKeys(any())).thenReturn(ResponseDto.success());
+
     }
 
     @AfterEach
@@ -106,7 +122,7 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("getMemberByCode: 코드 없으면 예외")
     void getMemberByCode_noCode() {
-        MemberGetInput input = new MemberGetInput("", "");
+        MemberGetInput input = new MemberGetInput("");
 
         assertThatThrownBy(() -> service.getMemberByCode(input))
             .isInstanceOf(BusinessException.class)
@@ -123,7 +139,7 @@ class MemberServiceImplTest {
             memberJpaRepository.save(m);
 
             MemberCreateInput input = new MemberCreateInput(m.getCode(), "nick", "010100200",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
             assertThatThrownBy(() -> service.createMember(input))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(ErrorCode.MEMBER_ALREADY_EXISTS.getMessage());
@@ -136,7 +152,7 @@ class MemberServiceImplTest {
             memberJpaRepository.save(m);
 
             MemberCreateInput input = new MemberCreateInput("c1", m.getNickName(), "010100200",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
 
             assertThatThrownBy(() -> service.createMember(input))
                 .isInstanceOf(BusinessException.class)
@@ -147,7 +163,7 @@ class MemberServiceImplTest {
         @DisplayName("createMember: 소셜멤버 없으면 예외")
         void createMember_noSocialMember() {
             MemberCreateInput input = new MemberCreateInput("who", "nick", "010100200", LocalDate.now(),
-                Gender.MAN);
+                Gender.MAN,null);
 
             assertThatThrownBy(() -> service.createMember(input))
                 .isInstanceOf(BusinessException.class)
@@ -163,7 +179,7 @@ class MemberServiceImplTest {
             SocialMembers save = socialMemberJpaRepository.save(socialMembers);
 
             MemberCreateInput input = new MemberCreateInput(save.getCode(), "new", "01022223333",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
             given(memberKafkaEventProducer.sendCreatedEvent(any(MemberCreatedEvent.class)))
                 .willReturn(CompletableFuture.completedFuture(null));
 
@@ -190,7 +206,7 @@ class MemberServiceImplTest {
             memberJpaRepository.saveAll(List.of(m, m2));
 
             MemberUpdateInput input = new MemberUpdateInput("c1", "worker", "01099998888",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
 
             assertThatThrownBy(() -> service.updateMember(input))
                 .isInstanceOf(BusinessException.class)
@@ -204,7 +220,7 @@ class MemberServiceImplTest {
             memberJpaRepository.save(m);
 
             MemberUpdateInput input = new MemberUpdateInput(m.getCode(), "newNick", "01087901234",
-                LocalDate.now(), Gender.MAN);
+                LocalDate.now(), Gender.MAN,null);
             given(memberKafkaEventProducer.sendUpdatedEvent(any(MemberUpdatedEvent.class)))
                 .willReturn(CompletableFuture.completedFuture(null));
 

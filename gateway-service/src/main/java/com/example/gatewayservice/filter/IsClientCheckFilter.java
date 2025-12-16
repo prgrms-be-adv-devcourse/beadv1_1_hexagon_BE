@@ -45,7 +45,7 @@ public class IsClientCheckFilter extends
 
             if (!ALLOWED_ROLES.contains(role.toUpperCase())) {
                 log.info("CLIENT 권한이 없음. role={}", role);
-                throw new BusinessException(ErrorCode.FORBIDDEN_CLIENT);
+                throw new BusinessException(ErrorCode.REQUIRED_CLIENT_ROLE);
             }
 
             return chain.filter(exchange);

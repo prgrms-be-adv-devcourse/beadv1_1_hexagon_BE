@@ -12,7 +12,9 @@ public record MemberUpdateInput(
 
     LocalDate birthDate,
 
-    Gender gender
+    Gender gender,
+
+    String profileImageKey
 ) {
 
 }

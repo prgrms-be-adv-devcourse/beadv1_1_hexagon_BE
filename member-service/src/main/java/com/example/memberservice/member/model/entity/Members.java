@@ -55,7 +55,7 @@ public class Members {
     @Comment("닉네임")
     private String nickName;
 
-    @Column(nullable = false)
+    @Column(nullable = false,unique = false)
     @Comment("이메일")
     private String email;
 

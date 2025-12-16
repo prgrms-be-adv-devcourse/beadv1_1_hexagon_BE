@@ -39,10 +39,6 @@ public class EmailAuthApiController implements EmailAuthApiControllerSwagger {
         @RequestHeader(name = "X-CODE") String memberCode,
         @RequestBody @Valid CreateEmailAuthRequest request) {
 
-        log.info("memberCode: {}, role: {}, email: {}", memberCode, role, request.email());
-        long start = System.currentTimeMillis();
-        log.info("START_TIME_MS: {}", start);
-
         roleCheck(role);
 
         emailAuthService.sendAuthMail(CreateEmailAuthInput.builder()
@@ -52,8 +48,6 @@ public class EmailAuthApiController implements EmailAuthApiControllerSwagger {
             .build()
         );
 
-        long elapsed = System.currentTimeMillis() - start;
-        log.info("ELAPSED: {} ms", elapsed);
         return ResponseDto.success();
     }
 
