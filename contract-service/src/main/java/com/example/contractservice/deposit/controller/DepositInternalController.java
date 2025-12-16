@@ -3,6 +3,7 @@ package com.example.contractservice.deposit.controller;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositRechargeResponse;
 import com.example.contractservice.deposit.service.DepositService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class DepositInternalController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<DepositRechargeResponse> recharge(@RequestBody DepositRechargeRequest request) {
+    public ResponseDto<DepositRechargeResponse> recharge(@Valid @RequestBody DepositRechargeRequest request) {
 
         DepositRechargeResponse rechargeResponse = depositService.recharge(request);
 

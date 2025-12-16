@@ -23,7 +23,7 @@ public class ContractInProgressWriter extends ContractStatusWriter {
     @Override
     protected void publishEvent(Contract contract) {
         applicationEventPublisher.publishEvent(
-                new ContractEvent(contract.getInfo().clientCode(), contract.getCode(),
+                new ContractEvent(contract.getCode(), contract.getInfo().commissionCode(),
                         contract.getCreatedAt(), ContractStatus.IN_PROGRESS.name()));
     }
 }

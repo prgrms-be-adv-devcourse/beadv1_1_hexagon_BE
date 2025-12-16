@@ -16,7 +16,7 @@ public record CommissionUpdatedEvent(
         LocalDate endedAt,
         PaymentType paymentType,
         Long payAmount,
-        Boolean isClosed,
+        Boolean isOpen,
         Instant updatedAt
 ) {
 

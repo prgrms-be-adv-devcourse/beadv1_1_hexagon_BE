@@ -3,12 +3,12 @@ package com.example.contractservice.contract.service.dto.response;
 import java.util.List;
 
 public record MemberInfoResponse(
-        List<MemberInfo> members
+        List<MemberInfo> internalMemberInfos
 ) {
 
     public record MemberInfo (
-            String code,
-            String name,
+            String memberCode,
+            String nickName,
             Boolean canWork
     ) {}
 }

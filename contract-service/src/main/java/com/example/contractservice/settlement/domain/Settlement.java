@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class Settlement {
-
+    private Long id;
     private String code;
 
     private SettlementReference settlementReference;
@@ -20,11 +20,9 @@ public class Settlement {
 
     private SettlementTimeline settlementTimeline;
 
-    public Settlement(SettlementReference settlementReference, SettlementStatusInfo settlementStatusInfo, SettlementTimeline settlementTimeline) {
-        this(null, settlementReference, settlementStatusInfo, settlementTimeline);
-    }
-    public Settlement(String code, SettlementReference settlementReference,
+    public Settlement(Long id, String code, SettlementReference settlementReference,
         SettlementStatusInfo settlementStatusInfo, SettlementTimeline settlementTimeline) {
+        this.id = id;
         this.code = (code == null) ? generateCode() : code;
         this.settlementReference = settlementReference;
         this.settlementStatusInfo = settlementStatusInfo;
@@ -34,6 +32,10 @@ public class Settlement {
     public void settle(BigDecimal settlementRate) {
         this.settlementStatusInfo = settlementStatusInfo.settle(settlementRate);
         this.settlementTimeline = settlementTimeline.updateSettledAt(Instant.now());
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getCode() {

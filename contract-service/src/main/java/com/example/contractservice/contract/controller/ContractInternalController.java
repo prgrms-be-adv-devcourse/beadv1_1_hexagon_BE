@@ -12,6 +12,7 @@ import com.example.contractservice.contract.controller.dto.response.ContractPayR
 import com.example.contractservice.contract.service.CommissionsCapacityService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
+import jakarta.validation.Valid;
 import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -38,9 +38,8 @@ public class ContractInternalController {
     @ContractPayApi
     @PostMapping("/pay")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<ContractPayResponse> payContract(@RequestHeader(name = "X-CODE") String xCode,
-            @RequestBody ContractPayRequest request) {
-        ContractPayServiceRequest serviceRequest = new ContractPayServiceRequest(xCode, request.codes());
+    public ResponseDto<ContractPayResponse> payContract(@Valid @RequestBody ContractPayRequest request) {
+        ContractPayServiceRequest serviceRequest = new ContractPayServiceRequest(request.xCode(), request.codes());
 
         return ResponseDto.success(contractService.payContracts(serviceRequest));
     }
@@ -62,7 +61,7 @@ public class ContractInternalController {
     @CommissionCapacityUpsertApi
     @PostMapping("/commissions-capacity")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<Empty> upsertCapacity(@RequestBody CommissionsCapacityUpsertRequest request) {
+    public ResponseDto<Empty> upsertCapacity(@Valid @RequestBody CommissionsCapacityUpsertRequest request) {
         validateCapacityUpsertRequest(request);
 
         commissionsCapacityService.upsertCapacity(request);
