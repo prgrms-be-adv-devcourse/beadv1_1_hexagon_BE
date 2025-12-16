@@ -140,7 +140,7 @@ jwt:
 redirect-url:
   login:
     success: ${FRONT_DOMAIN}/login/success
-    need-signup: ${FRONT_DOMAIN}/login/need-signup
+    need-signup: ${FRONT_DOMAIN}/login/need-signed-up
     failure: ${FRONT_DOMAIN}/login/fail
 
 eureka:
