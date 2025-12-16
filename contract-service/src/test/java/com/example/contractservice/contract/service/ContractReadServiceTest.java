@@ -19,6 +19,7 @@ import com.example.contractservice.contract.service.dto.request.ContractDetailRe
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberRole;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
@@ -140,8 +141,8 @@ class ContractReadServiceTest {
 
         when(restTemplate.getForObject(any(), eq(MemberInfoResponse.class)))
                 .thenReturn(new MemberInfoResponse(List.of(
-                        new MemberInfo(memberCode, "멤버 닉네임", true),
-                        new MemberInfo(opponentCode, "상대방 닉네임", false)))
+                        new MemberInfo(memberCode, "멤버 닉네임", MemberRole.FREELANCER),
+                        new MemberInfo(opponentCode, "상대방 닉네임", MemberRole.CLIENT)))
                 );
 
         // when

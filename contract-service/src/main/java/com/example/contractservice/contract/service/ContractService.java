@@ -18,11 +18,10 @@ import com.example.contractservice.contract.service.dto.request.ContractPayServi
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
-import java.net.URI;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -152,7 +151,7 @@ public class ContractService {
                 .filter(memberInfo -> memberInfo.memberCode().equals(freelancerCode))
                 .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
-        if (!freelancerInfo.canWork()) {
+        if (freelancerInfo.memberRole() != MemberRole.FREELANCER) {
             throw new ContractException(NOT_FREELANCER);
         }
     }

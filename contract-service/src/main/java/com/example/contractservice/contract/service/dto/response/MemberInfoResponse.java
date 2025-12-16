@@ -9,6 +9,11 @@ public record MemberInfoResponse(
     public record MemberInfo (
             String memberCode,
             String nickName,
-            Boolean canWork
+            MemberRole memberRole
     ) {}
+
+    public enum MemberRole {
+        CLIENT,
+        FREELANCER
+    }
 }
