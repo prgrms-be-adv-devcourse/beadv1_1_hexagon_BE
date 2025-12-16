@@ -80,24 +80,24 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                                     MultiMatchQuery.of(m -> m
                                             .query(query)
                                             .fields("title^2", "content")
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
+                                            .minimumShouldMatch("2<80%")
+//                                            .fuzziness("1")
                                     )._toQuery()
                             );
                             case TITLE -> b.must(
                                     MatchQuery.of(m -> m
                                             .field("title")
                                             .query(query)
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
+                                            .minimumShouldMatch("2<80%")
+//                                            .fuzziness("1")
                                     )._toQuery()
                             );
                             case CONTENT -> b.must(
                                     MatchQuery.of(m -> m
                                             .field("content")
                                             .query(query)
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
+                                            .minimumShouldMatch("2<80%")
+//                                            .fuzziness("1")
                                     )._toQuery()
                             );
                         }
