@@ -1,6 +1,7 @@
 package com.example.memberservice.member.service.model.vo;
 
 
+import com.example.memberservice.member.model.enums.MemberRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record ApiMemberInfo(
@@ -21,7 +22,10 @@ public record ApiMemberInfo(
     String birthDay,
 
     @Schema(description = "사용자 성별", defaultValue = "MAN OR FEMAIL")
-    String gender
+    String gender,
+
+    @Schema(description = "사용자 역할", defaultValue = "FREELANCER")
+    MemberRole role
 
 ) {
 

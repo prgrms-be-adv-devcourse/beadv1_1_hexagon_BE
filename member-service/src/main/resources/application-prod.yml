@@ -136,6 +136,7 @@ jwt:
   claims:
     member-code: member-code
     is-sign: is-signed-up
+    member-role: role
 
 redirect-url:
   login:

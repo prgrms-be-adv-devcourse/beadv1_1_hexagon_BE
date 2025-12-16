@@ -3,6 +3,7 @@ package com.example.gatewayservice.common.jwt;
 import com.example.gatewayservice.common.exception.BusinessException;
 import com.example.gatewayservice.common.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,11 @@ public class JwtTokenValidator {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        } catch (JwtException e) {
+        }catch(ExpiredJwtException e){
+            log.info("accessToken이 만료되었습니다.");
+            throw new BusinessException(ErrorCode.NEED_RE_ISSUE);
+        }
+        catch (JwtException e) {
             log.info("acesssToken 검증이 실패했습니다.");
             throw new BusinessException(ErrorCode.UNAUTHORIZATION);
         }
