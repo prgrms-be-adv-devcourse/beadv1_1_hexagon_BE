@@ -17,7 +17,7 @@ import com.example.cartpostservice.commissions.service.usecase.command.Commissio
 import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
-import com.example.cartpostservice.commissions.service.usecase.result.TagServiceResult;
+import com.example.cartpostservice.commissions.service.usecase.result.TagsReadResult;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.transaction.Transactional;
@@ -66,9 +66,9 @@ public class DomainCompositeService {
     public CommissionAndTagReadResult readCommission(String commissionCode) {
 
         CommissionReadResult commissionResult = commissionsService.read(commissionCode);
-        TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
+        TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
 
-        return null;
+        return CommissionAndTagReadResult.from(commissionResult, tagResult);
     }
 
     @Transactional
@@ -76,7 +76,7 @@ public class DomainCompositeService {
             CommissionUpdateRequest request) {
 
         CommissionReadResult commissionReadResult = commissionsService.read(commissionCode);
-        TagServiceResult tagReadResult = commissionsTagService.read(commissionCode);
+        TagsReadResult tagReadResult = commissionsTagService.read(commissionCode);
 
 //        CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
 //                code,
@@ -168,7 +168,7 @@ public class DomainCompositeService {
         commissionsService.closeCommission(commissionCode);
 
         CommissionReadResult commissionResult = commissionsService.read(commissionCode);
-        TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
+        TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
 
         CommissionServiceMessage finishMessage = new CommissionServiceMessage(
                 commissionCode,
@@ -221,12 +221,12 @@ public class DomainCompositeService {
                 .map(CommissionReadResult::code)
                 .toList();
 
-        List<TagServiceResult> tagServiceResults = commissionsTagService.getTags(commissionCodes);
+        List<TagsReadResult> tagsReadResults = commissionsTagService.getTags(commissionCodes);
 
-        Map<String, List<String>> tagMap = tagServiceResults.stream()
+        Map<String, List<String>> tagMap = tagsReadResults.stream()
                 .collect(Collectors.toMap(
-                        TagServiceResult::commissionCode,
-                        TagServiceResult::tagCodes
+                        TagsReadResult::commissionCode,
+                        TagsReadResult::tagCodes
                 ));
 
         List<CommissionReadResponse> responses = resultPage.stream()
