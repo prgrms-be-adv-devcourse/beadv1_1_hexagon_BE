@@ -139,9 +139,9 @@ jwt:
 
 redirect-url:
   login:
-    success: ${EC2_DOMAIN}/login/success
-    need-signup: ${EC2_DOMAIN}/login/need-signup
-    failure: ${EC2_DOMAIN}/login/fail
+    success: ${FRONT_DOMAIN}/login/success
+    need-signup: ${FRONT_DOMAIN}/login/need-signup
+    failure: ${FRONT_DOMAIN}/login/fail
 
 eureka:
   client:
