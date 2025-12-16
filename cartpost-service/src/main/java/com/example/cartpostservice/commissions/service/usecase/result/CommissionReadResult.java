@@ -5,7 +5,7 @@ import java.time.Instant;
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
 
-public record CommissionsServiceResult(
+public record CommissionReadResult(
         String code,
 
         String memberCode,
@@ -16,7 +16,7 @@ public record CommissionsServiceResult(
 
         PaymentType paymentType,
 
-        String unitAmount,
+        Long unitAmount,
 
         LocalDate startedAt,
 

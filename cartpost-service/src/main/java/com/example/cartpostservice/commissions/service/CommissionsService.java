@@ -5,7 +5,7 @@ import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
-import com.example.cartpostservice.commissions.service.usecase.result.CommissionsServiceResult;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
 import com.example.cartpostservice.commissions.service.mapper.CommissionMapper;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
@@ -14,11 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class CommissionsService implements CrudService<CommissionsServiceCommand, CommissionsServiceResult, String> {
+public class CommissionsService implements CrudService<CommissionsServiceCommand, CommissionReadResult, String> {
 
     private final CommissionsRepository commissionsRepository;
 
@@ -32,25 +31,12 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     }
 
     @Override
-    public CommissionsServiceResult read(String commissionsCode) {
+    public CommissionReadResult read(String commissionsCode) {
 
         CommissionsEntity commission = commissionsRepository.findByCode(commissionsCode)
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_COMMISSION));
 
-        return null;
-//        return new CommissionsServiceResult(
-//                commission.getCode(),
-//                commission.getMemberCode(),
-//                commission.getTitle(),
-//                commission.getContent(),
-//                commission.getPaymentType(),
-//                commission.getUnitAmount(),
-//                commission.getStartedAt(),
-//                commission.getEndedAt(),
-//                commission.getRecruitmentStatus(),
-//                commission.getWriterName(),
-//                commission.getUpdatedAt()
-//        );
+        return CommissionMapper.toDto(commission);
     }
 
     @Override
@@ -89,7 +75,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
         commissionsRepository.delete(commission);
     }
 
-    public Page<CommissionsServiceResult> getPage(String memberCode, Pageable pageable) {
+    public Page<CommissionReadResult> getPage(String memberCode, Pageable pageable) {
 
         Page<CommissionsEntity> commissions = commissionsRepository.findPageByMemberCode(memberCode, pageable);
 

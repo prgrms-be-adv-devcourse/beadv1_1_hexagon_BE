@@ -1,36 +1,31 @@
 package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
-import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
 import com.example.cartpostservice.commissions.infra.client.internal.ContractClient;
 import com.example.cartpostservice.commissions.infra.client.internal.FileManagementClient;
 import com.example.cartpostservice.commissions.infra.client.internal.MemberClient;
-import com.example.cartpostservice.commissions.infra.client.internal.dto.request.DownloadFileComponentRequest;
-import com.example.cartpostservice.commissions.infra.client.internal.dto.response.DownloadFileComponentResponse;
-import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PeopleInfoResponseDto;
+import com.example.cartpostservice.commissions.infra.kafka.publisher.KafkaCommissionEventPublisher;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.event.CommissionDeleteEventFactory;
+import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
-import com.example.cartpostservice.commissions.service.usecase.result.CommissionsServiceResult;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.TagServiceResult;
-import com.example.cartpostservice.commissions.infra.kafka.publisher.KafkaCommissionEventPublisher;
-import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
-import com.example.cartpostservice.common.exception.ExternalServerException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hexagon.core.dto.ResponseDto;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -68,52 +63,19 @@ public class DomainCompositeService {
     }
 
     @Transactional
-    public CommissionElementReadResponse readCommission(String commissionCode) {
+    public CommissionAndTagReadResult readCommission(String commissionCode) {
 
-        CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
+        CommissionReadResult commissionResult = commissionsService.read(commissionCode);
         TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
 
-        ResponseDto<PeopleInfoResponseDto> applicantsResponse = contractClient.getNumberOfPeople(
-                commissionResult.code());
-
-        if (applicantsResponse == null) {
-            throw new ExternalServerException(CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR, "응답 없음");
-        }
-
-        if (applicantsResponse.httpStatus() != 200) {
-            throw new ExternalServerException(CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR,
-                    applicantsResponse.message());
-        }
-
-        PeopleInfoResponseDto peopleInfo = applicantsResponse.data();
-
-        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(commissionCode);
-        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
-                downloadFileComponentRequest);
-
-        return new CommissionElementReadResponse(
-                commissionResult.title(),
-                commissionResult.content(),
-                commissionResult.paymentType(),
-                commissionResult.unitAmount(),
-                commissionResult.startedAt(),
-                commissionResult.endedAt(),
-                commissionResult.recruitmentStatus(),
-                commissionResult.writerName(),
-                tagResult.tagCodes(),
-                peopleInfo.applyCapacity(),
-                peopleInfo.appliedCount(),
-                peopleInfo.selectionCapacity(),
-                peopleInfo.selectedCount(),
-                downloadFileComponents.data().urls()
-        );
+        return null;
     }
 
     @Transactional
     public CommissionUpdateResponse updateCommission(String code, String commissionCode,
             CommissionUpdateRequest request) {
 
-        CommissionsServiceResult commissionReadResult = commissionsService.read(commissionCode);
+        CommissionReadResult commissionReadResult = commissionsService.read(commissionCode);
         TagServiceResult tagReadResult = commissionsTagService.read(commissionCode);
 
 //        CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
@@ -205,7 +167,7 @@ public class DomainCompositeService {
 
         commissionsService.closeCommission(commissionCode);
 
-        CommissionsServiceResult commissionResult = commissionsService.read(commissionCode);
+        CommissionReadResult commissionResult = commissionsService.read(commissionCode);
         TagServiceResult tagResult = commissionsTagService.read(commissionResult.code());
 
         CommissionServiceMessage finishMessage = new CommissionServiceMessage(
@@ -218,7 +180,7 @@ public class DomainCompositeService {
                 commissionResult.startedAt(),
                 commissionResult.endedAt(),
                 commissionResult.paymentType(),
-                Long.parseLong(commissionResult.unitAmount()),
+                commissionResult.unitAmount(),
                 false,
                 commissionResult.updatedAt()
         );
@@ -253,10 +215,10 @@ public class DomainCompositeService {
                 pageable.getSort()
         );
 
-        Page<CommissionsServiceResult> resultPage = commissionsService.getPage(code, adjustedPageable);
+        Page<CommissionReadResult> resultPage = commissionsService.getPage(code, adjustedPageable);
 
         List<String> commissionCodes = resultPage.stream()
-                .map(CommissionsServiceResult::code)
+                .map(CommissionReadResult::code)
                 .toList();
 
         List<TagServiceResult> tagServiceResults = commissionsTagService.getTags(commissionCodes);
@@ -292,7 +254,7 @@ public class DomainCompositeService {
 
     @Transactional
     public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
-        CommissionsServiceResult commissionsServiceResult = commissionsService.read(
+        CommissionReadResult commissionsServiceResult = commissionsService.read(
                 commissionCode);
 
         return new CommissionRecruitmentStatusResponse(
