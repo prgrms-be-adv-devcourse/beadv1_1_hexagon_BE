@@ -13,7 +13,8 @@ public class MembersMapper {
             members.getEmail(),
             members.getPhoneNumber(),
             members.getBirthDate().toString(),
-            members.getGender().name()
+            members.getGender().name(),
+            members.getRole()
         );
     }
 
