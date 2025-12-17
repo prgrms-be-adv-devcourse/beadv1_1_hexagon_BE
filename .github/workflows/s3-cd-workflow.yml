@@ -1,4 +1,4 @@
-name: search-service ci/cd
+name: s3-service ci/cd
 
 on:
   push:
@@ -18,14 +18,14 @@ jobs:
       packages: write
       id-token: write
     with:
-      service-name: hexagon-search-service
-      service-dir: ./search-service
-      file-name: Dockerfile_search
+      service-name: hexagon-s3-service
+      service-dir: ./s3-service
+      file-name: Dockerfile_s3
 
   deploying:
     needs: releasing
     uses: ./.github/workflows/deploy-workflow.yml
     secrets: inherit
     with:
-      service-name: hexagon-search-service
+      service-name: hexagon-s3-service
       image-tag: ${{ needs.releasing.outputs.tag_name }}

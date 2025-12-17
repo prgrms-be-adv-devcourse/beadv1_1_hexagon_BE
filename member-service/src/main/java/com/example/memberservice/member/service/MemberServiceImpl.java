@@ -176,6 +176,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         // Kafka Event 발송.
+        log.info("카프카 이벤트 전송 시도");
         memberKafkaEventProducer.sendCreatedEvent(new MemberCreatedEvent(savedMember.getCode()));
 
     }
