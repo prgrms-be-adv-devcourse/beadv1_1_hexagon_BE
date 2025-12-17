@@ -14,7 +14,9 @@ import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.repository.SelfPromotionRepository;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
@@ -162,9 +164,21 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                 .map(SearchHit::getContent)
                 .map(SelfPromotionDocumentEntity::getTitle)
                 .map(this::extractNounsWithEs)
+                .map(this::removeSingleCharTokens)
+                .filter(s -> !s.isBlank())
                 .distinct()
                 .limit(size)
                 .toList();
+    }
+
+    private String removeSingleCharTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+
+        return Arrays.stream(text.split(" "))
+                .filter(token -> token.length() >= 2) // 2글자 이상만
+                .collect(Collectors.joining(" "));
     }
 
     @Override
