@@ -39,39 +39,39 @@ public class CartPostKafkaService {
     @Transactional
     public void addCartItem(ContractEvent event) {
 
-        CartsEntity cart = cartsRepository.findByMemberCode(event.memberCode())
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_CART));
-
-        List<String> contractCode = List.of(event.contractCode());
-        ResponseDto<List<ContractBriefWithNicknameResponse>> response = contractClient.getBriefInfo(contractCode);
-
-        if (event.status().equals("CONFIRMED")) {
-            if (!cartItemsRepository.existsByContractCode(event.contractCode())) {
-
-                List<ContractBriefWithNicknameResponse> contractList = response.data();
-
-                if (contractList == null || contractList.isEmpty()) {
-                    throw new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM);
-                }
-
-                // 4. 리스트 중에서 현재 이벤트의 contractCode와 일치하는 정보 찾기
-                ContractBriefWithNicknameResponse contractInfo = contractList.stream()
-                        .filter(info -> info.code().equals(event.contractCode()))
-                        .findFirst()
-                        .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM));
-
-                CartItemsEntity item = CartItemsEntity.builder()
-                        .contractCode(event.contractCode())
-                        .cartCode(cart.getCode())
-                        .status(ContractStatus.valueOf(event.status()))
-                        .startedAt(contractInfo.startedAt())
-                        .endedAt(contractInfo.endedAt())
-                        .paymentType(PaymentType.valueOf(contractInfo.paymentType()))
-                        .amount(String.valueOf(contractInfo.unitAmount()))
-                        .build();
-
-                cartItemsRepository.save(item);
-            }
-        }
+//        CartsEntity cart = cartsRepository.findByMemberCode(event.memberCode())
+//                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_CART));
+//
+//        List<String> contractCode = List.of(event.contractCode());
+//        ResponseDto<List<ContractBriefWithNicknameResponse>> response = contractClient.getBriefInfo(contractCode);
+//
+//        if (event.status().equals("CONFIRMED")) {
+//            if (!cartItemsRepository.existsByContractCode(event.contractCode())) {
+//
+//                List<ContractBriefWithNicknameResponse> contractList = response.data();
+//
+//                if (contractList == null || contractList.isEmpty()) {
+//                    throw new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM);
+//                }
+//
+//                // 4. 리스트 중에서 현재 이벤트의 contractCode와 일치하는 정보 찾기
+//                ContractBriefWithNicknameResponse contractInfo = contractList.stream()
+//                        .filter(info -> info.code().equals(event.contractCode()))
+//                        .findFirst()
+//                        .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM));
+//
+//                CartItemsEntity item = CartItemsEntity.builder()
+//                        .contractCode(event.contractCode())
+//                        .cartCode(cart.getCode())
+//                        .status(ContractStatus.valueOf(event.status()))
+//                        .startedAt(contractInfo.startedAt())
+//                        .endedAt(contractInfo.endedAt())
+//                        .paymentType(PaymentType.valueOf(contractInfo.paymentType()))
+//                        .amount(String.valueOf(contractInfo.unitAmount()))
+//                        .build();
+//
+//                cartItemsRepository.save(item);
+        //           }
+        //     }
     }
 }
