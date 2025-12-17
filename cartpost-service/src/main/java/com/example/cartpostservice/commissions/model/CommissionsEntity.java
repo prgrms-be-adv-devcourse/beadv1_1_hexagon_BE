@@ -102,6 +102,10 @@ public class CommissionsEntity extends BaseEntity {
         lastSyncTime = Instant.now();
     }
 
+    public void updateLastSyncTime(Instant lastSyncTime) {
+        this.lastSyncTime = lastSyncTime;
+    }
+
     public void closeRecruitmentStatus() {
         this.recruitmentStatus = RecruitmentStatus.CLOSED;
     }

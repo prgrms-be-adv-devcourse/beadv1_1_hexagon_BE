@@ -4,11 +4,13 @@ import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
 import com.example.cartpostservice.commissions.service.mapper.CommissionMapper;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -99,12 +101,23 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     }
 
 
-    public void updateCacheInfo(CommissionCacheCreatedCommand cacheCommand) {
+    public void createCacheInfo(CommissionCacheCreatedCommand cacheCommand) {
         CommissionsEntity commission = commissionsRepository.findByCode(cacheCommand.commissionCode())
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
 
-        commission.updatePersonInfo(cacheCommand.eligibleApplicants(), 0, cacheCommand.eligibleApplicants(), 0);
+        commission.updatePersonInfo(cacheCommand.eligibleApplicants(), 0, cacheCommand.plannedHires(), 0);
+        commission.updateLastSyncTime(Instant.now());
     }
+
+    public void updateCacheInfo(CommissionCacheUpdatedCommand cacheCommand) {
+        CommissionsEntity commission = commissionsRepository.findByCode(cacheCommand.commissionCode())
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
+
+        commission.updatePersonInfo(cacheCommand.eligibleApplicants(), cacheCommand.appliedCount(),
+                cacheCommand.plannedHires(), cacheCommand.selectedCount());
+        commission.updateLastSyncTime(Instant.now());
+    }
+
 
     public boolean isOwner(String memberCode, String commissionsCode) {
         return commissionsRepository

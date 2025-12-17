@@ -14,6 +14,7 @@ import com.example.cartpostservice.commissions.service.event.CommissionUpsertEve
 import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionAndTagPartitionInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
@@ -63,7 +64,7 @@ public class DomainCompositeService {
     public void createCacheInfo(CommissionCacheCreatedCommand cacheCommand,
             CommissionAndTagPartitionInfoCommand partitionInfoCommand) {
 
-        commissionsService.updateCacheInfo(cacheCommand);
+        commissionsService.createCacheInfo(cacheCommand);
 
         applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(partitionInfoCommand));
     }
@@ -75,6 +76,15 @@ public class DomainCompositeService {
         TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
 
         return CommissionAndTagReadResult.from(commissionResult, tagResult);
+    }
+
+    @Transactional
+    public void updateCacheInfo(CommissionCacheUpdatedCommand cacheCommand,
+            CommissionAndTagPartitionInfoCommand partitionInfoCommand) {
+
+        commissionsService.updateCacheInfo(cacheCommand);
+
+        applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(partitionInfoCommand));
     }
 
     @Transactional

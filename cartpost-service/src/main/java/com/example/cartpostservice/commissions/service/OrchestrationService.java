@@ -3,14 +3,14 @@ package com.example.cartpostservice.commissions.service;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
-import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionAndTagPartitionInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
-import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
 import com.example.cartpostservice.commissions.service.usecase.result.DownloadFileComponentsResult;
@@ -65,6 +65,14 @@ public class OrchestrationService {
 
         if (commissionAndTagReadResult.lastSyncTime() == null) {
             recruitsInfoResult = internalService.readRecruitsInfo(commissionCode);
+
+            if (recruitsInfoResult != null) {
+                CommissionCacheUpdatedCommand updatedCommand = CommissionCacheUpdatedCommand.from(recruitsInfoResult,
+                        commissionCode);
+
+                domainCompositeService.updateCacheInfo(updatedCommand, CommissionAndTagPartitionInfoCommand.from(
+                        domainCompositeService.readCommission(commissionCode)));
+            }
         }
 
         return new CommissionElementResult(commissionAndTagReadResult, recruitsInfoResult);
