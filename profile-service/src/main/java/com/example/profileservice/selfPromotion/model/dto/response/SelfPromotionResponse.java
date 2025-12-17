@@ -34,7 +34,10 @@ public record SelfPromotionResponse(
         Instant createdAt,
 
         @Schema(description = "수정 일시", example = "2025-11-10T03:00:00Z")
-        Instant updatedAt
+        Instant updatedAt,
+
+        @Schema(description = "PDF 다운로드 URL (만료 시간 포함)", example = "https://s3.aws.com/bucket/key?X-Amz-Signature=...", nullable = true)
+        String pdfDownloadUrl
 ) {
 
 }

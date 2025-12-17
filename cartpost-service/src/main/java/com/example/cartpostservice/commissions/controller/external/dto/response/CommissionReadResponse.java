@@ -10,7 +10,7 @@ public record CommissionReadResponse(
 
         PaymentType paymentType,
 
-        String unitAmount,
+        Long unitAmount,
 
         LocalDate startedAt,
 

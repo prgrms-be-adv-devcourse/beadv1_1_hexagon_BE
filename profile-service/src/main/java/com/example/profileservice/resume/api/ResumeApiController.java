@@ -6,7 +6,6 @@ import com.example.profileservice.experience.model.dto.response.ExperienceRespon
 import com.example.profileservice.resume.model.dto.request.ResumeCreateRequest;
 import com.example.profileservice.resume.model.dto.request.ResumeUpdateRequest;
 import com.example.profileservice.resume.model.dto.response.ResumeDetailResponse;
-import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +25,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @Tag(name = "Resume API", description = "프리랜서 이력서 및 경력 관리")
 public interface ResumeApiController {
 
-    // 이력서 목록 조회
-    @Operation(summary = "내 이력서 목록 조회", description = "로그인된 프리랜서가 작성한 모든 이력서 목록을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공")
-    ResponseEntity<ResponseDto<List<ResumeSimpleResponse>>> getMyResumes(
-            @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
+    // 이력서 조회
+    @Operation(summary = "내 이력서 상세 조회", description = "로그인된 프리랜서의 단일 이력서 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "이력서 조회 성공")
+    ResponseEntity<ResponseDto<ResumeDetailResponse>> getMyResume(
             @RequestHeader(value = "X-CODE") String memberCode);
 
     // 이력서 등록
@@ -57,7 +54,6 @@ public interface ResumeApiController {
                     examples = @ExampleObject(name = "Unauthorized Access", value = "{\"code\": 3302, \"httpStatus\": 403, \"message\": \"해당 이력서에 대한 접근 권한이 없습니다.\", \"data\": null}")))
     ResponseEntity<ResponseDto<ResumeDetailResponse>> getResumeDetail(
             @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
-            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode);
 
     // 이력서 수정

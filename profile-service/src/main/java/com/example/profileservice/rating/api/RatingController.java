@@ -20,9 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class RatingController implements RatingApiController {
 
-    // Gateway 환경이 구축되지 않았을 때를 위한 임시 기본값
-    private static final String DEFAULT_MEMBER_CODE = "member-uuid-code-001";
-
     private final RatingService ratingService;
 
     @Override
@@ -36,7 +33,7 @@ public class RatingController implements RatingApiController {
     @Override
     @PatchMapping("/{memberCode}")
     public ResponseEntity<ResponseDto<RatingResponse>> updateRating(
-            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String callerCode, // X-CODE를 callerCode로 사용
+            @RequestHeader(value = "X-CODE") String callerCode, // X-CODE를 callerCode로 사용
             @PathVariable String memberCode, // PathVariable을 receiverCode로 사용
             @Valid @RequestBody RatingRequest request) {
 

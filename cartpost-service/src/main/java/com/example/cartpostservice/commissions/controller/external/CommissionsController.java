@@ -2,13 +2,18 @@ package com.example.cartpostservice.commissions.controller.external;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
+import com.example.cartpostservice.commissions.controller.external.CommissionsApi;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
-import com.example.cartpostservice.commissions.service.CommissionsManagerService;
+import com.example.cartpostservice.commissions.controller.external.dto.response.FileComponentReadResponse;
+import com.example.cartpostservice.commissions.service.OrchestrationService;
+import com.example.cartpostservice.commissions.service.mapper.CommissionResponseAssembler;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
+import com.example.cartpostservice.commissions.service.usecase.result.FileElementResult;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +37,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommissionsController implements CommissionsApi {
 
-    private final CommissionsManagerService commissionsManagerService;
+    private final OrchestrationService orchestrationService;
+    private final CommissionResponseAssembler commissionResponseAssembler;
 
     @Override
     @PostMapping
     public ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code,
             @Valid @RequestBody CommissionCreateRequest commissionCreateRequest) {
 
-        CommissionCreateResponse response = commissionsManagerService.createCommission(code, commissionCreateRequest);
+        CommissionCreateResponse response = orchestrationService.createCommission(code, commissionCreateRequest);
         CustomStatusCode createdStatus = CustomStatusCode.CREATED;
 
         return new ResponseEntity<>(getSuccessResponse(createdStatus, response),
@@ -51,21 +57,46 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<CommissionElementReadResponse>> readCommission(
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        CommissionElementReadResponse response = commissionsManagerService.readCommission(commissionCode);
+        CommissionElementResult result = orchestrationService.readCommission(commissionCode);
+        CommissionElementReadResponse response = commissionResponseAssembler.toReadResponse(result);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 
     @Override
+    @GetMapping("/{commission-code}/files")
+    public ResponseEntity<ResponseDto<FileComponentReadResponse>> readFiles(
+            @PathVariable(name = "commission-code") String commissionCode) {
+
+        FileElementResult elementResult = orchestrationService.readFileComponents(commissionCode);
+        FileComponentReadResponse response = commissionResponseAssembler.toFileReadResponse(elementResult);
+
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
+                CustomStatusCode.SUCCESS.getStatus());
+    }
+
+    @Override
+    @GetMapping("/total")
+    public ResponseEntity<ResponseDto<Page<CommissionReadResponse>>> readOwnCommissions(
+            @RequestHeader("X-CODE") String memberCode,
+            Pageable pageable) {
+
+        Page<CommissionReadResponse> responses = orchestrationService.readOwnCommissions(memberCode, pageable);
+
+        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
+                .body(getSuccessResponse(CustomStatusCode.SUCCESS, responses));
+    }
+
+    @Override
     @PatchMapping("/{commission-code}")
     public ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(
-            @RequestHeader("X-CODE") String code,
+            @RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode,
             @Valid @RequestBody CommissionUpdateRequest commissionUpdateRequest
     ) {
 
-        CommissionUpdateResponse response = commissionsManagerService.updateCommission(code, commissionCode,
+        CommissionUpdateResponse response = orchestrationService.updateCommission(memberCode, commissionCode,
                 commissionUpdateRequest);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
@@ -75,10 +106,10 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @DeleteMapping("/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> deleteCommission(
-            @RequestHeader("X-CODE") String code,
+            @RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        commissionsManagerService.deleteCommission(code, commissionCode);
+        orchestrationService.softDeleteCommission(memberCode, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
@@ -90,7 +121,7 @@ public class CommissionsController implements CommissionsApi {
             @RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        commissionsManagerService.finishCommission(code, commissionCode);
+        orchestrationService.finishCommission(code, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
@@ -101,22 +132,9 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
             String commissionCode) {
 
-        commissionsManagerService.openCommission(memberCode, commissionCode);
+        orchestrationService.openCommission(memberCode, commissionCode);
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
-    }
-
-
-    @Override
-    @GetMapping("/total")
-    public ResponseEntity<ResponseDto<Page<CommissionReadResponse>>> readOwnCommissions(
-            @RequestHeader("X-CODE") String code,
-            Pageable pageable) {
-
-        Page<CommissionReadResponse> responses = commissionsManagerService.readOwnCommissions(code, pageable);
-
-        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
-                .body(getSuccessResponse(CustomStatusCode.SUCCESS, responses));
     }
 
     @Override
@@ -124,7 +142,7 @@ public class CommissionsController implements CommissionsApi {
     public ResponseEntity<ResponseDto<Empty>> canAccessCommission(@RequestHeader("X-CODE") String code,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        commissionsManagerService.canAccessCommission(code, commissionCode);
+        orchestrationService.canAccessCommission(code, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));

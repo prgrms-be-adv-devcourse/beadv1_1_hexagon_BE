@@ -14,7 +14,7 @@ public record CommissionElementReadResponse(
 
         PaymentType paymentType,
 
-        String unitAmount,
+        Long unitAmount,
 
         LocalDate startedAt,
 
@@ -32,9 +32,7 @@ public record CommissionElementReadResponse(
 
         int eligibleApplicants,
 
-        int appliedCount,
-
-        List<PresignedUrlComponent> fileUrls
+        int appliedCount
 ) {
 
 }

@@ -1,10 +1,17 @@
 package com.example.contractservice.contract.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.example.contractservice.common.TestConfig;
+import com.example.contractservice.common.util.feign.CommissionClient;
+import com.example.contractservice.common.util.feign.MemberClient;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
+import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.entity.CommissionsCapacity;
@@ -12,6 +19,9 @@ import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.CommissionsCapacityJpaRepository;
 import com.example.contractservice.contract.repository.ContractJpaRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
+import com.example.contractservice.contract.service.dto.response.CommissionRecruitmentResponse;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.repository.DepositHistoryJpaRepository;
@@ -23,7 +33,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
+import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -50,10 +65,15 @@ class ContractServiceTest {
     ContractService contractService;
     @Autowired
     CommissionsCapacityJpaRepository commissionsCapacityJpaRepository;
+
     @MockitoBean
     KafkaTemplate<String, String> kafkaTemplate;
     @MockitoBean
     KafkaAdmin kafkaAdmin;
+    @MockitoBean
+    MemberClient memberClient;
+    @MockitoBean
+    CommissionClient commissionClient;
 
     @Value("${admin.member.code}")
     String adminMemberCode;
@@ -71,6 +91,7 @@ class ContractServiceTest {
         depositJpaRepository.deleteAllInBatch();
         settlementJpaRepository.deleteAllInBatch();
         depositHistoryJpaRepository.deleteAllInBatch();
+        commissionsCapacityJpaRepository.deleteAllInBatch();
     }
 
     @Test
@@ -188,5 +209,64 @@ class ContractServiceTest {
         assertEquals(0L, adminDeposit.getAmount());
         assertEquals(unitAmount * contractsNum, clientDeposit.getAmount());
         assertEquals(0, allSettlements.size());
+    }
+
+    @Test
+    @DisplayName("의뢰글에 동시 지원 요청이 들어와도 지원 인원 이상으로 요청이 수행될 수 없다")
+    void success_blocking_over_request_on_full_commission() throws Exception {
+        // given
+        String clientCode = UUID.randomUUID().toString();
+        String freelancerCode = UUID.randomUUID().toString();
+        String commissionCode = UUID.randomUUID().toString();
+
+        int applyCapacity = 5; // 최대 지원 인원
+        int selectionCapacity = 3;
+
+        commissionsCapacityJpaRepository.save(
+                CommissionsCapacity.createBy(commissionCode, applyCapacity, selectionCapacity));
+
+        int tryCount = applyCapacity * 2;
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        CountDownLatch countDownLatch = new CountDownLatch(tryCount);
+
+        List<MemberInfo> memberInfoList = List.of(new MemberInfo(clientCode, "클라이언트", false),
+                new MemberInfo(freelancerCode, "프리랜서", true));
+
+        when(memberClient.getMemberInfo(any()))
+                .thenReturn(new ResponseDto<>(0, HttpStatus.OK.value(), "", new MemberInfoResponse(memberInfoList)));
+        when(commissionClient.getRecruitmentStatus(commissionCode))
+                .thenReturn(new ResponseDto<>(0, HttpStatus.OK.value(), "", new CommissionRecruitmentResponse(true)));
+
+        // when
+        IntStream.range(0, tryCount)
+                .forEach(i -> threadPool.execute(() -> {
+                            try {
+                                contractService.requestContract(
+                                        new ContractCreateRequest(clientCode,
+                                                freelancerCode,
+                                                commissionCode,
+                                                Instant.now(),
+                                                Instant.now(),
+                                                "PER_JOB",
+                                                5000L,
+                                                "name" + i,
+                                                "body" + i));
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            finally {
+                                countDownLatch.countDown();
+                            }
+                        })
+                );
+
+        countDownLatch.await();
+
+        // then
+        CommissionsCapacity commissionsCapacity = commissionsCapacityJpaRepository.findByCommissionCode(commissionCode).get();
+        assertEquals(applyCapacity, commissionsCapacity.getAppliedCount());
+        verify(memberClient, times(applyCapacity)).getMemberInfo(any());
+        verify(commissionClient, times(applyCapacity)).getRecruitmentStatus(commissionCode);
     }
 }
