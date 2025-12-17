@@ -1,13 +1,14 @@
-name: cartpost-service ci/cd
+name: s3-service ci/cd
 
 on:
   push:
     branches:
       - test/ci-cd/208-1
     paths:
-      - 'cartpost-service/**'
+      - 's3-service/**'
 
 jobs:
+
   releasing:
     uses: ./.github/workflows/release-workflow.yml
     secrets: inherit
@@ -17,14 +18,14 @@ jobs:
       packages: write
       id-token: write
     with:
-      service-name: hexagon-cartpost-service
-      service-dir: ./cartpost-service
-      file-name: Dockerfile_cartpost
+      service-name: hexagon-s3-service
+      service-dir: ./s3-service
+      file-name: Dockerfile_s3
 
   deploying:
     needs: releasing
     uses: ./.github/workflows/deploy-workflow.yml
     secrets: inherit
     with:
-      service-name: hexagon-cartpost-service
+      service-name: hexagon-s3-service
       image-tag: ${{ needs.releasing.outputs.tag_name }}

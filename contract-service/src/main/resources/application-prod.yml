@@ -69,6 +69,8 @@ kafka:
     topic:
       contract:
         name: contract-topic
+      commission:
+        name: commission-open-close-topic
   consumer:
     topic:
       cart:
@@ -101,3 +103,9 @@ batch:
   contract:
     size: 500
     interval:  0 0 0 * * ?
+
+admin:
+  member:
+    code: ${ADMIN_MEMBER_CODE} # 수정 가능
+  deposit:
+    code: ${ADMIN_DEPOSIT_CODE} # 수정 가능

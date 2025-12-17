@@ -42,6 +42,7 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendCreatedEvent(MemberCreatedEvent event) {
+        log.info("memberCreateEvent 발송");
         return kafkaTemplate.send(memberCreatedTopicName, event.memberCode(), event);
     }
 

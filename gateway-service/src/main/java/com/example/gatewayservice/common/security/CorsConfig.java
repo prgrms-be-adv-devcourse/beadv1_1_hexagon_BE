@@ -14,11 +14,11 @@ import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
     @Value("${cors.allowed.origin}")
     private String allowedOrigin;
 
     private List<String> allowedOriginList;
-
 
 
     @PostConstruct
@@ -27,11 +27,12 @@ public class CorsConfig {
         allowedOriginList = Arrays.asList(allowedOrigin.split(","));
 
     }
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(allowedOriginList); // 허용할 프론트 URL
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
