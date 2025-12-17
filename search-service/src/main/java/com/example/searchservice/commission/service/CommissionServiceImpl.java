@@ -5,6 +5,8 @@ import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery.Builder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
@@ -18,7 +20,9 @@ import com.example.searchservice.commission.repository.CommissionRepository;
 import com.example.searchservice.commission.vo.OpenStatus;
 import com.example.searchservice.common.vo.SearchScope;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
@@ -84,31 +88,44 @@ public class CommissionServiceImpl implements CommissionService {
                         }
                     }
 
-                    if (hasQuery) { // 검색문이 있는 경우 must 쿼리 추가
+                    if (hasQuery) {// 검색문이 있는 경우 must 쿼리 추가
+                        boolean enableFuzzy = shouldEnableFuzziness(query);
                         switch (scope) {
                             case ALL -> boolQuery.must(
-                                    MultiMatchQuery.of(m -> m
-                                            .query(query)
-                                            .fields("title^2", "content")
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
-                                    )._toQuery()
+                                    MultiMatchQuery.of(m -> {
+                                        Builder base = m.query(query)
+                                                .fields("title^2", "content")
+                                                .minimumShouldMatch("3<80%");
+
+                                        if (enableFuzzy) {
+                                            return base.fuzziness("AUTO"); // token 수가 3 초과일 때만 fuzzy 적용
+                                        }
+                                        return base;
+                                    })._toQuery()
                             );
                             case TITLE -> boolQuery.must(
-                                    MatchQuery.of(m -> m
-                                            .field("title")
-                                            .query(query)
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
-                                    )._toQuery()
+                                    MatchQuery.of(m -> {
+                                        MatchQuery.Builder base = m.field("title")
+                                                .query(query)
+                                                .minimumShouldMatch("3<80");
+
+                                        if (enableFuzzy) {
+                                            return base.fuzziness("AUTO");
+                                        }
+                                        return base;
+                                    })._toQuery()
                             );
                             case CONTENT -> boolQuery.must(
-                                    MatchQuery.of(m -> m
-                                            .field("content")
-                                            .query(query)
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
-                                    )._toQuery()
+                                    MatchQuery.of(m -> {
+                                        MatchQuery.Builder base = m.field("content")
+                                                .query(query)
+                                                .minimumShouldMatch("3<80");
+
+                                        if (enableFuzzy) {
+                                            return base.fuzziness("AUTO");
+                                        }
+                                        return base;
+                                    })._toQuery()
                             );
                         }
                     }
@@ -201,9 +218,21 @@ public class CommissionServiceImpl implements CommissionService {
                 .map(SearchHit::getContent)
                 .map(CommissionDocumentEntity::getTitle)
                 .map(this::extractNounsWithEs)
+                .map(this::removeSingleCharTokens)
+                .filter(s -> !s.isBlank())
                 .distinct()
                 .limit(size)
                 .toList();
+    }
+
+    private String removeSingleCharTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+
+        return Arrays.stream(text.split(" "))
+                .filter(token -> token.length() >= 2) // 2글자 이상만
+                .collect(Collectors.joining(" "));
     }
 
     @Override
@@ -243,6 +272,23 @@ public class CommissionServiceImpl implements CommissionService {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    // token 수가 3 초과인지 아닌지를 true or false로 반환
+    private boolean shouldEnableFuzziness(String text) {
+        AnalyzeRequest req = AnalyzeRequest.of(a -> a
+                .index("commissions")                    // 인덱스 이름
+                .analyzer("commission_search_analyzer")  // 검색에 쓰는 analyzer
+                .text(text)
+        );
+
+        try {
+            AnalyzeResponse response = esClient.indices().analyze(req);
+            int tokenCount = response.tokens() == null ? 0 : response.tokens().size();
+            return tokenCount > 3; // token 수가 3 초과인지
+        } catch (Exception e) {
+            return false;
         }
     }
 }

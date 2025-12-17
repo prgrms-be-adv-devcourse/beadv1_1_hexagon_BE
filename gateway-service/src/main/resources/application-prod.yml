@@ -10,6 +10,7 @@ spring:
       server:
         webflux:
           routes:
+            #region SWAGGER_ROUTES
             - id: cartpost-swagger-ui
               uri: lb://CARTPOST-SERVICE
               predicates:
@@ -45,49 +46,84 @@ spring:
               predicates:
                 - Path=/api/search/swagger-ui,/api/search/swagger-ui/**,/api/search/v3/api-docs,/api/search/v3/api-docs/**
 
-            #######
-            # CARTPOST SERVICE
-            #######
+            - id: s3-swagger-ui
+              uri: lb://s3-service
+              predicates:
+                - Path=/api/s3/swagger-ui,/api/s3/swagger-ui/**,/api/s3/v3/api-docs,/api/s3/v3/api-docs/**
+
+            ##TODO(이후 ai 서비스 개발 시 변경)
+            #            - id: ai-swagger-ui
+            #              uri: lb://ai-service
+            #              predicates:
+            #                - Path=/api/ai/swagger-ui,/api/ai/swagger-ui/**,/api/ai/v3/api-docs,/api/ai/v3/api-docs/**
+            #endregion SWAGGER_ROUTES
+
+            #region HEALTH_CHECK_ROUTES
+            - id: cartpost-health-check-api
+              uri: lb://CARTPOST-SERVICE
+              predicates:
+                - Path=/api/commissions/connectCheck,/api/commissions/healthCheck
+
+            - id: communication-health-check-api
+              uri: lb://COMMUNICATION-SERVICE
+              predicates:
+                - Path=/api/chatrooms/connectCheck,/api/chatrooms/healthCheck
+
+            - id: contract-health-check-api
+              uri: lb://CONTRACT-SERVICE
+              predicates:
+                - Path=/api/contracts/connectCheck,/api/contracts/healthCheck
+
+            - id: member-health-check-api
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members/connectCheck,/api/members/healthCheck
+
+            - id: payment-health-check-api
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/connectCheck,/api/payments/healthCheck
+
+            - id: profile-health-check-api
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/profiles/connectCheck,/api/profiles/healthCheck
+
+            - id: search-health-check-api
+              uri: lb://SEARCH-SERVICE
+              predicates:
+                - Path=/api/search/connectCheck,/api/search/healthCheck
+            #endregion HEALTH_CHECK_ROUTES
+
+            #region CARTPOST_SERVICE_ROUTES
+
+            # 아무 자격이 필요 없는 API 요청
             - id: cartpost-service
               uri: lb://CARTPOST-SERVICE
               predicates:
                 - Path=/api/commissions/{comissions_code}
                 - Method=GET
 
-
-            #######
-            # CARTPOST SERVICE
-            #######
-            - id: cartpost-service
+            # 클라이언트 자격이 필요한 API 요청
+            - id: cartpost-service-with-client
               uri: lb://CARTPOST-SERVICE
               predicates:
-                - Path=/api/commissions/{comissions_code}
-                - Method=GET
-
-
-            #######
-            # CARTPOST AUTH SERVICE - auth
-            #######
-            - id: cartpost-service-need-auth
-              uri: lb://CARTPOST-SERVICE
-              predicates:
-                - Path=/api/commissions/**,/api/commissions,/api/carts/**
+                - Path=/api/commissions/**,/api/commissions
+                  ,/api/carts/**
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
                 - IsSignCheckFilter
+                - IsClientCheckFilter
 
-            #######
-            # COMMUNICATION SERVICE
-            #######
+            #endregion CARTPOST_SERVICE_ROUTES
+
+            #region COMMUNICATION_SERVICE_ROUTES
             - id: communication-service
               uri: lb://COMMUNICATION-SERVICE
               predicates:
                 - Path=/ws/chat
 
-            #######
-            # COMMUNICATION SERVICE - auth
-            #######
             - id: communication-service-need-auth
               uri: lb://COMMUNICATION-SERVICE
               predicates:
@@ -97,10 +133,33 @@ spring:
                 - TokenAuthenticationFilter
                 - IsSignCheckFilter
 
-            #######
-            # CONTRACT SERVICE -auth
-            #######
-            - id: contract-service-need-auth
+            #endregion COMMUNICATION_SERVICE_ROUTES
+
+            #region CONTRACT_SERVICE_ROUTES
+            - id: contract-service-freelancer
+              uri: lb://CONTRACT-SERVICE
+              predicates:
+                - Path=/api/contracts
+                - Method=POST
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsFreelancerCheckFilter
+
+            - id: contract-service-both
+              uri: lb://CONTRACT-SERVICE
+              predicates:
+                - Path=/api/contracts
+                - Method=POST
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsFreelancerCheckFilter
+                - IsClientCheckFilter
+
+            - id: contract-service
               uri: lb://CONTRACT-SERVICE
               predicates:
                 - Path=/api/contracts/**,/api/contracts,/api/deposits/**,/api/deposits
@@ -109,23 +168,39 @@ spring:
                 - TokenAuthenticationFilter
                 - IsSignCheckFilter
 
-            #######
-            # Member SERVICE
-            #######
-            - id: member-service-get
+            #endregion CONTRACT_SERVICE_ROUTES
+
+            #region MEMBER_SERVICE_ROUTES
+
+
+
+            - id: member-service-no-auth
               uri: lb://MEMBER-SERVICE
               predicates:
                 - Path=/api/members
                 - Method=GET
 
-            #######
-            # Member SERVICE
-            #######
+            - id: auth-service
+              uri: lb://member-service
+              predicates:
+                - Path=/api/auth/**
+
+            # 회원가입의 경우 IsSign 필요 없음.
             - id: member-service-sign
               uri: lb://MEMBER-SERVICE
               predicates:
-                - Path=/api/members/healthCheck,/api/members
-                - Method=POST,GET
+                - Path=/api/members
+                - Method=POST
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+
+            # 닉네임 체크의 경우 IsSign 필요 없음(회원가입 때도 쓰이기 떄문에).
+            - id: member-service-check-name
+              uri: lb://MEMBER-SERVICE
+              predicates:
+                - Path=/api/members/check-name
+                - Method=GET
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
@@ -136,20 +211,17 @@ spring:
             - id: member-service-need-auth
               uri: lb://MEMBER-SERVICE
               predicates:
-                - Path=/api/members
+                - Path=/api/members,/api/members/**
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
                 - IsSignCheckFilter
 
-
-            #######
-            # MEMBER SERVICE
-            #######
             - id: member-service
               uri: lb://MEMBER-SERVICE
               predicates:
-                - Path=/api/members/**,/api/members,/oauth2/**,/login/**,/login,/api/auth,/api/auth/**
+                - Path=/oauth2/**,/login/**,/login,/api/auth,/api/auth/**
+
 
             #######
             # MEMBER SERVICE - INTERNAL (PROFILE -> MEMBER 통신용)
@@ -159,9 +231,10 @@ spring:
               predicates:
                 - Path=/internal/members/**
 
-            #######
-            # PAYMENT SERVICE - auth
-            #######
+            #endregion MEMBER_SERVICE_ROUTES
+
+            #region PAYMENT_SERVICE_ROUTES
+
             - id: payment-service
               uri: lb://PAYMENT-SERVICE
               predicates:
@@ -170,35 +243,100 @@ spring:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
                 - IsSignCheckFilter
+                - IsClientCheckFilter
 
-            #######
-            # PROFILE SERVICE
-            #######
-            - id: profile-service
+            #endregion PAYMENT_SERVICE_ROUTES
+
+            #region PROFILE_SERVICE_ROUTES
+
+            #region RESUME_ROUTES
+            - id: profile-resumes-read
               uri: lb://PROFILE-SERVICE
               predicates:
-                #                - Path=/api/experiences/**,/api/experiences,/api/ratings/**,/api/ratings,/api/resumes/**,/api/resumes,/api/self-promotions/**,/api/self-promotions,/api/tags/**,/api/tags
-                - Path=/api/tags,/api/ratings/{memberCode},/api/ratings,/api/self-promotions/{promotion-code}
+                - Path=/api/resumes/{resumeCode}
+                - Method=GET
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
 
-            #######
-            # PROFILE SERVICE - auth
-            #######
-            - id: profile-service-need-auth
+            - id: profile-resumes-freelancer
               uri: lb://PROFILE-SERVICE
               predicates:
-                - Path=/api/resumes,/api/resumes/**,/api/self-promotions,/api/self-promotions/**,/api/tags/**,/api/ratings/**
+                - Path=/api/resumes,/api/resumes/me,/api/resumes/{resumeCode},/api/resumes/{resumeCode}/experiences,/api/resumes/{resumeCode}/experiences/{experienceCode}
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsFreelancerCheckFilter
+            #endregion RESUME_ROUTES
 
-            #######
-            # SEARCH SERVICE
-            #######
+            #region SELF_PROMOTION_ROUTES
+            - id: profile-self-promotions-public
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/self-promotions,/api/self-promotions/{promotionCode}
+                - Method=GET
+
+            - id: profile-self-promotions-freelancer
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/self-promotions,/api/self-promotions/{promotionCode},/api/self-promotions/me
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsFreelancerCheckFilter
+            #endregion SELF_PROMOTION_ROUTES
+
+            #region TAG_ROUTES
+            - id: profile-tags-public
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/tags
+
+            - id: profile-tags-freelancer
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/tags/{tagCode}/members/me,/api/tags/me,/api/tags/members/me
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsFreelancerCheckFilter
+            #endregion TAG_ROUTES
+
+            #endregion PROFILE_SERVICE_ROUTES
+
+            #region SEARCH_SERVICE_ROUTES
             - id: search-service
               uri: lb://SEARCH-SERVICE
               predicates:
                 - Path=/api/search/**
 
+            #endregion SEARCH_SERVICE_ROUTES
+            - id: s3-service-upload-url
+              uri: lb://s3-service
+              predicates:
+                - Path=/api/s3/upload-url
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+
+            #region S3_SERVICE_ROUTES
+            - id: s3-service
+              uri: lb://s3-service
+              predicates:
+                - Path=/api/s3/**,/api/s3
+            #endregion S3_SERVICE_ROUTES
+
+            #region AI_SERVICE_ROUTES
+
+            #endregion AI_SERVICE_ROUTES
+
 cors:
   allowed:
-    origin: "http://localhost:8000,http://localhost:3000"
+    origin: ${CORS_ALLOWED_ORIGIN}
 
 jwt:
   access-token:
@@ -206,6 +344,7 @@ jwt:
   claims:
     member-code: member-code
     is-sign: is-signed-up
+    member-role: role
 
 
 eureka:

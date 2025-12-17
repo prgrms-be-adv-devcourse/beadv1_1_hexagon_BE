@@ -6,6 +6,7 @@ import org.hexagon.core.vo.PaymentType;
 public record SelfPromotionResponseDto(
         String code,
         String title,
+        String content,
         String memberCode,
         String memberNickname,
         PaymentType paymentType,
@@ -15,6 +16,7 @@ public record SelfPromotionResponseDto(
         return new SelfPromotionResponseDto(
                 selfPromotionDocumentEntity.getCode(),
                 selfPromotionDocumentEntity.getTitle(),
+                selfPromotionDocumentEntity.getContent(),
                 selfPromotionDocumentEntity.getMemberCode(),
                 selfPromotionDocumentEntity.getMemberNickname(),
                 selfPromotionDocumentEntity.getPaymentType(),

@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.service.dto.response;
 
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import java.time.Instant;
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ public record CommissionsServiceResult(
 
         LocalDate endedAt,
 
-        boolean isOpen,
+        RecruitmentStatus recruitmentStatus,
 
         String writerName,
 

@@ -3,6 +3,8 @@ package com.example.searchservice.selfpromotion.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery.Builder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
@@ -12,13 +14,16 @@ import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.selfpromotion.dto.SelfPromotionResponseDto;
 import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import com.example.searchservice.selfpromotion.repository.SelfPromotionRepository;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -51,7 +56,7 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
             PageRequest sortedByUpdatedAt = PageRequest.of(
                     page,
                     size,
-                    Sort.by(Sort.Direction.DESC, "updatedAt")
+                    Sort.by(Direction.DESC, "updatedAt")
             );
 
             return selfPromotionRepository.findAll(sortedByUpdatedAt)
@@ -74,31 +79,44 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
 
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(q -> q.bool(b -> {
-                    if(hasQuery) { // 검색문이 있는 경우 must 쿼리 추가
+                    if (hasQuery) {// 검색문이 있는 경우 must 쿼리 추가
+                        boolean enableFuzzy = shouldEnableFuzziness(query);
                         switch (scope) {
                             case ALL -> b.must(
-                                    MultiMatchQuery.of(m -> m
-                                            .query(query)
-                                            .fields("title^2", "content")
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
-                                    )._toQuery()
+                                    MultiMatchQuery.of(m -> {
+                                        Builder base = m.query(query)
+                                                .fields("title^2", "content")
+                                                .minimumShouldMatch("3<80%");
+
+                                        if (enableFuzzy) {
+                                            return base.fuzziness("AUTO"); // token 수가 3 초과일 때만 fuzzy 적용
+                                        }
+                                        return base;
+                                    })._toQuery()
                             );
                             case TITLE -> b.must(
-                                    MatchQuery.of(m -> m
-                                            .field("title")
-                                            .query(query)
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
-                                    )._toQuery()
+                                    MatchQuery.of(m -> {
+                                        MatchQuery.Builder base = m.field("title")
+                                                .query(query)
+                                                .minimumShouldMatch("3<80");
+
+                                        if (enableFuzzy) {
+                                            return base.fuzziness("AUTO");
+                                        }
+                                        return base;
+                                    })._toQuery()
                             );
                             case CONTENT -> b.must(
-                                    MatchQuery.of(m -> m
-                                            .field("content")
-                                            .query(query)
-                                            .minimumShouldMatch("2<70%")
-                                            .fuzziness("1")
-                                    )._toQuery()
+                                    MatchQuery.of(m -> {
+                                        MatchQuery.Builder base = m.field("content")
+                                                .query(query)
+                                                .minimumShouldMatch("3<80");
+
+                                        if (enableFuzzy) {
+                                            return base.fuzziness("AUTO");
+                                        }
+                                        return base;
+                                    })._toQuery()
                             );
                         }
                     }
@@ -146,9 +164,21 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                 .map(SearchHit::getContent)
                 .map(SelfPromotionDocumentEntity::getTitle)
                 .map(this::extractNounsWithEs)
+                .map(this::removeSingleCharTokens)
+                .filter(s -> !s.isBlank())
                 .distinct()
                 .limit(size)
                 .toList();
+    }
+
+    private String removeSingleCharTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+
+        return Arrays.stream(text.split(" "))
+                .filter(token -> token.length() >= 2) // 2글자 이상만
+                .collect(Collectors.joining(" "));
     }
 
     @Override
@@ -188,6 +218,23 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    // token 수가 3 초과인지 아닌지를 true or false로 반환
+    private boolean shouldEnableFuzziness(String text) {
+        AnalyzeRequest req = AnalyzeRequest.of(a -> a
+                .index("self_promotions")                    // 인덱스 이름
+                .analyzer("self_promotion_search_analyzer")  // 검색에 쓰는 analyzer
+                .text(text)
+        );
+
+        try {
+            AnalyzeResponse response = esClient.indices().analyze(req);
+            int tokenCount = response.tokens() == null ? 0 : response.tokens().size();
+            return tokenCount > 3; // token 수가 3 초과인지
+        } catch (Exception e) {
+            return false;
         }
     }
 }

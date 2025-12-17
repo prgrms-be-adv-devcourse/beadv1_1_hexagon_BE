@@ -1,6 +1,6 @@
 package com.example.communicationservice.client;
 
-import com.example.communicationservice.client.dto.MemberExistOutput;
+import com.example.communicationservice.client.dto.output.MemberExistOutput;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

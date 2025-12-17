@@ -25,14 +25,14 @@ public class ChatMessageController {
     private final ChatMessageService chatMessageService;
 
     /**
-     * 메시지 수신 처리
-     * 1. 채팅방 참여자 인가
-     * 2. DB 저장
-     * 3. 해당 토픽 구독자에게 메시지 전송
+     * 메시지 수신 처리 <br>
+     * 1. 채팅방 참여자 인가 <br>
+     * 2. DB 저장 <br>
+     * 3. 해당 토픽 구독자에게 메시지 전송 <br>
      */
     @MessageMapping("chat.send")
     public void handleChatMessage(@Valid @Payload ChatMessageSendRequest request) {
-        ChatMessageSendResponse response = chatMessageService.saveMessage(request);
+        ChatMessageSendResponse response = chatMessageService.sendMessage(request);
 
         String destinationPrefix = "/queue/room/";
         messagingTemplate.convertAndSend(destinationPrefix + request.roomId(), response);

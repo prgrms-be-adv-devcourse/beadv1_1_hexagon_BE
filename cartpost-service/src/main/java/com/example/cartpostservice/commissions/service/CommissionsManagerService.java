@@ -1,22 +1,24 @@
 package com.example.cartpostservice.commissions.service;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
-import com.example.cartpostservice.commissions.controller.dto.request.internal.DownloadFileComponentRequest;
-import com.example.cartpostservice.commissions.controller.dto.request.internal.FilesRequestDto;
-import com.example.cartpostservice.commissions.controller.dto.request.internal.TotalPeopleInfoRequestDto;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.internal.DownloadFileComponentResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.internal.InternalMemberInfo;
-import com.example.cartpostservice.commissions.controller.dto.response.internal.MemberInfoOutput;
-import com.example.cartpostservice.commissions.controller.dto.response.internal.PeopleInfoResponseDto;
-import com.example.cartpostservice.commissions.controller.dto.response.internal.PresignedUrlComponent;
-import com.example.cartpostservice.commissions.controller.internal.ContractClient;
-import com.example.cartpostservice.commissions.controller.internal.FileManagementClient;
-import com.example.cartpostservice.commissions.controller.internal.MemberClient;
+import com.example.cartpostservice.commissions.common.dto.PresignedUrlComponent;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
+import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
+import com.example.cartpostservice.commissions.infra.client.internal.ContractClient;
+import com.example.cartpostservice.commissions.infra.client.internal.FileManagementClient;
+import com.example.cartpostservice.commissions.infra.client.internal.MemberClient;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.request.DownloadFileComponentRequest;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.request.FilesRequestDto;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.request.TotalPeopleInfoRequestDto;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.DownloadFileComponentResponse;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.InternalMemberInfo;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.MemberInfoOutput;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PeopleInfoResponseDto;
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
@@ -130,7 +132,7 @@ public class CommissionsManagerService {
                 commissionResult.endedAt(),
                 commissionResult.paymentType(),
                 Long.parseLong(commissionResult.unitAmount()),
-                commissionResult.isOpen(),
+                commissionResult.recruitmentStatus().equals(RecruitmentStatus.OPEN),
                 commissionResult.updatedAt()
         );
 
@@ -169,7 +171,7 @@ public class CommissionsManagerService {
                 commissionResult.unitAmount(),
                 commissionResult.startedAt(),
                 commissionResult.endedAt(),
-                commissionResult.isOpen(),
+                commissionResult.recruitmentStatus(),
                 commissionResult.writerName(),
                 tagResult.tagCodes(),
                 peopleInfo.applyCapacity(),
@@ -242,7 +244,7 @@ public class CommissionsManagerService {
                 commissionUpdateResult.endedAt(),
                 commissionUpdateResult.paymentType(),
                 Long.parseLong(commissionUpdateResult.unitAmount()),
-                commissionUpdateResult.isOpen(),
+                commissionUpdateResult.recruitmentStatus().equals(RecruitmentStatus.OPEN),
                 commissionUpdateResult.updatedAt()
         );
         commissionKafkaService.updateProducer(updateMessage);
@@ -282,13 +284,24 @@ public class CommissionsManagerService {
                 commissionResult.endedAt(),
                 commissionResult.paymentType(),
                 Long.parseLong(commissionResult.unitAmount()),
-                commissionResult.isOpen(),
+                false,
                 commissionResult.updatedAt()
         );
 
         // kafka
         commissionKafkaService.finishProducer(finishMessage);
 
+    }
+
+    @Transactional
+    public void openCommission(String memberCode, String commissionCode) {
+        if (!commissionsService.isOwner(memberCode, commissionCode)) {
+            throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
+        }
+
+        // 추후 선정 인원수를 보고 예외 처리하는 코드 추가
+
+        commissionsService.openCommission(commissionCode);
     }
 
     @Transactional
@@ -326,7 +339,7 @@ public class CommissionsManagerService {
                         result.unitAmount(),
                         result.startedAt(),
                         result.endedAt(),
-                        result.isOpen(),
+                        result.recruitmentStatus(),
                         result.writerName(),
                         tagMap.getOrDefault(result.code(), List.of())
                 ))
@@ -340,6 +353,15 @@ public class CommissionsManagerService {
         if (!commissionsService.isOwner(code, commissionCode)) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
+    }
+
+    @Transactional
+    public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
+        CommissionsServiceResult commissionsServiceResult = commissionsService.read(
+                commissionCode);
+
+        return new CommissionRecruitmentStatusResponse(
+                commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN));
     }
 
     private void sendContractInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
@@ -359,4 +381,5 @@ public class CommissionsManagerService {
     private <T> T getOrDefault(T newValue, T oldValue) {
         return newValue != null ? newValue : oldValue;
     }
+
 }

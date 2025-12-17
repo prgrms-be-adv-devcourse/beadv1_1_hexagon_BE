@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.model;
 
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import org.hexagon.core.vo.PaymentType;
 import com.example.cartpostservice.common.model.BaseEntity;
 import jakarta.persistence.Column;
@@ -41,14 +42,29 @@ public class CommissionsEntity extends BaseEntity {
     @Column(nullable = false)
     private LocalDate endedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean isOpen = true;
+    private RecruitmentStatus recruitmentStatus;
 
     @Column(nullable = false)
     private String writerName;
 
     @Builder
     public CommissionsEntity(String memberCode, String title, String content, PaymentType paymentType,
+            String unitAmount, LocalDate startedAt, LocalDate endedAt, RecruitmentStatus recruitmentStatus,
+            String writerName) {
+        this.memberCode = memberCode;
+        this.title = title;
+        this.content = content;
+        this.paymentType = paymentType;
+        this.unitAmount = unitAmount;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.recruitmentStatus = recruitmentStatus;
+        this.writerName = writerName;
+    }
+
+    public void update(String memberCode, String title, String content, PaymentType paymentType,
             String unitAmount, LocalDate startedAt, LocalDate endedAt, String writerName) {
         this.memberCode = memberCode;
         this.title = title;
@@ -60,19 +76,15 @@ public class CommissionsEntity extends BaseEntity {
         this.writerName = writerName;
     }
 
-    public void closed() {
-        this.isOpen = false;
+    public void closeRecruitmentStatus() {
+        this.recruitmentStatus = RecruitmentStatus.CLOSED;
     }
 
-    public void update(String memberCode, String title, String content, PaymentType paymentType,
-            String unitAmount, LocalDate startedAt, LocalDate endedAt, String writerName){
-        this.memberCode = memberCode;
-        this.title = title;
-        this.content = content;
-        this.paymentType = paymentType;
-        this.unitAmount = unitAmount;
-        this.startedAt = startedAt;
-        this.endedAt = endedAt;
-        this.writerName = writerName;
+    public void haltRecruitmentStatus() {
+        this.recruitmentStatus = RecruitmentStatus.HALTED;
+    }
+
+    public void openRecruitmentStatus() {
+        this.recruitmentStatus = RecruitmentStatus.OPEN;
     }
 }

@@ -1,7 +1,7 @@
 package com.example.communicationservice.service;
 
 import com.example.communicationservice.client.MemberServiceClient;
-import com.example.communicationservice.client.dto.MemberExistOutput;
+import com.example.communicationservice.client.dto.output.MemberExistOutput;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.example.communicationservice.controller.dto.request.ChatRoomCreateRequest;
@@ -11,6 +11,7 @@ import com.example.communicationservice.controller.dto.response.ChatRoomReadResp
 import com.example.communicationservice.controller.dto.response.PageInfo;
 import com.example.communicationservice.entity.ChatRoom;
 import com.example.communicationservice.mapper.ChatMapper;
+import com.example.communicationservice.mapper.PageMapper;
 import com.example.communicationservice.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -84,7 +85,7 @@ public class ChatRoomService {
             .toList();
 
         // Page 정보 추출 및 DTO 생성
-        PageInfo pageInfo = ChatMapper.toPageInfo(chatRoomPage);
+        PageInfo pageInfo = PageMapper.toPageInfo(chatRoomPage);
 
         return new ChatRoomListReadResponse(chatRooms, pageInfo);
     }

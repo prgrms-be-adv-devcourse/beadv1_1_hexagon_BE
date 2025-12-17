@@ -8,9 +8,9 @@ public class CookieGenerator {
         ResponseCookie cookie = ResponseCookie.from(key, value)
             .path("/")
             .maxAge(age)
-            .secure(false)
-            .httpOnly(false)
-            // .sameSite("None")
+            .secure(true)
+            .httpOnly(true)
+            .sameSite("None")
             .build();
 
         return cookie.toString();

@@ -1,14 +1,15 @@
 package com.example.communicationservice.mapper;
 
-import com.example.communicationservice.controller.dto.FileInfo;
+import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
 import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.*;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
-import com.example.communicationservice.entity.File;
-import org.springframework.data.domain.Page;
+import com.example.communicationservice.type.MessageType;
 
-// dto와 entity 사이의 변환 로직 전담
+import java.util.Map;
+
+// dto <-> entity 또는 dto <-> dto 변환 로직 전담
 public abstract class ChatMapper {
 
     private ChatMapper() {} // 인스턴스화 방지
@@ -21,29 +22,47 @@ public abstract class ChatMapper {
             .senderCode(request.senderCode())
             .type(request.type())
             .text(request.text())
-            .file(request.file() != null ? toEntity(request.file()) : null)
+            .file(request.file() != null ? FileMapper.toEntity(request.file()) : null)
             .build();
     }
 
-    public static ChatMessageReadResponse toReadResponse(ChatMessage message) {
+    public static ChatMessageReadResponse toReadResponse(
+        ChatMessage message,
+        Map<String, FileDownloadUrlGenerateOutput> keyToDownloadUrl
+    ) {
+        ChatFileReadResponse file = null;
+        MessageType type = message.getType();
+
+        if (message.getFile() != null && (MessageType.FILE == type || MessageType.MIXED == type)) {
+            String key = message.getFile().getKey();
+            FileDownloadUrlGenerateOutput output = keyToDownloadUrl.get(key);
+
+            if (output != null) {
+                file = FileMapper.toReadResponse(output);
+            }
+        }
+
         return new ChatMessageReadResponse(
             message.getId(),
             message.getSenderCode(),
             message.getType(),
             message.getText(),
-            from(message.getFile()),
+            file,
             message.getSentAt()
         );
     }
 
-    public static ChatMessageSendResponse toSendResponse(ChatMessage message) {
+    public static ChatMessageSendResponse toSendResponse(
+        ChatMessage message,
+        FileDownloadUrlGenerateOutput output
+    ) {
         return new ChatMessageSendResponse(
             message.getId(),
             message.getRoomId(),
             message.getSenderCode(),
             message.getType(),
             message.getText(),
-            from(message.getFile()),
+            output != null ? FileMapper.toSendResponse(output) : null,
             message.getSentAt()
         );
     }
@@ -60,38 +79,6 @@ public abstract class ChatMapper {
             chatRoom.getName(),
             chatRoom.getUpdatedAt()
         );
-    }
-
-    // ------------------ Paging ------------------
-
-    public static PageInfo toPageInfo(Page<?> page) {
-        return new PageInfo(
-            page.getNumber(),
-            page.getSize(),
-            page.getTotalElements(),
-            page.getTotalPages(),
-            page.hasNext()
-        );
-    }
-
-    // ------------------ File ------------------
-
-    public static FileInfo from(File file) {
-        if (file == null) {
-            return null;
-        }
-
-        return new FileInfo(file.getKey());
-    }
-
-    public static File toEntity(FileInfo fileInfo) {
-        if (fileInfo == null) {
-            return null;
-        }
-
-        return File.builder()
-            .key(fileInfo.key())
-            .build();
     }
 
 }

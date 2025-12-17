@@ -1,0 +1,15 @@
+package com.example.cartpostservice.commissions.infra.client.internal;
+
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.MemberInfoOutput;
+import java.util.List;
+import org.hexagon.core.dto.ResponseDto;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@FeignClient(name = "member-service")
+public interface MemberClient {
+
+    @GetMapping("/internal/members")
+    ResponseDto<MemberInfoOutput> getMemberInfoByCode(@RequestParam("member-code") List<String> memberCodes);
+}

@@ -1,6 +1,7 @@
 package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.model.CommissionsEntity;
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
 import com.example.cartpostservice.commissions.service.dto.request.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.dto.response.CommissionsServiceResult;
@@ -30,6 +31,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 .startedAt(requestDto.startedAt())
                 .endedAt(requestDto.endedAt())
                 .writerName(requestDto.writerName())
+                .recruitmentStatus(RecruitmentStatus.OPEN)
                 .build();
 
         CommissionsEntity saved = commissionsRepository.save(commissions);
@@ -52,7 +54,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 commission.getUnitAmount(),
                 commission.getStartedAt(),
                 commission.getEndedAt(),
-                commission.isOpen(),
+                commission.getRecruitmentStatus(),
                 commission.getWriterName(),
                 commission.getUpdatedAt()
         );
@@ -109,7 +111,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                         commission.getUnitAmount(),
                         commission.getStartedAt(),
                         commission.getEndedAt(),
-                        commission.isOpen(),
+                        commission.getRecruitmentStatus(),
                         commission.getWriterName(),
                         commission.getUpdatedAt()
                 )
@@ -123,9 +125,24 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     }
 
     public void closeCommission(String commissionCode) {
-        CommissionsEntity entity = commissionsRepository.findByCode(commissionCode)
+        CommissionsEntity commission = commissionsRepository.findByCode(commissionCode)
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
 
-        entity.closed();
+        if (commission.getRecruitmentStatus() != RecruitmentStatus.OPEN) {
+            throw new BusinessException(CustomStatusCode.ALREADY_CLOSED_COMMISSION);
+        }
+
+        commission.closeRecruitmentStatus();
+    }
+
+    public void openCommission(String commissionCode) {
+        CommissionsEntity commission = commissionsRepository.findByCode(commissionCode)
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
+
+        if (commission.getRecruitmentStatus() == RecruitmentStatus.HALTED) {
+            throw new BusinessException(CustomStatusCode.CANNOT_OPEN_COMMISSION);
+        }
+
+        commission.openRecruitmentStatus();
     }
 }
