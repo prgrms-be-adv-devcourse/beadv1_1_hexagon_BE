@@ -5,17 +5,22 @@ import com.example.profileservice.experience.model.dto.response.ExperienceRespon
 import com.example.profileservice.resume.model.dto.request.ResumeCreateRequest;
 import com.example.profileservice.resume.model.dto.request.ResumeUpdateRequest;
 import com.example.profileservice.resume.model.dto.response.ResumeDetailResponse;
-import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
 import com.example.profileservice.resume.service.ResumeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.dto.Empty;
+import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/resumes")
@@ -24,15 +29,14 @@ public class ResumeController implements ResumeApiController {
 
     private final ResumeService resumeService;
 
-    // 이력서 목록 조회
+    // 본인용 조회
     @Override
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<List<ResumeSimpleResponse>>> getMyResumes(
+    public ResponseEntity<ResponseDto<ResumeDetailResponse>> getMyResume(
             @RequestHeader(value = "X-CODE") String memberCode
     ) {
-        List<ResumeSimpleResponse> resumes = resumeService.getMyResumes(memberCode);
-
-        return ResponseEntity.ok(ResponseDto.success(resumes));
+        ResumeDetailResponse resume = resumeService.getMyResume(memberCode);
+        return ResponseEntity.ok(ResponseDto.success(resume));
     }
 
     // 이력서 등록
@@ -50,9 +54,8 @@ public class ResumeController implements ResumeApiController {
     @Override
     @GetMapping("/{resumeCode}")
     public ResponseEntity<ResponseDto<ResumeDetailResponse>> getResumeDetail(
-            @RequestHeader(value = "X-CODE") String memberCode,
             @PathVariable String resumeCode) {
-        ResumeDetailResponse response = resumeService.getResumeDetail(memberCode, resumeCode);
+        ResumeDetailResponse response = resumeService.getPublicResumeDetail(resumeCode);
 
         return ResponseEntity.ok(ResponseDto.success(response));
     }

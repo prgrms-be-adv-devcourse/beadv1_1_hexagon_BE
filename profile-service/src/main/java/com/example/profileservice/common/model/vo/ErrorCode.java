@@ -30,6 +30,7 @@ public enum ErrorCode {
     // 4xx 클라이언트 에러 - resume (3300 ~ 3399)
     RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, 3301, "요청하신 이력서를 찾을 수 없습니다."),
     UNAUTHORIZED_RESUME_ACCESS(HttpStatus.FORBIDDEN, 3302, "해당 이력서에 대한 접근 권한이 없습니다."),
+    RESUME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 3303, "이력서가 이미 존재합니다."),
 
     // 4xx 클라이언트 에러 - selfPromotion (3400 ~ 3499)
     PROMOTION_NOT_FOUND(HttpStatus.NOT_FOUND, 3401, "요청하신 셀프 프로모션 게시글을 찾을 수 없습니다."),

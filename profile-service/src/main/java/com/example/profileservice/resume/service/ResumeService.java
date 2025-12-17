@@ -14,7 +14,6 @@ import com.example.profileservice.resume.model.dto.response.ResumeDetailResponse
 import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
 import com.example.profileservice.resume.repository.ResumeRepository;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,22 +33,41 @@ public class ResumeService {
     private final ExperienceRepository experienceRepository;
     private final MemberFeignClient memberFeignClient;
 
-    // 회원이 작성한 모든 이력서를 조회
-    public List<ResumeSimpleResponse> getMyResumes(String memberCode) {
-        Optional<ResumeEntity> resume = resumeRepository.findByMemberCodeAndIsDeletedFalse(memberCode);
+    // 본인용 조회: memberCode로 즉시 조회
+    public ResumeDetailResponse getMyResume(String memberCode) {
+        ResumeEntity resume = resumeRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESUME_NOT_FOUND));
 
-        return resume.map(this::toSimpleResponse)
-                .map(List::of)
-                .orElse(Collections.emptyList());
+        return getResumeDetailResponse(resume);
+    }
+
+    // 공개용 상세 조회: resumeCode로 조회 (memberCode 검증 제외)
+    public ResumeDetailResponse getPublicResumeDetail(String resumeCode) {
+        ResumeEntity resume = resumeRepository.findByCodeAndIsDeletedFalse(resumeCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESUME_NOT_FOUND));
+
+        return getResumeDetailResponse(resume);
+    }
+
+    // 공통 응답 조립 로직
+    private ResumeDetailResponse getResumeDetailResponse(ResumeEntity resume) {
+        List<ExperienceEntity> experiences = experienceRepository.findAllByResumeCodeAndIsDeletedFalseOrderByStartedAtDesc(resume.getCode());
+        List<ExperienceResponse> experienceResponses = experiences.stream()
+                .map(this::toExperienceResponse)
+                .toList();
+        return toDetailResponse(resume, experienceResponses);
     }
 
     // 새로운 이력서를 등록하고, 최초 등록 시 이벤트 발행
     @Transactional
     public ResumeDetailResponse createResume(String memberCode, ResumeCreateRequest request) {
-        // 1. 회원 유효성 검증 로직
         validateMemberCode(memberCode);
 
-        // 2. 이력서 엔티티 생성 및 저장
+        // 이미 작성된 이력서가 있는지 확인
+        if (resumeRepository.findByMemberCodeAndIsDeletedFalse(memberCode).isPresent()) {
+            throw new CustomException(ErrorCode.RESUME_ALREADY_EXISTS);
+        }
+
         ResumeEntity resume = ResumeEntity.builder()
                 .memberCode(memberCode)
                 .title(request.title())
@@ -246,6 +264,19 @@ public class ResumeService {
 
         // 이력서 삭제는 Search 인덱스에 영향을 주지 않으므로 개별 이벤트는 생략하고, 최종 이벤트는 Member 모듈에서 처리
         return deletedResumeCodes;
+    }
+
+    // 특정 memberCode로 상세 정보 가져오기
+    public ResumeDetailResponse getResumeDetailByMemberCode(String memberCode) {
+        ResumeEntity resume = resumeRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESUME_NOT_FOUND));
+
+        List<ExperienceEntity> experiences = experienceRepository.findAllByResumeCodeAndIsDeletedFalseOrderByStartedAtDesc(resume.getCode());
+        List<ExperienceResponse> experienceResponses = experiences.stream()
+                .map(this::toExperienceResponse)
+                .toList();
+
+        return toDetailResponse(resume, experienceResponses);
     }
 
     private ResumeSimpleResponse toSimpleResponse(ResumeEntity entity) {
