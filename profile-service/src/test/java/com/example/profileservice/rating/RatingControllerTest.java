@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.profileservice.common.model.util.TestKafkaConfig;
-import com.example.profileservice.common.model.vo.util.ContractFeignClient;
+import com.example.profileservice.common.model.vo.util.CompletedContractStore;
 import com.example.profileservice.common.model.vo.util.ContractInfo;
 import com.example.profileservice.common.model.vo.util.ContractStatus;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
@@ -65,8 +65,8 @@ public class RatingControllerTest {
     @MockitoBean
     private MemberFeignClient memberFeignClient;
 
-    @MockitoBean
-    private ContractFeignClient contractFeignClient;
+    @Autowired
+    private CompletedContractStore completedContractStore;
 
     private RatingRequest satisfiedRequest;
     private RatingRequest unsatisfiedRequest;
@@ -92,23 +92,13 @@ public class RatingControllerTest {
                 null, null, null, null,
                 ContractStatus.DONE // 필수: DONE 상태
         );
-        Mockito.when(contractFeignClient.getContractByCode(VALID_CONTRACT_CODE))
-                .thenReturn(ResponseDto.success(validContract));
 
-        // 2-2. 계약 당사자가 이미 평가 완료한 경우 (중복 평가 방지 테스트용)
-        Mockito.when(contractFeignClient.isContractRatedBy(Mockito.eq(VALID_CONTRACT_CODE), Mockito.eq(CALLER_CODE)))
-                .thenReturn(ResponseDto.success(false)); // 기본적으로 미평가 상태로 설정
-        Mockito.when(contractFeignClient.isContractRatedBy(Mockito.eq(ALREADY_RATED_CONTRACT_CODE), Mockito.eq(CALLER_CODE)))
-                .thenReturn(ResponseDto.success(true)); // 이미 평가 완료 상태로 설정
+        completedContractStore.markCompleted(VALID_CONTRACT_CODE);
 
-        // 2-3. 계약 상태가 DONE이 아닌 경우 (UNCOMPLETED_CONTRACT_CODE)
+        completedContractStore.markCompleted("another-contract-code");
+
+        // 2-2. 계약 상태가 DONE이 아닌 경우 (UNCOMPLETED_CONTRACT_CODE)
         ContractInfo uncompletedContract = validContract.progress(); // IN_PROGRESS로 상태 변경
-        Mockito.when(contractFeignClient.getContractByCode(UNCOMPLETED_CONTRACT_CODE))
-                .thenReturn(ResponseDto.success(uncompletedContract));
-
-        // 2-4. 계약 코드가 존재하지 않는 경우 (INVALID_CONTRACT_CODE)
-        Mockito.when(contractFeignClient.getContractByCode(INVALID_CONTRACT_CODE))
-                .thenReturn(ResponseDto.success((ContractInfo) null)); // ContractInfo가 null인 성공 응답 가정
 
         // 3. RatingRequest 생성자에 contractCode 추가 (setUp에서는 Mocking된 VALID_CONTRACT_CODE 사용)
         RatingRequest satisfied = new RatingRequest(VALID_CONTRACT_CODE, true);
@@ -255,66 +245,18 @@ public class RatingControllerTest {
     }
 
     @Test
-    @DisplayName("PATCH /api/ratings/{memberCode} - 계약 코드가 유효하지 않거나 찾을 수 없을 때 400 Bad Request")
-    void updateRating_InvalidContractCode_Failure() throws Exception {
-        // given: INVALID_CONTRACT_CODE 사용
-        RatingRequest invalidContractRequest = new RatingRequest(INVALID_CONTRACT_CODE, true);
+    @DisplayName("PATCH - DONE 이벤트를 받지 못한 계약은 평가 불가")
+    void updateRating_NotCompletedKafkaContract_Failure() throws Exception {
 
-        // when & then
+        RatingRequest request = new RatingRequest("not-done-contract", true);
+
         mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
                         .header(HEADER_X_CODE, CALLER_CODE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidContractRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(3203)); // CONTRACT_NOT_FOUND
-    }
-
-    @Test
-    @DisplayName("PATCH /api/ratings/{memberCode} - 계약 상태가 DONE이 아닐 때 400 Bad Request")
-    void updateRating_ContractNotCompleted_Failure() throws Exception {
-        // given: UNCOMPLETED_CONTRACT_CODE (IN_PROGRESS 상태로 Mocking됨) 사용
-        RatingRequest uncompletedRequest = new RatingRequest(UNCOMPLETED_CONTRACT_CODE, true);
-
-        // when & then
-        mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
-                        .header(HEADER_X_CODE, CALLER_CODE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(uncompletedRequest)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(3204)); // CONTRACT_NOT_COMPLETED
     }
-
-    @Test
-    @DisplayName("PATCH /api/ratings/{memberCode} - 이미 평가 완료한 계약에 대해 재평가 시도 시 400 Bad Request")
-    void updateRating_AlreadySubmitted_Failure() throws Exception {
-        // given: ALREADY_RATED_CONTRACT_CODE 사용 (isContractRatedBy가 true를 반환하도록 Mocking됨)
-        RatingRequest ratedRequest = new RatingRequest(ALREADY_RATED_CONTRACT_CODE, true);
-
-        // when & then
-        mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
-                        .header(HEADER_X_CODE, CALLER_CODE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(ratedRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(3206)); // RATING_ALREADY_SUBMITTED
-    }
-
-    // 권한 관련 실패 테스트: CALLER_CODE가 계약 당사자가 아닌 경우 또는 이상한 회원을 평가하는 경우
-    @Test
-    @DisplayName("PATCH /api/ratings/{memberCode} - 평가 권한이 없을 때 (당사자 불일치) 400 Bad Request")
-    void updateRating_UnauthorizedAccess_Failure() throws Exception {
-        // given: 유효한 계약이지만, RECEIVER_CODE_NEW(계약 당사자가 아닌 자)를 평가하려고 시도
-        // Mocking된 validContract: (CALLER_CODE <-> RECEIVER_CODE_INITIALIZED)
-
-        // when & then: CALLER_CODE가 RECEIVER_CODE_NEW를 평가 시도 (계약 당사자 불일치)
-        mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_NEW)
-                        .header(HEADER_X_CODE, CALLER_CODE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(satisfiedRequest))) // VALID_CONTRACT_CODE 포함
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(3205)); // UNAUTHORIZED_RATING_ACCESS
-    }
-
 
     @Test
     @DisplayName("PATCH /api/ratings/{memberCode} - RatingRequest의 contractCode 필드 누락 시 400 Bad Request")
