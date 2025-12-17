@@ -63,6 +63,8 @@ public class CommissionsController implements CommissionsApi {
                 CustomStatusCode.SUCCESS.getStatus());
     }
 
+    @Override
+    @GetMapping("/{commission-code}/files")
     public ResponseEntity<ResponseDto<FileComponentReadResponse>> readFiles(
             @PathVariable(name = "commission-code") String commissionCode) {
 
