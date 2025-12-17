@@ -76,6 +76,26 @@ public class ResumeService {
         return toDetailResponse(resume, experienceResponses);
     }
 
+    // memberCode만으로 해당 사용자의 활성 이력서 상세 정보를 조회
+    public ResumeDetailResponse getResumeDetail(String memberCode) {
+        // 1. 해당 사용자의 삭제되지 않은 이력서 조회
+        ResumeEntity resume = resumeRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
+                .orElse(null); // 이력서가 없을 경우 null 반환
+
+        if (resume == null) {
+            return null;
+        }
+
+        // 2. 해당 이력서에 포함된 경력/경험 목록 조회
+        List<ExperienceEntity> experiences = experienceRepository.findAllByResumeCodeAndIsDeletedFalseOrderByStartedAtDesc(resume.getCode());
+
+        List<ExperienceResponse> experienceResponses = experiences.stream()
+                .map(this::toExperienceResponse)
+                .collect(Collectors.toList());
+
+        return toDetailResponse(resume, experienceResponses);
+    }
+
     // 특정 이력서의 내용을 수정
     @Transactional
     public ResumeDetailResponse updateResume(String memberCode, String resumeCode, ResumeUpdateRequest request) {
