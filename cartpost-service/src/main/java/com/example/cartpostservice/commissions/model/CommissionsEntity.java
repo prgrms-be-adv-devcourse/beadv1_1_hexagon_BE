@@ -51,16 +51,16 @@ public class CommissionsEntity extends BaseEntity {
     private String writerName;
 
     @Column(nullable = true)
-    private int cacheApplyCapacity;
+    private Integer cacheApplyCapacity;
 
     @Column(nullable = true)
-    private int cacheAppliedCount;
+    private Integer cacheAppliedCount;
 
     @Column(nullable = true)
-    private int cacheSelectionCapacity;
+    private Integer cacheSelectionCapacity;
 
     @Column(nullable = true)
-    private int cacheSelectedCount;
+    private Integer cacheSelectedCount;
 
     @Column(nullable = true)
     private Instant lastSyncTime;
@@ -83,14 +83,14 @@ public class CommissionsEntity extends BaseEntity {
 
     public void update(String memberCode, String title, String content, PaymentType paymentType,
             Long unitAmount, LocalDate startedAt, LocalDate endedAt, String writerName) {
-        this.memberCode = memberCode;
-        this.title = title;
-        this.content = content;
-        this.paymentType = paymentType;
-        this.unitAmount = unitAmount;
-        this.startedAt = startedAt;
-        this.endedAt = endedAt;
-        this.writerName = writerName;
+        this.memberCode = getOrDefault(memberCode, this.memberCode);
+        this.title = getOrDefault(title, this.title);
+        this.content = getOrDefault(content, this.content);
+        this.paymentType = getPaymentType();
+        this.unitAmount = getOrDefault(unitAmount, this.unitAmount);
+        this.startedAt = getOrDefault(startedAt, this.startedAt);
+        this.endedAt = getOrDefault(endedAt, this.endedAt);
+        this.writerName = getOrDefault(writerName, this.writerName);
     }
 
     public void updatePersonInfo(int cacheApplyCapacity, int cacheAppliedCount, int cacheSelectionCapacity,
@@ -116,5 +116,9 @@ public class CommissionsEntity extends BaseEntity {
 
     public void openRecruitmentStatus() {
         this.recruitmentStatus = RecruitmentStatus.OPEN;
+    }
+
+    private <T> T getOrDefault(T newValue, T oldValue) {
+        return newValue != null ? newValue : oldValue;
     }
 }

@@ -5,6 +5,7 @@ import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionIndexReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
@@ -44,28 +45,19 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
     }
 
     @Override
-    public void update(CommissionsServiceCommand commissionsServiceCommand, String commissionsCode) {
+    public void update(CommissionsServiceCommand updatedCommand, String commissionCode) {
         List<CommissionsEntity> commissions = commissionsRepository.findByMemberCode(
-                commissionsServiceCommand.memberCode());
+                updatedCommand.memberCode());
         if (commissions.isEmpty()) {
             throw new BusinessException(CustomStatusCode.BAD_REQUEST_COMMISSION);
         }
 
         CommissionsEntity foundEntity = commissions.stream()
-                .filter(entity -> entity.getCode().equals(commissionsCode))
+                .filter(entity -> entity.getCode().equals(commissionCode))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
 
-        foundEntity.update(
-                commissionsServiceCommand.memberCode(),
-                commissionsServiceCommand.title(),
-                commissionsServiceCommand.content(),
-                commissionsServiceCommand.paymentType(),
-                commissionsServiceCommand.unitAmount(),
-                commissionsServiceCommand.startedAt(),
-                commissionsServiceCommand.endedAt(),
-                commissionsServiceCommand.writerName()
-        );
+        commissionMapper.updateCommission(updatedCommand, foundEntity);
 
         // 자동 반영
         //CommissionsEntity saved = commissionsRepository.save(foundEntity);

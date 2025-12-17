@@ -34,4 +34,16 @@ public record CommissionsServiceCommand(
         );
     }
 
+    public static CommissionsServiceCommand from(CommissionUpdatedCommand command, String memberCode) {
+        return new CommissionsServiceCommand(
+                memberCode,
+                command.title(),
+                command.content(),
+                command.paymentType(),
+                command.unitAmount(),
+                command.startedAt(),
+                command.endedAt(),
+                null
+        );
+    }
 }

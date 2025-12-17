@@ -90,12 +90,12 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @PatchMapping("/{commission-code}")
     public ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(
-            @RequestHeader("X-CODE") String code,
+            @RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode,
             @Valid @RequestBody CommissionUpdateRequest commissionUpdateRequest
     ) {
 
-        CommissionUpdateResponse response = orchestrationService.updateCommission(code, commissionCode,
+        CommissionUpdateResponse response = orchestrationService.updateCommission(memberCode, commissionCode,
                 commissionUpdateRequest);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),

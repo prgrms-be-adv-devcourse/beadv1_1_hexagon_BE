@@ -11,13 +11,18 @@ import com.example.cartpostservice.commissions.service.usecase.command.Commissio
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionInternalInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionElementResult;
 import com.example.cartpostservice.commissions.service.usecase.result.DownloadFileComponentsResult;
 import com.example.cartpostservice.commissions.service.usecase.result.FileElementResult;
 import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
+import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
+import com.example.cartpostservice.common.exception.ExceptionLogService;
 import com.example.cartpostservice.common.exception.ExternalServerException;
+import java.time.Duration;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +36,7 @@ public class OrchestrationService {
 
     private final InternalService internalService;
     private final DomainCompositeService domainCompositeService;
+    private final ExceptionLogService exceptionLogService;
 
     public CommissionCreateResponse createCommission(String memberCode, CommissionCreateRequest request) {
 
@@ -63,7 +69,8 @@ public class OrchestrationService {
         CommissionAndTagReadResult commissionAndTagReadResult = domainCompositeService.readCommission(commissionCode);
         RecruitsInfoResult recruitsInfoResult = null;
 
-        if (commissionAndTagReadResult.lastSyncTime() == null) {
+        if (commissionAndTagReadResult.lastSyncTime() == null
+                || Duration.between(commissionAndTagReadResult.lastSyncTime(), Instant.now()).getSeconds() > 10) {
             recruitsInfoResult = internalService.readRecruitsInfo(commissionCode);
 
             if (recruitsInfoResult != null) {
@@ -88,10 +95,26 @@ public class OrchestrationService {
         return domainCompositeService.readOwnCommissions(memberCode, pageable);
     }
 
-    public CommissionUpdateResponse updateCommission(String code, String commissionCode,
+    public CommissionUpdateResponse updateCommission(String memberCode, String commissionCode,
             CommissionUpdateRequest request) {
 
-        return null;
+        RecruitsInfoResult originalInfo = internalService.readRecruitsInfo(commissionCode);
+
+        if (originalInfo == null) {
+            throw new ExternalServerException(CustomStatusCode.INTERNAL_SERVER_ERROR,
+                    CustomStatusCode.INTERNAL_SERVER_ERROR.getMessage());
+        }
+
+        internalService.updateCommissionInternalInfo(CommissionInternalInfoCommand.from(commissionCode, request),
+                originalInfo);
+
+        try {
+            domainCompositeService.updateCommission(CommissionUpdatedCommand.from(commissionCode, request));
+        } catch (Exception e) {
+            exceptionLogService.logExternalServerException(e, "domainCompositeService.updateCommission");
+        }
+
+        return new CommissionUpdateResponse(commissionCode);
     }
 
     public void deleteCommission(String code, String commissionCode) {

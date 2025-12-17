@@ -2,6 +2,7 @@ package com.example.cartpostservice.commissions.service.mapper;
 
 import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionIndexReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
@@ -58,6 +59,19 @@ public class CommissionMapper {
                 commission.getRecruitmentStatus(),
                 commission.getWriterName(),
                 commission.getUpdatedAt()
+        );
+    }
+
+    public void updateCommission(CommissionsServiceCommand updatedCommand, CommissionsEntity commission) {
+        commission.update(
+                updatedCommand.memberCode(),
+                updatedCommand.title(),
+                updatedCommand.content(),
+                updatedCommand.paymentType(),
+                updatedCommand.unitAmount(),
+                updatedCommand.startedAt(),
+                updatedCommand.endedAt(),
+                updatedCommand.writerName()
         );
     }
 }

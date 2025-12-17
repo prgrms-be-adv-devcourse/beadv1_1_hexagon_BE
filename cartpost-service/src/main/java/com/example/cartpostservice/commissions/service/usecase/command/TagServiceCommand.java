@@ -14,4 +14,11 @@ public record TagServiceCommand(
                 commissionTotalInfoCommand.tagCodes()
         );
     }
+
+    public static TagServiceCommand from(CommissionUpdatedCommand updatedCommand) {
+        return new TagServiceCommand(
+                updatedCommand.commissionCode(),
+                updatedCommand.tagCodes()
+        );
+    }
 }

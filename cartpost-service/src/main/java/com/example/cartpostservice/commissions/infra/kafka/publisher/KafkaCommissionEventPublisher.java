@@ -2,14 +2,12 @@ package com.example.cartpostservice.commissions.infra.kafka.publisher;
 
 import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import lombok.RequiredArgsConstructor;
-import org.hexagon.core.events.commission.CommissionCreatedEvent;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
-import org.hexagon.core.events.commission.CommissionUpdatedEvent;
+import org.hexagon.core.events.commission.CommissionUpsertEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -24,14 +22,12 @@ public class KafkaCommissionEventPublisher {
     @Value("${kafka.topic.commission.name}")
     private String commissionStatusTopic;
 
-    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void upsertProducer(CommissionCreatedEvent commissionCreatedEvent) {
+    public void upsertProducer(CommissionUpsertEvent commissionUpsertEvent) {
 
-        kafkaTemplate.send(commissionStatusTopic, commissionCreatedEvent);
+        kafkaTemplate.send(commissionStatusTopic, commissionUpsertEvent);
     }
-
-    @Async
+    
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void deleteProducer(CommissionDeletedEvent commissionDeletedEvent) {
         kafkaTemplate.send(commissionStatusTopic, commissionDeletedEvent);
@@ -39,7 +35,7 @@ public class KafkaCommissionEventPublisher {
 
     public void finishProducer(CommissionServiceMessage finishMessage) {
 
-        CommissionUpdatedEvent commissionUpdatedEvent = new CommissionUpdatedEvent(
+        CommissionUpsertEvent commissionUpdatedEvent = new CommissionUpsertEvent(
                 finishMessage.code(),
                 finishMessage.title(),
                 finishMessage.content(),

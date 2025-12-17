@@ -16,6 +16,7 @@ import com.example.cartpostservice.commissions.service.usecase.command.Commissio
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionTotalInfoCommand;
+import com.example.cartpostservice.commissions.service.usecase.command.CommissionUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
@@ -133,73 +134,21 @@ public class DomainCompositeService {
     }
 
     @Transactional
-    public CommissionUpdateResponse updateCommission(String code, String commissionCode,
-            CommissionUpdateRequest request) {
+    public String updateCommission(CommissionUpdatedCommand updatedCommand) {
 
-        CommissionReadResult commissionReadResult = commissionsService.read(commissionCode);
-        TagsReadResult tagReadResult = commissionsTagService.read(commissionCode);
+        CommissionReadResult commissionReadResult = commissionsService.read(updatedCommand.commissionCode());
 
-//        CommissionsServiceCommand commissionsServiceCommand = new CommissionsServiceCommand(
-//                code,
-//                getOrDefault(request.title(), commissionReadResult.title()),
-//                getOrDefault(request.content(), commissionReadResult.content()),
-//                getOrDefault(request.paymentType(), commissionReadResult.paymentType()),
-//                getOrDefault(request.unitAmount(), commissionReadResult.unitAmount()),
-//                getOrDefault(request.startedAt(), commissionReadResult.startedAt()),
-//                getOrDefault(request.endedAt(), commissionReadResult.endedAt()),
-//                commissionReadResult.writerName()
-//        );
-//
-//        TagServiceCommand tagServiceCommand = new TagServiceCommand(
-//                commissionCode,
-//                getOrDefault(request.tagCode(), tagReadResult.tagCodes())
-//        );
-//
-//        commissionsService.update(commissionsServiceCommand, commissionCode);
-//        commissionsTagService.update(tagServiceCommand, commissionCode);
-//
-//        if (request.plannedHires() != null || request.eligibleApplicants() != null) {
-//            //endContractInfo(commissionCode, request.plannedHires(), request.eligibleApplicants());
-//        }
-//
-//        List<String> updatedKeys = request.fileKeys();
-//        if (request.fileKeys() == null) {
-//            DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(
-//                    commissionCode);
-//            ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
-//                    downloadFileComponentRequest);
-//            updatedKeys = downloadFileComponents.data().urls().stream()
-//                    .map(PresignedUrlComponent::key)
-//                    .toList();
-//        }
-//
-//        FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode, updatedKeys);
-//        ResponseDto<Empty> updateFileComponents = fileManagementClient.updateFileStatus(filesRequestDto);
-//
-//        if (updateFileComponents == null) {
-//            throw new ExternalServerException(CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR, "응답 없음");
-//        }
-//
-//        // kafka
-//        CommissionsServiceResult commissionUpdateResult = commissionsService.read(commissionCode);
-//        TagServiceResult tagResult = commissionsTagService.read(commissionUpdateResult.code());
-//        CommissionServiceMessage updateMessage = new CommissionServiceMessage(
-//                commissionCode,
-//                commissionUpdateResult.title(),
-//                commissionUpdateResult.content(),
-//                commissionUpdateResult.memberCode(),
-//                commissionUpdateResult.writerName(),
-//                tagResult.tagCodes(),
-//                commissionUpdateResult.startedAt(),
-//                commissionUpdateResult.endedAt(),
-//                commissionUpdateResult.paymentType(),
-//                Long.parseLong(commissionUpdateResult.unitAmount()),
-//                commissionUpdateResult.recruitmentStatus().equals(RecruitmentStatus.OPEN),
-//                commissionUpdateResult.updatedAt()
-//        );
-//        commissionKafkaService.updateProducer(updateMessage);
+        commissionsService.update(CommissionsServiceCommand.from(updatedCommand, commissionReadResult.memberCode()),
+                updatedCommand.commissionCode());
 
-        return new CommissionUpdateResponse(commissionCode);
+        commissionsTagService.update(TagServiceCommand.from(updatedCommand), updatedCommand.commissionCode());
+
+        CommissionReadResult updatedResult = commissionsService.read(updatedCommand.commissionCode());
+        TagsReadResult updatedTagResult = commissionsTagService.read(updatedCommand.commissionCode());
+
+        applicationEventPublisher.publishEvent(
+                CommissionUpsertEventFactory.createEvent(updatedResult, updatedTagResult));
+        return updatedCommand.commissionCode();
     }
 
     @Transactional
@@ -277,11 +226,6 @@ public class DomainCompositeService {
 
         return new CommissionRecruitmentStatusResponse(
                 commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN));
-    }
-
-
-    private <T> T getOrDefault(T newValue, T oldValue) {
-        return newValue != null ? newValue : oldValue;
     }
 
 

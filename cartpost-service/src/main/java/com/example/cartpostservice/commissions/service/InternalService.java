@@ -88,6 +88,33 @@ public class InternalService {
         return new DownloadFileComponentsResult(downloadFileComponents.data().urls());
     }
 
+    public void updateCommissionInternalInfo(CommissionInternalInfoCommand internalInfoCommand,
+            RecruitsInfoResult originalInfo) {
+
+        int sendPlannedHires = originalInfo.plannedHires();
+        int sendEligibleApplicants = originalInfo.eligibleApplicants();
+
+        if (internalInfoCommand.plannedHires() != null) {
+            sendPlannedHires = internalInfoCommand.plannedHires();
+        }
+
+        if (internalInfoCommand.eligibleApplicants() != null) {
+            sendEligibleApplicants = internalInfoCommand.eligibleApplicants();
+        }
+
+        sendPeopleInfo(internalInfoCommand.commissionCode(), sendPlannedHires,
+                sendEligibleApplicants);
+
+        try {
+            updateFileKeyComponents(internalInfoCommand.commissionCode(), internalInfoCommand.fileKeys());
+        } catch (Exception ex) {
+            exceptionLogService.logExternalServerException(ex, "InternalService.updateCommissionInternalInfo");
+
+            sendPeopleInfo(internalInfoCommand.commissionCode(), originalInfo.plannedHires(),
+                    originalInfo.eligibleApplicants());
+        }
+    }
+
     private void sendPeopleInfo(String commissionCode, Integer plannedHires, Integer eligibleApplicants) {
         TotalPeopleInfoRequestDto totalPeopleInfoRequestDto = new TotalPeopleInfoRequestDto(commissionCode,
                 plannedHires, eligibleApplicants);
@@ -125,6 +152,18 @@ public class InternalService {
                 downloadFileComponentRequest);
 
         return downloadFileComponents.data();
+    }
+
+    private void updateFileKeyComponents(String commissionCode, List<String> fileKeys) {
+        if (fileKeys != null) {
+            FilesRequestDto filesRequestDto = new FilesRequestDto(commissionCode, fileKeys);
+
+            ResponseDto<Empty> s3UpdateResponse = fileManagementClient.updateFileStatus(filesRequestDto);
+
+            if (s3UpdateResponse == null) {
+                throw new ExternalServerException(CustomStatusCode.INTERNAL_MODULE_SERVER_ERROR, "응답이 존재하지 않습니다");
+            }
+        }
     }
 
 
