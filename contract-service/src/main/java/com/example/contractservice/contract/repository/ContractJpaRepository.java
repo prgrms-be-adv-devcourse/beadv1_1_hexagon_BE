@@ -16,4 +16,11 @@ public interface ContractJpaRepository extends JpaRepository<ContractEntity, Lon
         WHERE c.code IN :codes
     """)
     List<ContractEntity> findAllByCodes(List<String> codes);
+
+    @Query(value = """
+        SELECT freelancer_code
+        FROM contracts
+        WHERE status = :status AND commission_code = :commissionCode
+    """, nativeQuery = true)
+    List<String> findFreelancerBy(String commissionCode, String status);
 }

@@ -1,6 +1,7 @@
-package com.example.cartpostservice.commissions.controller.dto.response;
+package com.example.cartpostservice.commissions.controller.external.dto.response;
 
-import com.example.cartpostservice.commissions.controller.dto.response.internal.PresignedUrlComponent;
+import com.example.cartpostservice.commissions.common.dto.PresignedUrlComponent;
+import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import org.hexagon.core.vo.PaymentType;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +20,7 @@ public record CommissionElementReadResponse(
 
         LocalDate endedAt,
 
-        boolean isOpen,
+        RecruitmentStatus recruitmentStatus,
 
         String writerName,
 

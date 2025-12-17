@@ -1,13 +1,13 @@
-package com.example.cartpostservice.commissions.controller;
+package com.example.cartpostservice.commissions.controller.external;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.service.CommissionsManagerService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.Valid;
@@ -95,6 +95,17 @@ public class CommissionsController implements CommissionsApi {
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
     }
+
+    @Override
+    @PostMapping("/reopen/{commission-code}")
+    public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
+            String commissionCode) {
+
+        commissionsManagerService.openCommission(memberCode, commissionCode);
+        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
+                .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
+    }
+
 
     @Override
     @GetMapping("/total")

@@ -84,7 +84,7 @@ class ContractPaySettlementTest {
 
     @Test
     @DisplayName("정산으로 인한 예치금 입금, 결제로 인한 예치금 출금이 동시에 발생할 수 있다.")
-    void processPayment() throws Exception{
+    void success_process_payment_and_settlement_at_the_same_time() throws Exception{
         // given
         AtomicInteger paySuccessCount = new AtomicInteger(0);
         AtomicInteger settlementSuccessCount = new AtomicInteger(0);
@@ -92,7 +92,7 @@ class ContractPaySettlementTest {
         long paymentAmount = 1111L;
         long initAmount = 500_000L;
         long settlementOriginalAmount = 10000;
-        String userCode = "userCode";
+        String userCode = UUID.randomUUID().toString();
         DepositEntity userDeposit = DepositEntity.createBy(userCode);
         userDeposit.updateInfo(initAmount);
         DepositEntity adminDeposit = DepositEntity.createBy(adminMemberCode);

@@ -1,7 +1,7 @@
-package com.example.cartpostservice.commissions.controller.internal;
+package com.example.cartpostservice.commissions.infra.client.internal;
 
-import com.example.cartpostservice.commissions.controller.dto.request.internal.TotalPeopleInfoRequestDto;
-import com.example.cartpostservice.commissions.controller.dto.response.internal.PeopleInfoResponseDto;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.request.TotalPeopleInfoRequestDto;
+import com.example.cartpostservice.commissions.infra.client.internal.dto.response.PeopleInfoResponseDto;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;

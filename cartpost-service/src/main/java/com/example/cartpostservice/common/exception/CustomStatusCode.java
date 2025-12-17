@@ -14,10 +14,12 @@ public enum CustomStatusCode {
 
     FORBIDDEN_ITEM(HttpStatus.FORBIDDEN, 6403, "소유하고 있는 아이템이 아닙니다"),
     FORBIDDEN_COMMISSION(HttpStatus.FORBIDDEN, 6413, "의뢰글에 접근 권한이 없습니다"),
+    CANNOT_OPEN_COMMISSION(HttpStatus.UNAUTHORIZED, 6423, "중단된 의뢰글은 다시 모집 공고를 열 수 없습니다"),
 
     NOT_FOUND_ITEM(HttpStatus.BAD_REQUEST, 6404, "아이템이 존재하지 않습니다"),
     NOT_FOUND_COMMISSION(HttpStatus.BAD_REQUEST, 6414, "의뢰글이 존재하지 않습니다"),
-    INVALID_REQUEST_PPARAMETER(HttpStatus.BAD_REQUEST, 6424, "파리미터 값이 잘못되었습니다"),
+    INVALID_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST, 6424, "파리미터 값이 잘못되었습니다"),
+    ALREADY_CLOSED_COMMISSION(HttpStatus.BAD_REQUEST, 6434, "이미 마감된 의뢰글 입니다"),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6500, "내부 시스템에 오류가 발생했습니다"),
     NOT_FOUND_CART(HttpStatus.INTERNAL_SERVER_ERROR, 6510, "내부 서버 문제로 장바구니가 없습니다"),

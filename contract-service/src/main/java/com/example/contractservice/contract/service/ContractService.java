@@ -19,6 +19,7 @@ import com.example.contractservice.contract.service.dto.request.ContractPayServi
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.contract.ContractEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +44,7 @@ public class ContractService {
     private final ContractRepository contractRepository;
     private final ContractPayService contractPayService;
     private final ContractCancelService contractCancelService;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final CommissionsCapacityRepository commissionsCapacityRepository;
 
     public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
@@ -77,6 +81,8 @@ public class ContractService {
         Contract createdContract = request.toContract();
 
         Contract contract = contractRepository.saveContract(createdContract);
+
+        applicationEventPublisher.publishEvent(new ContractEvent(contract.getCode(), contract.getInfo().commissionCode(), contract.getCreatedAt(), contract.getInfo().status().name()));
 
         return ContractCreateResponse.of(contract.getCode());
     }
@@ -154,7 +160,7 @@ public class ContractService {
                 .filter(memberInfo -> memberInfo.memberCode().equals(freelancerCode))
                 .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
-        if (!freelancerInfo.canWork()) {
+        if (freelancerInfo.role() != MemberRole.FREELANCER) {
             throw new ContractException(NOT_FREELANCER);
         }
     }

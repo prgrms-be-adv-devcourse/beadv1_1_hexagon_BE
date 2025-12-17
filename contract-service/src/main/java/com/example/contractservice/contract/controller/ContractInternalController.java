@@ -10,6 +10,7 @@ import com.example.contractservice.contract.controller.dto.response.CommissionCa
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.service.CommissionsCapacityService;
+import com.example.contractservice.contract.service.ContractReadService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import jakarta.validation.Valid;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContractInternalController {
     private final ContractService contractService;
     private final CommissionsCapacityService commissionsCapacityService;
+    private final ContractReadService contractReadService;
 
     @ContractPayApi
     @PostMapping("/pay")
@@ -56,6 +58,12 @@ public class ContractInternalController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<MemberRoleStatusResponse> getMemberRoleStatus(@PathVariable("member-code") String memberCode) {
         return ResponseDto.success(contractService.getMemberRoleStatus(memberCode));
+    }
+
+    @GetMapping("/commissions/{commission-code}/freelancer")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<List<String>> getAppliedFreelancerCodes(@PathVariable("commission-code") String commissionCode) {
+        return ResponseDto.success(contractReadService.getAppliedFreelancerCodesBy(commissionCode));
     }
 
     @CommissionCapacityUpsertApi

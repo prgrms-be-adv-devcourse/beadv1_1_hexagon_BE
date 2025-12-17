@@ -1,11 +1,11 @@
-package com.example.cartpostservice.commissions.controller;
+package com.example.cartpostservice.commissions.controller.external;
 
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
-import com.example.cartpostservice.commissions.controller.dto.request.CommissionUpdateRequest;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
-import com.example.cartpostservice.commissions.controller.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -87,6 +87,16 @@ public interface CommissionsApi {
             @PathVariable String commissionCode
     );
 
+    @Operation(summary = "의뢰글 공고", description = "X-CODE 헤더를 기준으로 의뢰글 모집 공고 처리합니다.")
+    @Parameter(name = "X-CODE", description = "요청 사용자 식별 코드", required = true, in = ParameterIn.HEADER)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "공고 오픈 성공"),
+            @ApiResponse(responseCode = "404", description = "대상 의뢰글 없음")
+    })
+    ResponseEntity<ResponseDto<Empty>> openCommission(
+            @RequestHeader("X-CODE") String memberCode,
+            @PathVariable String commissionCode
+    );
 
     @Operation(summary = "내 의뢰글 목록 조회", description = "X-CODE 헤더를 기준으로 본인의 의뢰글 목록을 페이징 조회합니다.")
     @Parameters({
