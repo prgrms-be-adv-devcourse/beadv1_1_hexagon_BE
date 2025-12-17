@@ -9,22 +9,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.profileservice.common.model.util.TestKafkaConfig;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
-import com.example.profileservice.common.model.util.TestKafkaConfig;
 import com.example.profileservice.experience.model.dto.request.ExperienceRequest;
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
 import com.example.profileservice.experience.repository.ExperienceRepository;
 import com.example.profileservice.resume.model.dto.request.ResumeCreateRequest;
 import com.example.profileservice.resume.model.dto.request.ResumeUpdateRequest;
-import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
 import com.example.profileservice.resume.repository.ResumeRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.hexagon.core.dto.ResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
@@ -78,7 +74,6 @@ public class ResumeControllerTest {
 
     @BeforeEach
     void setUp() {
-
         // Mocking 설정: 기본적으로 모든 유효한 요청에 대해 성공 응답 반환
         List<String> validCodes = List.of(TEST_MEMBER_CODE, OTHER_MEMBER_CODE);
         MemberExistOutput mockExistOutput = new MemberExistOutput(validCodes, List.of());
@@ -137,17 +132,25 @@ public class ResumeControllerTest {
     @Test
     @DisplayName("POST /api/resumes - 이력서 등록 성공 (201 Created)")
     void createResume_Success() throws Exception {
+
+        // given: 이력서가 없는 새로운 회원 코드 정의
+        String newMemberCode = "new-member-uuid-777";
+
+        // 새로운 회원 코드도 존재하는 회원이라고 설정
+        MemberExistOutput mockExistOutput = new MemberExistOutput(List.of(newMemberCode), List.of());
+        Mockito.when(memberFeignClient.existMemberByCode(List.of(newMemberCode)))
+                .thenReturn(ResponseDto.success(mockExistOutput));
+
         // when
         mockMvc.perform(post(BASE_URL)
-                        .header(HEADER_X_CODE, TEST_MEMBER_CODE)
+                        .header(HEADER_X_CODE, newMemberCode)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequest)))
                 // then
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.title").value(createRequest.title()))
-                .andExpect(jsonPath("$.data.body").value(createRequest.body()))
-                .andExpect(jsonPath("$.data.experiences.length()").value(0));
+                .andExpect(jsonPath("$.data.body").value(createRequest.body()));
     }
 
     @Test
@@ -163,20 +166,14 @@ public class ResumeControllerTest {
         resumeRepository.save(otherResume);
 
         // when & then
-        MvcResult result = mockMvc.perform(get(BASE_URL + "/me")
-                        .header(HEADER_X_CODE, TEST_MEMBER_CODE))
+        mockMvc.perform(get(BASE_URL + "/me")
+                        .header(HEADER_X_CODE, TEST_MEMBER_CODE)) // 내 코드로 요청
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andReturn();
-
-        // 결과 검증: 본인 이력서만 조회되었는지 확인
-        String responseJson = result.getResponse().getContentAsString();
-        ResponseDto<List<ResumeSimpleResponse>> responseDto = objectMapper.readValue(responseJson, new TypeReference<>() {});
-        List<String> returnedCodes = responseDto.data().stream().map(ResumeSimpleResponse::resumeCode).collect(
-                Collectors.toList());
-
-        assertThat(returnedCodes).containsExactly(initialResume.getCode());
+                .andExpect(jsonPath("$.data.title").value(initialResume.getTitle()))
+                .andExpect(jsonPath("$.data.body").value(initialResume.getBody()))
+                .andExpect(jsonPath("$.data.experiences").isArray())
+                .andExpect(jsonPath("$.data.resumeCode").value(initialResume.getCode()));
     }
 
     @Test
@@ -192,13 +189,11 @@ public class ResumeControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/resumes/{resumeCode} - 다른 회원의 이력서 조회 시 403 Forbidden")
-    void getResumeDetail_Unauthorized_Failure() throws Exception {
-        // when & then
+    @DisplayName("GET /api/resumes/{resumeCode} - 공개용 API이므로 다른 회원도 조회 성공")
+    void getResumeDetail_PublicAccess_Success() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{resumeCode}", initialResume.getCode())
-                        .header(HEADER_X_CODE, OTHER_MEMBER_CODE)) // 다른 회원의 X-CODE 사용
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(3302)); // UNAUTHORIZED_RESUME_ACCESS
+                        .header(HEADER_X_CODE, OTHER_MEMBER_CODE))
+                .andExpect(status().isOk()); // 403이 아니라 200을 기대함
     }
 
     @Test

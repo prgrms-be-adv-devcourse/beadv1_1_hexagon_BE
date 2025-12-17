@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.FileType;
 import org.hexagon.core.vo.PaymentType;
@@ -210,18 +211,14 @@ public class SelfPromotionControllerTest {
     @DisplayName("GET /api/self-promotions/me - 내 프로모션 목록 조회 성공")
     void getMyPromotions_Success() throws Exception {
         // when & then
-        MvcResult result = mockMvc.perform(get(BASE_URL + "/me")
+        mockMvc.perform(get(BASE_URL + "/me")
                         .header(HEADER_X_CODE, TEST_MEMBER_CODE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.length()").value(1)) // 내 프로모션 1개
-                .andReturn();
-
-        // 결과 검증: 본인 프로모션만 조회되었는지 확인
-        String responseJson = result.getResponse().getContentAsString();
-        ResponseDto<List<SelfPromotionResponse>> responseDto = objectMapper.readValue(responseJson, new TypeReference<>() {});
-
-        assertThat(responseDto.data().get(0).promotionCode()).isEqualTo(initialPromotion.getCode());
+                // length() 체크 대신, 실제 데이터의 내용을 확인하세요.
+                .andExpect(jsonPath("$.data.promotionCode").value(initialPromotion.getCode()))
+                .andExpect(jsonPath("$.data.title").value(initialPromotion.getTitle()))
+                .andExpect(jsonPath("$.data.memberCode").value(TEST_MEMBER_CODE));
     }
 
     @Test
@@ -248,35 +245,60 @@ public class SelfPromotionControllerTest {
     @Test
     @DisplayName("POST /api/self-promotions - 프로모션 등록 성공 (이력서 연결 O)")
     void createPromotion_WithResume_Success() throws Exception {
-        // given
+        // given: 아직 프로모션이 없는 새로운 회원 코드 정의
+        String newMemberCode = "new-freelancer-uuid-001";
+
+        // Mocking: 새로운 회원도 존재하는 회원으로 응답하도록 설정
+        MemberExistOutput mockExistOutput = new MemberExistOutput(List.of(newMemberCode), List.of());
+        Mockito.when(memberFeignClient.existMemberByCode(Mockito.anyList()))
+                .thenReturn(ResponseDto.success(mockExistOutput));
+
+        // 이 새로운 회원용 이력서 생성 (연결을 위해)
+        ResumeEntity newResume = ResumeEntity.builder()
+                .memberCode(newMemberCode)
+                .title("새 이력서")
+                .build();
+        resumeRepository.save(newResume);
+
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
-                "새 프로모션 제목", "어필 내용", PaymentType.PER_JOB, 100000L, validResume.getCode(), null);
+                "새 프로모션 제목", "어필 내용", PaymentType.PER_JOB, 100000L,
+                newResume.getCode(), // 새로 만든 이력서 코드 연결
+                null);
 
         // when & then
         mockMvc.perform(post(BASE_URL)
-                        .header(HEADER_X_CODE, TEST_MEMBER_CODE)
+                        .header(HEADER_X_CODE, newMemberCode) // 새 회원 코드로 요청
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.title").value(request.title()))
-                .andExpect(jsonPath("$.data.resumeCode").value(validResume.getCode()))
-                .andExpect(jsonPath("$.data.memberCode").value(TEST_MEMBER_CODE));
+                .andExpect(jsonPath("$.data.resumeCode").value(newResume.getCode()))
+                .andExpect(jsonPath("$.data.memberCode").value(newMemberCode));
     }
 
     @Test
     @DisplayName("POST /api/self-promotions - 프로모션 등록 성공 (이력서 연결 X)")
     void createPromotion_WithoutResume_Success() throws Exception {
-        // given
+        // given: 프로모션을 등록한 적이 없는 '완전 새로운' 회원 코드
+        String freshMemberCode = "brand-new-member-uuid-999";
+
+        // Mocking: 새로운 회원 코드에 대해서도 존재한다고 응답 설정
+        MemberExistOutput mockExistOutput = new MemberExistOutput(List.of(freshMemberCode), List.of());
+        Mockito.when(memberFeignClient.existMemberByCode(Mockito.anyList()))
+                .thenReturn(ResponseDto.success(mockExistOutput));
+
         SelfPromotionCreateRequest request = new SelfPromotionCreateRequest(
                 "연결 없는 프로모션", "내용", PaymentType.MONTHLY, 3000000L, null, null);
 
         // when & then
         mockMvc.perform(post(BASE_URL)
-                        .header(HEADER_X_CODE, TEST_MEMBER_CODE)
+                        .header(HEADER_X_CODE, freshMemberCode) // TEST_MEMBER_CODE 대신 freshMemberCode 사용
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.resumeCode").doesNotExist());
+                // 주의: 응답 DTO에서 resumeCode 필드 자체가 없다면 doesNotExist()를 쓰고,
+                // 필드는 있는데 값이 null이라면 value(nullValue())를 사용해야 합니다.
+                .andExpect(jsonPath("$.data.resumeCode").value(Matchers.nullValue()));
     }
 
     @Test

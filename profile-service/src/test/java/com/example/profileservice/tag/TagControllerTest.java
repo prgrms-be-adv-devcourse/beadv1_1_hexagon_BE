@@ -262,4 +262,45 @@ public class TagControllerTest {
         // 3. 총 연결 개수 확인
         assertThat(memberTagRepository.findAllByMemberCode(TEST_MEMBER_CODE)).hasSize(2);
     }
+
+    @Test
+    @DisplayName("GET /api/tags/by-codes - 태그 코드 목록으로 일괄 조회 성공")
+    void getTagsByCodes_Success() throws Exception {
+        // given
+        // 콤마(,)로 구분된 파라미터 생성
+        String codesParam = springTag.getCode() + "," + javaTag.getCode();
+
+        // when & then
+        mockMvc.perform(get(BASE_URL + "/by-codes")
+                        .param("codes", codesParam))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[?(@.tagCode == '%s')].skill", springTag.getCode()).value("Spring Boot"))
+                .andExpect(jsonPath("$.data[?(@.tagCode == '%s')].skill", javaTag.getCode()).value("Java"));
+    }
+
+    @Test
+    @DisplayName("GET /api/tags/by-codes - 존재하지 않는 코드가 섞여 있어도 존재하는 것만 반환")
+    void getTagsByCodes_PartialSuccess() throws Exception {
+        // given
+        String codesParam = springTag.getCode() + ",non-existent-code";
+
+        // when & then
+        mockMvc.perform(get(BASE_URL + "/by-codes")
+                        .param("codes", codesParam))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].skill").value("Spring Boot"));
+    }
+
+    @Test
+    @DisplayName("GET /api/tags/by-codes - 빈 리스트 전달 시 빈 데이터 반환")
+    void getTagsByCodes_EmptyList_Success() throws Exception {
+        // when & then
+        mockMvc.perform(get(BASE_URL + "/by-codes")
+                        .param("codes", ""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(0));
+    }
 }

@@ -231,8 +231,8 @@ public class RatingControllerTest {
     @Test
     @DisplayName("PATCH /api/ratings/{memberCode} - RatingRequest의 satisfied 필드 누락 시 400 Bad Request")
     void updateRating_MissingRequiredField_Failure() throws Exception {
-        // given: satisfied 필드가 없는 요청
-        String invalidRequestContent = "{}";
+        // given: "contractCode"는 명시해주어 요청
+        String invalidRequestContent = "{\"contractCode\": \"some-code\"}";
 
         // when & then: 필수 필드 누락 검증
         mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
