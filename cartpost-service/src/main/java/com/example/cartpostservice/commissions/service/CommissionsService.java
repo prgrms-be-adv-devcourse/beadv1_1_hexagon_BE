@@ -6,6 +6,7 @@ import com.example.cartpostservice.commissions.repository.CommissionsRepository;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionIndexReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
 import com.example.cartpostservice.commissions.service.mapper.CommissionMapper;
 import com.example.cartpostservice.common.exception.BusinessException;
@@ -78,26 +79,11 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
         commissionsRepository.delete(commission);
     }
 
-    public Page<CommissionReadResult> getPage(String memberCode, Pageable pageable) {
+    public Page<CommissionIndexReadResult> getPage(String memberCode, Pageable pageable) {
 
         Page<CommissionsEntity> commissions = commissionsRepository.findPageByMemberCode(memberCode, pageable);
 
-        return null;
-//        return commissions.map(commission ->
-//                new CommissionsServiceResult(
-//                        commission.getCode(),
-//                        commission.getMemberCode(),
-//                        commission.getTitle(),
-//                        commission.getContent(),
-//                        commission.getPaymentType(),
-//                        commission.getUnitAmount(),
-//                        commission.getStartedAt(),
-//                        commission.getEndedAt(),
-//                        commission.getRecruitmentStatus(),
-//                        commission.getWriterName(),
-//                        commission.getUpdatedAt()
-//                )
-//        );
+        return commissions.map(commissionMapper::toIndexDto);
     }
 
 

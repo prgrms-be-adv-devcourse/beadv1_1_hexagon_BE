@@ -76,6 +76,18 @@ public class CommissionsController implements CommissionsApi {
     }
 
     @Override
+    @GetMapping("/total")
+    public ResponseEntity<ResponseDto<Page<CommissionReadResponse>>> readOwnCommissions(
+            @RequestHeader("X-CODE") String memberCode,
+            Pageable pageable) {
+
+        Page<CommissionReadResponse> responses = orchestrationService.readOwnCommissions(memberCode, pageable);
+
+        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
+                .body(getSuccessResponse(CustomStatusCode.SUCCESS, responses));
+    }
+
+    @Override
     @PatchMapping("/{commission-code}")
     public ResponseEntity<ResponseDto<CommissionUpdateResponse>> updateCommission(
             @RequestHeader("X-CODE") String code,
@@ -121,19 +133,6 @@ public class CommissionsController implements CommissionsApi {
         orchestrationService.openCommission(memberCode, commissionCode);
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
-    }
-
-
-    @Override
-    @GetMapping("/total")
-    public ResponseEntity<ResponseDto<Page<CommissionReadResponse>>> readOwnCommissions(
-            @RequestHeader("X-CODE") String code,
-            Pageable pageable) {
-
-        Page<CommissionReadResponse> responses = orchestrationService.readOwnCommissions(code, pageable);
-
-        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
-                .body(getSuccessResponse(CustomStatusCode.SUCCESS, responses));
     }
 
     @Override

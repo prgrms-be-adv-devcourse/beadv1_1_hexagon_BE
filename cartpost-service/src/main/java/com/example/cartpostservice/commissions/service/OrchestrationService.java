@@ -84,8 +84,8 @@ public class OrchestrationService {
         return new FileElementResult(componentsResult.urls());
     }
 
-    public Page<CommissionReadResponse> readOwnCommissions(String code, Pageable pageable) {
-        return null;
+    public Page<CommissionReadResponse> readOwnCommissions(String memberCode, Pageable pageable) {
+        return domainCompositeService.readOwnCommissions(memberCode, pageable);
     }
 
     public CommissionUpdateResponse updateCommission(String code, String commissionCode,

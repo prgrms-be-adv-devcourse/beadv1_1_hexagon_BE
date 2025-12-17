@@ -19,6 +19,7 @@ import com.example.cartpostservice.commissions.service.usecase.command.Commissio
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionAndTagReadResult;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionIndexReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.TagsReadResult;
 import com.example.cartpostservice.common.exception.BusinessException;
@@ -76,6 +77,50 @@ public class DomainCompositeService {
         TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
 
         return CommissionAndTagReadResult.from(commissionResult, tagResult);
+    }
+
+    @Transactional
+    public Page<CommissionReadResponse> readOwnCommissions(String code, Pageable pageable) {
+
+        int page = 0;
+        if (pageable.getPageNumber() > 0) {
+            page = pageable.getPageNumber() - 1;
+        }
+
+        Pageable adjustedPageable = PageRequest.of(
+                page,
+                pageable.getPageSize(),
+                pageable.getSort()
+        );
+
+        Page<CommissionIndexReadResult> resultPage = commissionsService.getPage(code, adjustedPageable);
+
+        List<String> commissionCodes = resultPage.stream()
+                .map(CommissionIndexReadResult::code)
+                .toList();
+
+        List<TagsReadResult> tagsReadResults = commissionsTagService.getTags(commissionCodes);
+
+        Map<String, List<String>> tagMap = tagsReadResults.stream()
+                .collect(Collectors.toMap(
+                        TagsReadResult::commissionCode,
+                        TagsReadResult::tagCodes
+                ));
+
+        List<CommissionReadResponse> responses = resultPage.stream()
+                .map(result -> new CommissionReadResponse(
+                        result.title(),
+                        result.paymentType(),
+                        result.unitAmount(),
+                        result.startedAt(),
+                        result.endedAt(),
+                        result.recruitmentStatus(),
+                        result.writerName(),
+                        tagMap.getOrDefault(result.code(), List.of())
+                ))
+                .toList();
+
+        return new PageImpl<>(responses, pageable, resultPage.getTotalElements());
     }
 
     @Transactional
@@ -217,49 +262,6 @@ public class DomainCompositeService {
         commissionsService.openCommission(commissionCode);
     }
 
-    @Transactional
-    public Page<CommissionReadResponse> readOwnCommissions(String code, Pageable pageable) {
-
-        int page = 0;
-        if (pageable.getPageNumber() > 0) {
-            page = pageable.getPageNumber() - 1;
-        }
-
-        Pageable adjustedPageable = PageRequest.of(
-                page,
-                pageable.getPageSize(),
-                pageable.getSort()
-        );
-
-        Page<CommissionReadResult> resultPage = commissionsService.getPage(code, adjustedPageable);
-
-        List<String> commissionCodes = resultPage.stream()
-                .map(CommissionReadResult::code)
-                .toList();
-
-        List<TagsReadResult> tagsReadResults = commissionsTagService.getTags(commissionCodes);
-
-        Map<String, List<String>> tagMap = tagsReadResults.stream()
-                .collect(Collectors.toMap(
-                        TagsReadResult::commissionCode,
-                        TagsReadResult::tagCodes
-                ));
-
-        List<CommissionReadResponse> responses = resultPage.stream()
-                .map(result -> new CommissionReadResponse(
-                        result.title(),
-                        result.paymentType(),
-                        result.unitAmount(),
-                        result.startedAt(),
-                        result.endedAt(),
-                        result.recruitmentStatus(),
-                        result.writerName(),
-                        tagMap.getOrDefault(result.code(), List.of())
-                ))
-                .toList();
-
-        return new PageImpl<>(responses, pageable, resultPage.getTotalElements());
-    }
 
     @Transactional
     public void canAccessCommission(String code, String commissionCode) {

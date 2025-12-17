@@ -3,6 +3,7 @@ package com.example.cartpostservice.commissions.service.mapper;
 import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionsServiceCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.CommissionIndexReadResult;
 import com.example.cartpostservice.commissions.service.usecase.result.CommissionReadResult;
 import org.springframework.stereotype.Component;
 
@@ -44,5 +45,19 @@ public class CommissionMapper {
         );
     }
 
-    ;
+    public CommissionIndexReadResult toIndexDto(CommissionsEntity commission) {
+        return new CommissionIndexReadResult(
+                commission.getCode(),
+                commission.getMemberCode(),
+                commission.getTitle(),
+                commission.getContent(),
+                commission.getPaymentType(),
+                commission.getUnitAmount(),
+                commission.getStartedAt(),
+                commission.getEndedAt(),
+                commission.getRecruitmentStatus(),
+                commission.getWriterName(),
+                commission.getUpdatedAt()
+        );
+    }
 }
