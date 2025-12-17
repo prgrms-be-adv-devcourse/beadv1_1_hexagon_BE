@@ -1,4 +1,4 @@
-package com.example.cartpostservice.commissions.controller.external;
+package com.example.cartpostservice.commissions.controller;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
@@ -127,12 +127,26 @@ public class CommissionsController implements CommissionsApi {
     }
 
     @Override
+    @PostMapping("/reopen/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
             String commissionCode) {
 
-        orchestrationService.openCommission(memberCode, commissionCode);
+        commissionsManagerService.openCommission(memberCode, commissionCode);
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
+    }
+
+
+    @Override
+    @GetMapping("/total")
+    public ResponseEntity<ResponseDto<Page<CommissionReadResponse>>> readOwnCommissions(
+            @RequestHeader("X-CODE") String code,
+            Pageable pageable) {
+
+        Page<CommissionReadResponse> responses = commissionsManagerService.readOwnCommissions(code, pageable);
+
+        return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
+                .body(getSuccessResponse(CustomStatusCode.SUCCESS, responses));
     }
 
     @Override
