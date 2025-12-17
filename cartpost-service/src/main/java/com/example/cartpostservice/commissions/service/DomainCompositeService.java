@@ -160,10 +160,9 @@ public class DomainCompositeService {
     }
 
     @Transactional
-    public void deleteCommission(String code, String commissionCode) {
+    public void softDeleteCommission(String memberCode, String commissionCode) {
         // soft delete로  변환 예정
-        commissionsService.delete(code, commissionCode);
-        commissionsTagService.delete(code, commissionCode);
+        commissionsService.softDelete(memberCode, commissionCode);
 
         // kafka
         applicationEventPublisher.publishEvent(CommissionDeleteEventFactory.createEvent(commissionCode));

@@ -71,6 +71,13 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
         commissionsRepository.delete(commission);
     }
 
+    public void softDelete(String memberCode, String commissionsCode) {
+        CommissionsEntity commission = commissionsRepository.findByMemberCodeAndCode(memberCode, commissionsCode)
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
+
+        commission.delete();
+    }
+
     public Page<CommissionIndexReadResult> getPage(String memberCode, Pageable pageable) {
 
         Page<CommissionsEntity> commissions = commissionsRepository.findPageByMemberCode(memberCode, pageable);

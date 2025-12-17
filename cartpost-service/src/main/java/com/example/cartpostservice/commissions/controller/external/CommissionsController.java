@@ -105,10 +105,10 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @DeleteMapping("/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> deleteCommission(
-            @RequestHeader("X-CODE") String code,
+            @RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        orchestrationService.deleteCommission(code, commissionCode);
+        orchestrationService.softDeleteCommission(memberCode, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));

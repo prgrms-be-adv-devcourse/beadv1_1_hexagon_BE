@@ -117,8 +117,10 @@ public class OrchestrationService {
         return new CommissionUpdateResponse(commissionCode);
     }
 
-    public void deleteCommission(String code, String commissionCode) {
+    public void softDeleteCommission(String memberCode, String commissionCode) {
+        // soft delete 이므로 commission에 대해서만 isdeleted 상태만 바꾸고 다른 데이터들은 삭제하지 않는다
 
+        domainCompositeService.softDeleteCommission(memberCode, commissionCode);
     }
 
     public void finishCommission(String code, String commissionCode) {
