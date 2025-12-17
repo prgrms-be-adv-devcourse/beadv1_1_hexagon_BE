@@ -1,6 +1,6 @@
 package com.example.contractservice.contract.service;
 
-import static com.example.contractservice.contract.domain.exception.ContractErrorCode.COMMISSION_RECRUIT_FULL;
+import static com.example.contractservice.contract.domain.exception.ContractErrorCode.COMMISSION_SELECTION_COUNT_FULL;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.INVALID_PAYMENT_MEMBER;
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.NOT_REQUESTED_STATUS;
 
@@ -92,7 +92,7 @@ public class ContractPayService {
                 contract.getInfo().commissionCode());
 
         if (capacity.getSelectionCapacity() <= capacity.getSelectedCount()) {
-            throw new ContractException(COMMISSION_RECRUIT_FULL);
+            throw new ContractException(COMMISSION_SELECTION_COUNT_FULL);
         }
 
         capacity.increaseSelectedCount();

@@ -4,7 +4,9 @@ import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.CommissionsCapacity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import static com.example.contractservice.contract.domain.exception.ContractErrorCode.COMMISSION_APPLIED_COUNT_FULL;
 import static  com.example.contractservice.contract.domain.exception.ContractErrorCode.COMMISSION_CAPACITY_NOT_FOUND;
 
 @Repository
@@ -28,5 +30,14 @@ public class CommissionsCapacityRepository {
 
     public void saveCapacity(CommissionsCapacity capacity) {
         commissionsCapacityJpaRepository.save(capacity);
+    }
+
+    @Transactional
+    public void increaseAppliedCount(String commissionCode) {
+        int updatedCount = commissionsCapacityJpaRepository.increaseAppliedCount(commissionCode);
+
+        if (updatedCount <= 0) {
+            throw new ContractException(COMMISSION_APPLIED_COUNT_FULL);
+        }
     }
 }
