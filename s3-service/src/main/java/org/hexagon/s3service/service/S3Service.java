@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.s3service.dto.ExistsResponse;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
@@ -21,7 +22,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -205,6 +208,23 @@ public class S3Service {
                 deleteObject(oldKey);
                 s3ResourceRepository.deleteByKey(oldKey);
             }
+        }
+    }
+
+    public ExistsResponse exists(String key) {
+        try {
+            HeadObjectRequest request = HeadObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+
+            s3Client.headObject(request); // 파일이 존재하지 않는 경우 S3Exception
+            return new ExistsResponse(key, true);
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) { // 파일이 존재하지 않는 경우
+                return new ExistsResponse(key, false);
+            }
+            throw e; // 기타 예외
         }
     }
 }
