@@ -88,4 +88,11 @@ public class TagController implements TagApiController {
 
         return ResponseEntity.ok(ResponseDto.success(tag));
     }
+
+    @Override
+    @GetMapping("/by-codes")
+    public ResponseEntity<ResponseDto<List<TagResponse>>> getTagsByCodes(@RequestParam("codes") List<String> codes) {
+        List<TagResponse> tags = tagService.getTagsByCodes(codes);
+        return ResponseEntity.ok(ResponseDto.success(tags));
+    }
 }

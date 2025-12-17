@@ -220,6 +220,17 @@ public class TagService {
         log.info("MemberTag 연결 정보 일괄 삭제 및 빈 태그 목록 이벤트 발행 완료. memberCode: {}", memberCode);
     }
 
+    // 여러 코드를 한 번에 이름으로 변환
+    public List<TagResponse> getTagsByCodes(List<String> codes) {
+        if (codes == null || codes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return tagRepository.findAllByCodeIn(codes).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     private TagResponse toResponse(TagEntity entity) {
         return new TagResponse(entity.getCode(), entity.getSkill());
     }
