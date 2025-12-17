@@ -49,6 +49,7 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendUpdatedEvent(MemberUpdatedEvent event) {
+        log.info("memberUpdateEvent 발송");
         return kafkaTemplate.send(memberUpdatedTopicName, event.memberCode(), event);
     }
 
@@ -56,6 +57,7 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendDeletedEvent(
         MemberDeletedEvent event) {
+        log.info("memberDeleteEvent 발송");
         return kafkaTemplate.send(memberDeletedTopicName, event.memberCode(), event);
     }
 
@@ -63,6 +65,7 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendDeletedClientRoleEvent(
         MemberDeletedClientRoleEvent event) {
+        log.info("클라이언트 롤 삭제 이벤트 발송");
         return kafkaTemplate.send(memberClientRoleDeletedTopicName, event.memberCode(), event);
     }
 
@@ -70,6 +73,7 @@ public class MemberKafkaEventProducer implements MemberEventProducer{
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public CompletableFuture<SendResult<String, Object>> sendDeletedFreelancerRoleEvent(
         MemberDeletedFreelancerRoleEvent event) {
+        log.info("프리랜서 롤 삭제 이벤트 발송");
         return kafkaTemplate.send(memberFreelancerRoleDeletedTopicName, event.memberCode(), event);
     }
 }
