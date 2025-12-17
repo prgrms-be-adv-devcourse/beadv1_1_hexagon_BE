@@ -20,9 +20,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.ResponseDto;
-import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
-import org.hexagon.core.events.selfpromotion.SelfPromotionUpdatedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionUpsertEvent;
 import org.hexagon.core.vo.SelfPromotion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -110,7 +109,7 @@ public class SelfPromotionService {
         // 5. 이벤트 발행 (CREATE)
         SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
 
-        SelfPromotionUpsertedEvent createdEvent = new SelfPromotionUpsertedEvent(
+        SelfPromotionUpsertEvent createdEvent = new SelfPromotionUpsertEvent(
                 selfPromotionVo.code(), selfPromotionVo.title(), selfPromotionVo.content(),
                 selfPromotionVo.memberCode(), selfPromotionVo.memberNickname(),
                 selfPromotionVo.paymentType(), selfPromotionVo.payAmount(), selfPromotionVo.updatedAt()
@@ -167,7 +166,7 @@ public class SelfPromotionService {
         // 5. 이벤트 발행 (UPDATE)
         SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
 
-        SelfPromotionUpsertedEvent updatedEvent = new SelfPromotionUpsertedEvent(
+        SelfPromotionUpsertEvent updatedEvent = new SelfPromotionUpsertEvent(
                 selfPromotionVo.code(), selfPromotionVo.title(), selfPromotionVo.content(),
                 selfPromotionVo.memberCode(), selfPromotionVo.memberNickname(),
                 selfPromotionVo.paymentType(), selfPromotionVo.payAmount(), selfPromotionVo.updatedAt()
