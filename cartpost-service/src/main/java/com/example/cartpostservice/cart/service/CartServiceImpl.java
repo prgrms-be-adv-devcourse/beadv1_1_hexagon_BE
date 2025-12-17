@@ -70,7 +70,7 @@ public class CartServiceImpl implements CartService {
                 CustomStatusCode.NOT_FOUND_CART));
 
         CartItemsEntity cartItem = cartItemsRepository.findByCode(itemCode)
-                .orElseThrow(() -> new BusinessException(CustomStatusCode.NOT_FOUND_ITEM));
+                .orElseThrow(() -> new BusinessException(CustomStatusCode.BAD_REQUEST_ITEM));
 
         if (!cart.getCode().equals(cartItem.getCartCode())) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_ITEM);

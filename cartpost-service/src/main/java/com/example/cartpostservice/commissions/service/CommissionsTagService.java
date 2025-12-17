@@ -2,8 +2,8 @@ package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.model.CommissionsTagEntity;
 import com.example.cartpostservice.commissions.repository.CommissionsTagRepository;
-import com.example.cartpostservice.commissions.service.dto.request.TagServiceCommand;
-import com.example.cartpostservice.commissions.service.dto.response.TagServiceResult;
+import com.example.cartpostservice.commissions.service.usecase.command.TagServiceCommand;
+import com.example.cartpostservice.commissions.service.usecase.result.TagsReadResult;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CommissionsTagService implements CrudService<TagServiceCommand, TagServiceResult, String> {
+public class CommissionsTagService implements CrudService<TagServiceCommand, TagsReadResult, String> {
 
     private final CommissionsTagRepository commissionsTagRepository;
 
@@ -31,14 +31,14 @@ public class CommissionsTagService implements CrudService<TagServiceCommand, Tag
     }
 
     @Override
-    public TagServiceResult read(String commissionCode) {
+    public TagsReadResult read(String commissionCode) {
         List<CommissionsTagEntity> tags = commissionsTagRepository.findByCommissionCode(commissionCode);
 
         List<String> tagCodes = tags.stream()
                 .map(CommissionsTagEntity::getTagCode)
                 .toList();
 
-        return new TagServiceResult(
+        return new TagsReadResult(
                 commissionCode,
                 tagCodes
         );
@@ -75,7 +75,7 @@ public class CommissionsTagService implements CrudService<TagServiceCommand, Tag
         commissionsTagRepository.deleteByCommissionCode(commissionCode);
     }
 
-    public List<TagServiceResult> getTags(List<String> commissionCodes) {
+    public List<TagsReadResult> getTags(List<String> commissionCodes) {
         List<CommissionsTagEntity> tags = commissionsTagRepository.findAllByCommissionCodeIn(commissionCodes);
 
         return tags.stream()
@@ -87,7 +87,7 @@ public class CommissionsTagService implements CrudService<TagServiceCommand, Tag
                         )
                 ))
                 .entrySet().stream()
-                .map(entry -> new TagServiceResult(entry.getKey(), entry.getValue()))
+                .map(entry -> new TagsReadResult(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 }

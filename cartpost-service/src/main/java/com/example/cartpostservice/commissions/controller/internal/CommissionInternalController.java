@@ -3,7 +3,7 @@ package com.example.cartpostservice.commissions.controller.internal;
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
-import com.example.cartpostservice.commissions.service.CommissionsManagerService;
+import com.example.cartpostservice.commissions.service.DomainCompositeService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -22,16 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommissionInternalController implements CommissionInternalApi {
 
-    private final CommissionsManagerService commissionsManagerService;
+    private final DomainCompositeService domainCompositeService;
 
     @Override
-    @GetMapping("/recruitment-status/{commission-code}")
+    @GetMapping("/recruitment-status")
     public ResponseEntity<ResponseDto<CommissionRecruitmentStatusResponse>> getRecruitmentStatus(
-            @PathVariable("commission-code")
             @NotBlank(message = "의뢰글 uuid를 전달해 주시기 바랍니다")
-            String commissionsCode) {
+            @PathVariable("commission-code") String commissionsCode) {
 
-        CommissionRecruitmentStatusResponse statusResponse = commissionsManagerService.getRecruitmentStatus(
+        CommissionRecruitmentStatusResponse statusResponse = domainCompositeService.getRecruitmentStatus(
                 commissionsCode);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, statusResponse), HttpStatus.OK);

@@ -1,6 +1,7 @@
 package com.example.cartpostservice.commissions.model;
 
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
+import java.time.Instant;
 import org.hexagon.core.vo.PaymentType;
 import com.example.cartpostservice.common.model.BaseEntity;
 import jakarta.persistence.Column;
@@ -34,7 +35,7 @@ public class CommissionsEntity extends BaseEntity {
     private PaymentType paymentType;
 
     @Column(nullable = false)
-    private String unitAmount;
+    private Long unitAmount;
 
     @Column(nullable = false)
     private LocalDate startedAt;
@@ -49,9 +50,25 @@ public class CommissionsEntity extends BaseEntity {
     @Column(nullable = false)
     private String writerName;
 
+    @Column(nullable = true)
+    private Integer cacheApplyCapacity;
+
+    @Column(nullable = true)
+    private Integer cacheAppliedCount;
+
+    @Column(nullable = true)
+    private Integer cacheSelectionCapacity;
+
+    @Column(nullable = true)
+    private Integer cacheSelectedCount;
+
+    @Column(nullable = true)
+    private Instant lastSyncTime;
+
+
     @Builder
     public CommissionsEntity(String memberCode, String title, String content, PaymentType paymentType,
-            String unitAmount, LocalDate startedAt, LocalDate endedAt, RecruitmentStatus recruitmentStatus,
+            Long unitAmount, LocalDate startedAt, LocalDate endedAt, RecruitmentStatus recruitmentStatus,
             String writerName) {
         this.memberCode = memberCode;
         this.title = title;
@@ -65,15 +82,28 @@ public class CommissionsEntity extends BaseEntity {
     }
 
     public void update(String memberCode, String title, String content, PaymentType paymentType,
-            String unitAmount, LocalDate startedAt, LocalDate endedAt, String writerName) {
-        this.memberCode = memberCode;
-        this.title = title;
-        this.content = content;
-        this.paymentType = paymentType;
-        this.unitAmount = unitAmount;
-        this.startedAt = startedAt;
-        this.endedAt = endedAt;
-        this.writerName = writerName;
+            Long unitAmount, LocalDate startedAt, LocalDate endedAt, String writerName) {
+        this.memberCode = getOrDefault(memberCode, this.memberCode);
+        this.title = getOrDefault(title, this.title);
+        this.content = getOrDefault(content, this.content);
+        this.paymentType = getPaymentType();
+        this.unitAmount = getOrDefault(unitAmount, this.unitAmount);
+        this.startedAt = getOrDefault(startedAt, this.startedAt);
+        this.endedAt = getOrDefault(endedAt, this.endedAt);
+        this.writerName = getOrDefault(writerName, this.writerName);
+    }
+
+    public void updatePersonInfo(int cacheApplyCapacity, int cacheAppliedCount, int cacheSelectionCapacity,
+            int cacheSelectedCount) {
+        this.cacheApplyCapacity = cacheApplyCapacity;
+        this.cacheAppliedCount = cacheAppliedCount;
+        this.cacheSelectionCapacity = cacheSelectionCapacity;
+        this.cacheSelectedCount = cacheSelectedCount;
+        lastSyncTime = Instant.now();
+    }
+
+    public void updateLastSyncTime(Instant lastSyncTime) {
+        this.lastSyncTime = lastSyncTime;
     }
 
     public void closeRecruitmentStatus() {
@@ -86,5 +116,9 @@ public class CommissionsEntity extends BaseEntity {
 
     public void openRecruitmentStatus() {
         this.recruitmentStatus = RecruitmentStatus.OPEN;
+    }
+
+    private <T> T getOrDefault(T newValue, T oldValue) {
+        return newValue != null ? newValue : oldValue;
     }
 }

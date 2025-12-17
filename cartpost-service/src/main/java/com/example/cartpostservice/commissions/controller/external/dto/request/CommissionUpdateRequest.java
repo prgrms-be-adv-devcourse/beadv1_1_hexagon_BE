@@ -23,7 +23,7 @@ public record CommissionUpdateRequest(
 
         @Schema(description = "단위 금액", example = "50000")
         @Pattern(regexp = "^[0-9]+$", message = "금액은 숫자만 입력 가능합니다.")
-        String unitAmount,
+        Long unitAmount,
 
         @Schema(description = "시작 날짜 (yyyy-MM-dd)", example = "2025-01-01")
         @FutureOrPresent(message = "시작 날짜는 현재 혹은 미래여야 합니다.")

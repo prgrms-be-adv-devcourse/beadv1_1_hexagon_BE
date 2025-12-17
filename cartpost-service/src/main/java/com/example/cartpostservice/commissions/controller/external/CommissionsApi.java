@@ -4,8 +4,9 @@ import com.example.cartpostservice.commissions.controller.external.dto.request.C
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
-import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
+import com.example.cartpostservice.commissions.controller.external.dto.response.FileComponentReadResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -44,6 +45,15 @@ public interface CommissionsApi {
             @ApiResponse(responseCode = "404", description = "해당 의뢰글을 찾을 수 없음")
     })
     ResponseEntity<ResponseDto<CommissionElementReadResponse>> readCommission(@PathVariable String commissionCode);
+
+    @Operation(summary = "의뢰글 관련 파일 조회", description = "의뢰글 코드를 기준으로 파일 url 컴포넌트들을 조회합니다.")
+    @Parameter(name = "commissionsCode", description = "의뢰글 코드", required = true)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "해당 파일 url을 찾을 수 없음")
+    })
+    public ResponseEntity<ResponseDto<FileComponentReadResponse>> readFiles(
+            @PathVariable(name = "commission-code") String commissionCode);
 
     @Operation(summary = "의뢰글 업데이트", description = "X-CODE 헤더와 의뢰글 코드를 기준으로 의뢰글을 수정합니다.")
     @Parameters({
