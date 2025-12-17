@@ -93,6 +93,10 @@ public class ContractRepository {
                 .toList();
     }
 
+    public List<String> findAppliedFreelancerCodesBy(String commissionCode) {
+        return contractJpaRepository.findFreelancerBy(commissionCode, REQUESTED.name());
+    }
+
     private List<ContractEntity> fetch(QContractEntity qContractEntity, BooleanExpression predicate, OrderSpecifier<?>[] orderSpecifiers, int limit) {
         return queryFactory
                 .selectFrom(qContractEntity)
@@ -131,6 +135,14 @@ public class ContractRepository {
         };
     }
 
+    public boolean existsClientContractBy(String memberCode) {
+        return findFirstContract(memberCode, this::getClientWhereClause) != null;
+    }
+
+    public boolean existsFreelancerContractBy(String memberCode) {
+        return findFirstContract(memberCode, this::getFreelancerWhereClause) != null;
+    }
+
     private OrderSpecifier<?>[] getOrderSpec(QContractEntity qContractEntity, Order order) {
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
@@ -142,14 +154,6 @@ public class ContractRepository {
         orderSpecifiers.add(qContractEntity.code.asc());
 
         return orderSpecifiers.toArray(OrderSpecifier<?>[]::new);
-    }
-
-    public boolean existsClientContractBy(String memberCode) {
-        return findFirstContract(memberCode, this::getClientWhereClause) != null;
-    }
-
-    public boolean existsFreelancerContractBy(String memberCode) {
-        return findFirstContract(memberCode, this::getFreelancerWhereClause) != null;
     }
 
     private ContractEntity findFirstContract(String memberCode, BiFunction<QContractEntity, String, Predicate> whereClause) {
@@ -167,5 +171,4 @@ public class ContractRepository {
     private Predicate getFreelancerWhereClause(QContractEntity qContractEntity, String memberCode) {
         return qContractEntity.freelancerCode.eq(memberCode).and(qContractEntity.status.in(REQUESTED, PAID, IN_PROGRESS));
     }
-
 }

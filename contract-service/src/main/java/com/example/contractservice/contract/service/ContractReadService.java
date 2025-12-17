@@ -55,6 +55,10 @@ public class ContractReadService {
         return ContractDetailResponse.of(contract, clientName, freelancerCode);
     }
 
+    public List<String> getAppliedFreelancerCodesBy(String commissionCode) {
+        return contractRepository.findAppliedFreelancerCodesBy(commissionCode);
+    }
+
     private void validateMember(String memberCode, Contract contract) {
         ContractInfo contractInfo = contract.getInfo();
 
