@@ -81,11 +81,9 @@ public class InternalService {
     }
 
     public DownloadFileComponentsResult readFileComponents(String commissionCode) {
-        DownloadFileComponentRequest downloadFileComponentRequest = new DownloadFileComponentRequest(commissionCode);
-        ResponseDto<DownloadFileComponentResponse> downloadFileComponents = fileManagementClient.getDownloadFileComponent(
-                downloadFileComponentRequest);
+        DownloadFileComponentResponse fileComponentResponse = getDownloadFileComponent(commissionCode);
 
-        return new DownloadFileComponentsResult(downloadFileComponents.data().urls());
+        return new DownloadFileComponentsResult(fileComponentResponse.urls());
     }
 
     public void updateCommissionInternalInfo(CommissionInternalInfoCommand internalInfoCommand,

@@ -1,12 +1,7 @@
 package com.example.cartpostservice.commissions.service;
 
-import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
-import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
-import com.example.cartpostservice.commissions.infra.client.internal.ContractClient;
-import com.example.cartpostservice.commissions.infra.client.internal.FileManagementClient;
-import com.example.cartpostservice.commissions.infra.client.internal.MemberClient;
 import com.example.cartpostservice.commissions.infra.kafka.publisher.KafkaCommissionEventPublisher;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.event.CommissionDeleteEventFactory;
@@ -46,9 +41,6 @@ public class DomainCompositeService {
     private final CommissionsService commissionsService;
     private final CommissionsTagService commissionsTagService;
     private final KafkaCommissionEventPublisher commissionKafkaService;
-    private final MemberClient memberClient;
-    private final ContractClient contractClient;
-    private final FileManagementClient fileManagementClient;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional

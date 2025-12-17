@@ -6,7 +6,6 @@ import org.hexagon.core.events.commission.CommissionDeletedEvent;
 import org.hexagon.core.events.commission.CommissionUpsertEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -27,7 +26,7 @@ public class KafkaCommissionEventPublisher {
 
         kafkaTemplate.send(commissionStatusTopic, commissionUpsertEvent);
     }
-    
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void deleteProducer(CommissionDeletedEvent commissionDeletedEvent) {
         kafkaTemplate.send(commissionStatusTopic, commissionDeletedEvent);
