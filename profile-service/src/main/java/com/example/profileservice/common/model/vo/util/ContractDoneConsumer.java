@@ -19,7 +19,7 @@ public class ContractDoneConsumer {
     )
     public void consume(ContractEvent event) {
 
-        if (event.status() != ContractStatus.DONE) {
+        if (!"DONE".equals(event.status())) {
             return;
         }
 

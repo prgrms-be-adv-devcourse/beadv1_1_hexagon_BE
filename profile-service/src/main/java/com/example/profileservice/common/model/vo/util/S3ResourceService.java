@@ -17,7 +17,7 @@ public class S3ResourceService {
     private final S3FeignClient s3FeignClient;
 
     // S3 베이스 URL (getPdfDownloadUrl 헬퍼에서 사용)
-    @Value("${cloud.aws.s3.base-url}")
+    @Value("${cloud.aws.s3.base-url:}")
     private String s3BaseUrl;
 
     // S3 Resource Code를 사용하여 S3 모듈에 영구 저장 요청 (Create 시)

@@ -1,7 +1,5 @@
 package com.example.profileservice.common.model.vo.util;
 
-import org.hexagon.core.events.member.MemberDeletedEvent;
-import org.hexagon.core.events.member.MemberDeletedFreelancerRoleEvent;
 import com.example.profileservice.resume.service.ResumeService;
 import com.example.profileservice.selfPromotion.service.SelfPromotionService;
 import com.example.profileservice.tag.service.TagService;
@@ -9,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.member.MemberDeletedFreelancerRoleEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -32,7 +31,7 @@ public class MemberEventConsumer {
     public void consumeUnregisterEvent(String message) {
         MemberUnregisteredEvent event = null;
         try {
-            event = objectMapper.readValue(message, MemberDeletedEvent.class);
+            event = objectMapper.readValue(message, MemberUnregisteredEvent.class);
             String memberCode = event.memberCode();
 
             // 1. Tag 연결 정보 Hard Delete (일괄 삭제)
