@@ -2,7 +2,6 @@ package com.example.cartpostservice.commissions.controller.external;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
-import com.example.cartpostservice.commissions.controller.external.CommissionsApi;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
@@ -130,7 +129,7 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @PostMapping("/reopen/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
-            String commissionCode) {
+            @PathVariable(name = "commission-code") String commissionCode) {
 
         orchestrationService.openCommission(memberCode, commissionCode);
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())

@@ -17,7 +17,6 @@ import com.example.cartpostservice.commissions.service.usecase.result.Commission
 import com.example.cartpostservice.commissions.service.usecase.result.DownloadFileComponentsResult;
 import com.example.cartpostservice.commissions.service.usecase.result.FileElementResult;
 import com.example.cartpostservice.commissions.service.usecase.result.RecruitsInfoResult;
-import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import com.example.cartpostservice.common.exception.ExceptionLogService;
 import com.example.cartpostservice.common.exception.ExternalServerException;
@@ -128,7 +127,7 @@ public class OrchestrationService {
     }
 
     public void openCommission(String memberCode, String commissionCode) {
-
+        domainCompositeService.openCommission(memberCode, commissionCode);
     }
 
     public void canAccessCommission(String code, String commissionCode) {

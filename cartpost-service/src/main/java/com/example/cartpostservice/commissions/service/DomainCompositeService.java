@@ -2,11 +2,9 @@ package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
-import com.example.cartpostservice.commissions.infra.kafka.publisher.KafkaCommissionEventPublisher;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.event.CommissionDeleteEventFactory;
 import com.example.cartpostservice.commissions.service.event.CommissionUpsertEventFactory;
-import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionAndTagPartitionInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
@@ -40,7 +38,6 @@ public class DomainCompositeService {
 
     private final CommissionsService commissionsService;
     private final CommissionsTagService commissionsTagService;
-    private final KafkaCommissionEventPublisher commissionKafkaService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
@@ -180,9 +177,11 @@ public class DomainCompositeService {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
 
-        // 추후 선정 인원수를 보고 예외 처리하는 코드 추가
-
         commissionsService.openCommission(commissionCode);
+        CommissionReadResult commissionResult = commissionsService.read(commissionCode);
+        TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
+
+        applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(commissionResult, tagResult));
     }
 
 

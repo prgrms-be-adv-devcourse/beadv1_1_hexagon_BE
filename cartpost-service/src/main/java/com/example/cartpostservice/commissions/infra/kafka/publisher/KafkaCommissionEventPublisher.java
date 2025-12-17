@@ -1,6 +1,5 @@
 package com.example.cartpostservice.commissions.infra.kafka.publisher;
 
-import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
 import org.hexagon.core.events.commission.CommissionUpsertEvent;
