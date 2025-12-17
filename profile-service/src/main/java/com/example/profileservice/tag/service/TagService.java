@@ -11,7 +11,6 @@ import com.example.profileservice.tag.repository.MemberTagRepository;
 import com.example.profileservice.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hexagon.core.events.tag.TagInitEvent;
 import org.hexagon.core.vo.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
