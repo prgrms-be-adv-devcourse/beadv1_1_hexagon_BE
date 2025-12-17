@@ -69,6 +69,9 @@ dependencies {
     // Prometheus (모니터링)
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
+    // Feign Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

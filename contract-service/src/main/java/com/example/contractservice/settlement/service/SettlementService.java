@@ -2,6 +2,7 @@ package com.example.contractservice.settlement.service;
 
 import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.common.util.StringUtil;
+import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.settlement.domain.Settlement;
@@ -55,16 +56,21 @@ public class SettlementService {
 
         depositService.transfer(depositProcessRequest); // 정산 대상에 금액 입금
 
-        depositService.withdraw(new DepositProcessRequest(adminMemberCode, settlement.getSettlementStatusInfo().originalAmount() - settlement.getFee(),
-                StringUtil.format("정산 코드: {}에 대한 정산금 출금", settlement.getCode())));
+        long amount = settlement.getSettlementStatusInfo().originalAmount() - settlement.getFee();
+        String contractCode = settlement.getSettlementReference().contractCode();
+        String summary = StringUtil.format("정산 코드: {}에 대한 정산금 출금", settlement.getCode());
+
+        depositService.withdraw(new DepositProcessRequest(adminMemberCode, contractCode, amount, summary));
     }
 
     private List<Settlement> processByPaymentType(SettlementSaveRequest request) {
         List<Settlement> settlements = SettlementMapper.toDomains(request);
-        settlements.stream()
-                .map(SettlementMapper::toEntity)
-                .forEach(settlementRepository::save); // TODO: 레포지토리 인자로 도메인을 받도록 수정
+        settlements.forEach(settlementRepository::save);
 
         return settlements;
+    }
+
+    public void deleteAllRelatedWith(Contract contract) {
+        settlementRepository.hardDeleteAllBy(contract.getCode());
     }
 }

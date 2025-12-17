@@ -16,7 +16,7 @@ public interface AuthApiControllerSwagger {
 
     @PostMapping("/reissue")
     @Operation(summary = "AccessToken 재발급 Api", description = "RefreshToken을 통해 AccessToken을 재발급합니다.")
-    @ApiErrorResponses(exceptions = {ErrorCode.UNAUTHORIZATION, ErrorCode.DATA_SAVE_FAILED})
+    @ApiErrorResponses(exceptions = {ErrorCode.UN_AUTHORIZATION, ErrorCode.DATA_SAVE_FAILED})
     ResponseDto<Empty> reissueAccessTokenByRefreshToken(
         HttpServletResponse httpServletResponse,
         @CookieValue("refresh-token") String refreshToken);
@@ -24,7 +24,7 @@ public interface AuthApiControllerSwagger {
 
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "관리 중이던 Refresh Token을 제거해주어 로그아웃 시킵니다.")
-    @ApiErrorResponses(exceptions = {ErrorCode.UNAUTHORIZATION})
+    @ApiErrorResponses(exceptions = {ErrorCode.UN_AUTHORIZATION})
     ResponseDto<Empty> logoutMemberByRefreshToken(
         @CookieValue("refresh-token") String refreshToken);
 }

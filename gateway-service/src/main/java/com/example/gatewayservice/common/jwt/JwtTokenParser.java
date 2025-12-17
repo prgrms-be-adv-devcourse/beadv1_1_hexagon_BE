@@ -3,6 +3,7 @@ package com.example.gatewayservice.common.jwt;
 import com.example.gatewayservice.common.exception.BusinessException;
 import com.example.gatewayservice.common.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -34,5 +35,17 @@ public class JwtTokenParser {
         }
 
         return isSign;
+    }
+
+    public Optional<String> parseRole(Claims claims) {
+        Optional<String> role;
+        try{
+            role = Optional.ofNullable(claims.get(jwtProperties.getMemberRoleClaims()).toString());
+        }catch (Exception e){
+            log.info("claims에 %s 이 존재하지 않습니다.".formatted(jwtProperties.getMemberRoleClaims()));
+            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
+        }
+
+        return role;
     }
 }

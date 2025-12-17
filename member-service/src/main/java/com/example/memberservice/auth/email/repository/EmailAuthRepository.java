@@ -13,6 +13,8 @@ public interface EmailAuthRepository {
 
     Optional<String> findVerificationByMemberCode(MemberRole memberRole, String memberCode);
 
+    boolean existVerificationByMemberCode(MemberRole memberRole, String memberCode);
+
     boolean deleteAuthCode(MemberRole memberRole, String memberCode);
 
     boolean deleteVerified(MemberRole role, String memberCode);

@@ -2,6 +2,7 @@ package com.example.contractservice.contract.service.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.example.contractservice.common.TestConfig;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractJpaRepository;
@@ -14,13 +15,23 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
+@Import(TestConfig.class)
 class ContractKafkaHandlerTest {
     @Autowired
     ContractJpaRepository contractRepository;
     @Autowired
     ContractEventService contractEventService;
+
+    @MockitoBean
+    KafkaTemplate<String, String> kafkaTemplate;
+    @MockitoBean
+    KafkaAdmin kafkaAdmin;
 
     @AfterEach
     void tearDown() {

@@ -4,6 +4,7 @@ import static com.example.contractservice.deposit.domain.exception.DepositErrorC
 import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.NOT_ENOUGH_AMOUNT;
 
 import com.example.contractservice.deposit.domain.exception.DepositException;
+import java.time.Instant;
 import java.util.UUID;
 
 public class Deposit {
@@ -12,12 +13,21 @@ public class Deposit {
 
     private String memberCode;
 
+    private Instant createdAt;
+    private Instant updatedAt;
+
     private Long amount;
 
-    public Deposit(String code, String memberCode, Long amount) {
+    public static Deposit createdBy(String memberCode) {
+        return new Deposit(null, null, null, memberCode, 0L);
+    }
+
+    public Deposit(String code, Instant createdAt, Instant updatedAt, String memberCode, Long amount) {
         this.code = (code == null) ? generateCode() : code;
         this.memberCode = memberCode;
         this.amount = amount;
+        this.createdAt = (createdAt == null) ? Instant.now() : createdAt;
+        this.updatedAt = (updatedAt == null) ? this.createdAt : updatedAt;
     }
 
     public void withdraw(Long amount) {
@@ -46,6 +56,14 @@ public class Deposit {
 
     public Long getAmount() {
         return amount;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 
     private String generateCode() {

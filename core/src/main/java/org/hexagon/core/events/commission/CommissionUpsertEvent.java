@@ -11,12 +11,12 @@ public record CommissionUpsertEvent(
         String content,
         String memberCode,
         String memberNickname,
-        List<String> tags,
+        List<String> tagCodes,
         LocalDate startedAt,
         LocalDate endedAt,
         PaymentType paymentType,
         Long payAmount,
-        Boolean isClosed,
+        Boolean isOpen,
         Instant updatedAt
 ) {
 

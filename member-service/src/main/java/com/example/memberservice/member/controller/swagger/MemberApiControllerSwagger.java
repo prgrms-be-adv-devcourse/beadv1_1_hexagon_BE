@@ -3,6 +3,8 @@ package com.example.memberservice.member.controller.swagger;
 
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
+import com.example.memberservice.member.controller.dto.request.MemberRoleUpdateRequest;
+import org.apache.kafka.common.record.UnalignedMemoryRecords;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
@@ -23,14 +25,21 @@ public interface MemberApiControllerSwagger {
 
     @Operation(summary = "사용자 정보 조회", description = "사용자 정보를 조회합니다.")
     @Parameters({
-        @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true),
         @Parameter(name = "member-code", description = "검색할 사용자 Code(없을 경우 본인 정보 검색)", in = ParameterIn.QUERY)
     })
     @ApiErrorResponses(exceptions = {ErrorCode.NOT_CONTAINS_MEMBER_CODE, ErrorCode.MEMBER_NOT_FOUND,
         ErrorCode.INTERNAL_SERVER_ERROR})
     ResponseDto<MemberGetResponse> getMemberByCode(
-        @RequestHeader(name = "X-CODE", required = false) String xCode,
         @RequestParam(name = "member-code", required = false) String paramCode);
+
+    @Operation(summary = "사용자 본인 정보 조회", description = "사용자 본인 정보를 조회합니다.")
+    @Parameters({
+        @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true),
+    })
+    @ApiErrorResponses(exceptions = {ErrorCode.NOT_CONTAINS_MEMBER_CODE, ErrorCode.MEMBER_NOT_FOUND,
+        ErrorCode.INTERNAL_SERVER_ERROR})
+    ResponseDto<MemberGetResponse> getMyMemberByCode(
+        @RequestHeader(name = "X-CODE", required = false) String xCode);
 
     @Operation(summary = "사용자 생성", description = "새로운 사용자를 생성합니다.")
     @Parameters({
@@ -49,12 +58,21 @@ public interface MemberApiControllerSwagger {
     ResponseDto<Empty> updateMember(@RequestHeader("X-CODE") String memberCode,
         @RequestBody MemberUpdateRequest request);
 
-    @Operation(summary = "사용자 판매자 등록", description = "사용자의 판매자 등록을 진행합니다")
+    @Operation(summary = "사용자 역할 등록", description = "사용자의 역할 등록을 진행합니다")
     @Parameters({
         @Parameter(name = "X-CODE", description = "로그인한 사용자 코드", in = ParameterIn.HEADER, required = true)
     })
     @ApiErrorResponses(exceptions = {ErrorCode.MEMBER_NOT_FOUND})
-    ResponseDto<Empty> updateMemberWorkState(@RequestHeader("X-CODE") String memberCode);
+    ResponseDto<Empty> updateMemberRoleState(@RequestHeader("X-CODE") String memberCode,
+        @RequestBody MemberRoleUpdateRequest request);
+
+    @Operation(summary = "사용자 역할 제거", description = "사용자의 역할 제거를 진행합니다")
+    @Parameters({
+        @Parameter(name = "X-CODE", description = "로그인한 사용자 코드", in = ParameterIn.HEADER, required = true)
+    })
+    @ApiErrorResponses(exceptions = {ErrorCode.MEMBER_NOT_FOUND})
+    ResponseDto<Empty> deleteMemberRoleState(@RequestHeader("X-CODE") String memberCode,
+        @RequestBody MemberRoleUpdateRequest request);
 
     @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다.")
     @Parameters({

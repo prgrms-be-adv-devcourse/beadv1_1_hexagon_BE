@@ -1,6 +1,6 @@
 package com.example.contractservice.deposit.controller.dto.response;
 
-import com.example.contractservice.deposit.entity.DepositHistoryEntity;
+import com.example.contractservice.deposit.domain.DepositHistory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
@@ -15,12 +15,12 @@ public record DepositHistoryInfo(
         String summary
 ) {
 
-    public static DepositHistoryInfo from(DepositHistoryEntity entity) {
+    public static DepositHistoryInfo from(DepositHistory history) {
         return new DepositHistoryInfo(
-                entity.getCreatedAt(),
-                entity.getChangeAmount(),
-                entity.getResultAmount(),
-                entity.getSummary()
+                history.getCreatedAt(),
+                history.getDepositChange().changeAmount(),
+                history.getDepositChange().resultAmount(),
+                history.getSummary()
         );
     }
 }

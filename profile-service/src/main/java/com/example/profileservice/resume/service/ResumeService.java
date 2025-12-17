@@ -14,13 +14,15 @@ import com.example.profileservice.resume.model.dto.response.ResumeDetailResponse
 import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
 import com.example.profileservice.resume.model.entity.ResumeEntity;
 import com.example.profileservice.resume.repository.ResumeRepository;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.hexagon.core.dto.ResponseDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -188,6 +190,41 @@ public class ResumeService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_RESUME_ACCESS);
         }
         return resume;
+    }
+
+    // 멤버 모듈의 요청을 받아 해당 프리랜서의 모든 활성 이력서 및 종속된 경력/경험을 논리적으로 삭제
+    @Transactional
+    public List<String> deleteResumesByMemberCode(String memberCode) {
+        log.info("프리랜서 등록 취소 - Resume/Experience 일괄 삭제 시작. memberCode: {}", memberCode);
+
+        // 1. 해당 회원의 모든 활성 이력서 조회
+        List<ResumeEntity> resumesToDelete = resumeRepository.findActiveListByMemberCode(memberCode);
+
+        if (resumesToDelete.isEmpty()) {
+            log.info("삭제할 활성 Resume가 없습니다. memberCode: {}", memberCode);
+            return List.of();
+        }
+
+        // 2. 삭제할 이력서 코드 목록 추출
+        List<String> resumeCodesToDelete = resumesToDelete.stream()
+                .map(ResumeEntity::getCode)
+                .collect(Collectors.toList());
+
+        // 3. 종속된 모든 경력/경험 항목 조회
+        List<ExperienceEntity> experiencesToDelete = experienceRepository.findAllByResumeCodeAndIsDeletedFalse(resumeCodesToDelete);
+
+        // 4. 경력/경험 Soft Delete 처리
+        experiencesToDelete.forEach(ExperienceEntity::delete);
+        experienceRepository.saveAll(experiencesToDelete);
+        log.info("삭제된 Experience 개수: {}", experiencesToDelete.size());
+
+        // 5. 이력서 Soft Delete 처리
+        resumesToDelete.forEach(ResumeEntity::delete);
+        resumeRepository.saveAll(resumesToDelete);
+        log.info("삭제된 Resume 개수: {}", resumesToDelete.size());
+
+        // 이력서 삭제는 Search 인덱스에 영향을 주지 않으므로 개별 이벤트는 생략하고, 최종 이벤트는 Member 모듈에서 처리
+        return resumeCodesToDelete;
     }
 
     private ResumeSimpleResponse toSimpleResponse(ResumeEntity entity) {

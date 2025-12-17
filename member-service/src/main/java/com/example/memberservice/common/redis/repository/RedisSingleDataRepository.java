@@ -31,7 +31,7 @@ public class RedisSingleDataRepository implements KeyValueRepository {
     public void setSingleData(String key, Object value, long offset) {
         Duration duration = Duration.ofMinutes(offset);
 
-        this.executeOperation(key, () -> valueOperations().set(key, value, duration));
+        this.executeOperation(key,() -> valueOperations().set(key, value, duration));
     }
 
     @Override
@@ -56,7 +56,7 @@ public class RedisSingleDataRepository implements KeyValueRepository {
         return redisTemplate.execute(
             INCR_WITH_TTL_SCRIPT,
             List.of(key),
-            ttlSeconds
+            String.valueOf(ttlSeconds)
         );
     }
 

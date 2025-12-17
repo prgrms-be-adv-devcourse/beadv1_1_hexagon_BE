@@ -1,5 +1,6 @@
 package com.example.memberservice.member.controller.dto.request;
 
+import jakarta.annotation.Nullable;
 import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.example.memberservice.member.model.enums.Gender;
@@ -17,7 +18,11 @@ public record MemberCreateRequest(
     LocalDate birthDate,
 
     @Schema(description = "사용자 성별", example = "MAN OR FEMALE")
-    Gender gender
+    Gender gender,
+
+    @Schema(description = "사용자 프로필 Image S3 Key", example = "/member/temp/TestImage.jpg")
+    @Nullable
+    String profileImageKey
 ) {
 
 }

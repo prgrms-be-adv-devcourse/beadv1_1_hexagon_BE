@@ -5,19 +5,20 @@ import com.example.contractservice.contract.common.swagger.annotation.ContractCa
 import com.example.contractservice.contract.common.swagger.annotation.ContractCreateApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractByCodeApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractsApi;
+import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
-import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractListWithCursorResponse;
 import com.example.contractservice.contract.service.ContractReadService;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractDetailRequest;
 import com.example.contractservice.contract.service.dto.request.ContractReadCursorRequest;
+import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
 import org.springframework.http.HttpStatus;
@@ -66,7 +67,7 @@ public class ContractController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ContractCreateResponse> requestContract(@RequestHeader(name = "X-CODE") String xCode,
-            @RequestBody ContractCreateRequest request) {
+            @Valid @RequestBody ContractCreateRequest request) {
 
         validateCreateRequest(xCode, request);
 
@@ -76,10 +77,11 @@ public class ContractController {
     @ContractCancelApi
     @PostMapping("/{code}/cancel")
     @ResponseStatus(HttpStatus.OK)
-    public ContractInfoResponse cancelContract(@RequestHeader(name = "X-CODE") String xCode,
+    public ResponseDto<Empty> cancelContract(@RequestHeader(name = "X-CODE") String xCode,
             @PathVariable String code) {
+        contractService.cancelContract(new ContractCancelRequest(xCode, code));
 
-        return new ContractInfoResponse(UUID.randomUUID().toString(), "CANCELLED");
+        return ResponseDto.success();
     }
 
     private void validateCreateRequest(String xCode, ContractCreateRequest request) {

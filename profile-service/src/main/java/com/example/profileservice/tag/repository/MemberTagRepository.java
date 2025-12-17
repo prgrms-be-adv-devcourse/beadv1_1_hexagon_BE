@@ -1,13 +1,15 @@
 package com.example.profileservice.tag.repository;
 
 import com.example.profileservice.tag.model.entity.MemberTagEntity;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MemberTagRepository extends JpaRepository<MemberTagEntity, Long> {
@@ -25,4 +27,9 @@ public interface MemberTagRepository extends JpaRepository<MemberTagEntity, Long
     @Modifying
     @Query("DELETE FROM MemberTagEntity mt WHERE mt.memberCode = :memberCode AND mt.tagCode IN :tagCodes")
     void deleteAllByMemberCodeAndTagCodeIn(String memberCode, Collection<String> tagCodes);
+
+    // 특정 회원의 모든 연결된 태그를 일괄 삭제 (성능 최적화를 위해 Modifying 쿼리 사용)
+    @Modifying
+    @Query("DELETE FROM MemberTagEntity mt WHERE mt.memberCode = :memberCode")
+    void deleteAllByMemberCode(@Param("memberCode") String memberCode);
 }

@@ -1,6 +1,10 @@
 package com.example.memberservice.member.controller;
 
 
+import com.example.memberservice.common.exception.BusinessException;
+import com.example.memberservice.common.exception.ErrorCode;
+import com.example.memberservice.member.controller.dto.request.MemberRoleUpdateRequest;
+import com.example.memberservice.member.model.enums.MemberRole;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
@@ -39,9 +43,18 @@ public class MemberApiController implements MemberApiControllerSwagger {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<MemberGetResponse> getMemberByCode(
-        @RequestHeader(name = "X-CODE", required = false) String xCode,
-        @RequestParam(name = "member-code", required = false) String paramCode) {
-        return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(xCode, paramCode)));
+        @RequestParam(name = "member-code") String paramCode
+    ) {
+        return ResponseDto.success(
+            memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(paramCode)));
+    }
+
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<MemberGetResponse> getMyMemberByCode(
+        @RequestHeader(name = "X-CODE") String xCode) {
+        return ResponseDto.success(
+            memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(xCode)));
     }
 
     @PostMapping
@@ -49,7 +62,8 @@ public class MemberApiController implements MemberApiControllerSwagger {
     public ResponseDto<Empty> createMember(@RequestHeader(name = "X-CODE") String memberCode,
         @RequestBody MemberCreateRequest request) {
 
-        memberService.createMember(MemberServiceInputMapper.toCreateMemberInput(memberCode, request));
+        memberService.createMember(
+            MemberServiceInputMapper.toCreateMemberInput(memberCode, request));
 
         return ResponseDto.success(HttpStatus.CREATED);
     }
@@ -59,15 +73,33 @@ public class MemberApiController implements MemberApiControllerSwagger {
     public ResponseDto<Empty> updateMember(@RequestHeader(name = "X-CODE") String memberCode,
         @RequestBody MemberUpdateRequest request) {
 
-        memberService.updateMember(MemberServiceInputMapper.toUpdateMemberInput(memberCode, request));
+        memberService.updateMember(
+            MemberServiceInputMapper.toUpdateMemberInput(memberCode, request));
         return ResponseDto.success();
     }
 
     @PatchMapping("/state")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Empty> updateMemberWorkState(@RequestHeader("X-CODE") String memberCode) {
+    public ResponseDto<Empty> updateMemberRoleState(@RequestHeader("X-CODE") String memberCode,
+        @RequestBody MemberRoleUpdateRequest request) {
 
-        memberService.updateMemberWorkState(MemberServiceInputMapper.toUpdateMemberWorkStateInput(memberCode));
+        if (!request.role().equals(MemberRole.CLIENT)) {
+            throw new BusinessException(ErrorCode.NOT_ALLOW_ROLE_UPDATE);
+        }
+
+        memberService.updateMemberRoleState(
+            MemberServiceInputMapper.toUpdateMemberRoleStateInput(memberCode, request));
+        return ResponseDto.success();
+    }
+
+    @DeleteMapping("/state")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> deleteMemberRoleState(@RequestHeader("X-CODE") String memberCode,
+        @RequestBody MemberRoleUpdateRequest request) {
+
+        memberService.deleteMemberRoleState(
+            MemberServiceInputMapper.toUpdateMemberRoleStateInput(memberCode, request));
+
         return ResponseDto.success();
     }
 
@@ -86,7 +118,8 @@ public class MemberApiController implements MemberApiControllerSwagger {
     public ResponseDto<Empty> existMemberByName(@RequestHeader("X-CODE") String memberCode,
         @RequestParam(name = "name") String name) {
 
-        memberService.existMemberByNickName(MemberServiceInputMapper.toExistMemberByNameInput(memberCode, name));
+        memberService.existMemberByNickName(
+            MemberServiceInputMapper.toExistMemberByNameInput(memberCode, name));
 
         return ResponseDto.success();
     }

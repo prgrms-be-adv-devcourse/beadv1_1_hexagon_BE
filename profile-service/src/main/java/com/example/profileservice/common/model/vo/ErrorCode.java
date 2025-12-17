@@ -30,6 +30,7 @@ public enum ErrorCode {
     PROMOTION_NOT_FOUND(HttpStatus.NOT_FOUND, 3401, "요청하신 셀프 프로모션 게시글을 찾을 수 없습니다."),
     UNAUTHORIZED_PROMOTION_ACCESS(HttpStatus.FORBIDDEN, 3402, "해당 셀프 프로모션 게시글에 대한 접근 권한이 없습니다."),
     INVALID_RESUME_CODE_LINK(HttpStatus.BAD_REQUEST, 3403, "연결하려는 이력서 코드가 유효하지 않거나 존재하지 않습니다."),
+    PROMOTION_ALREADY_EXISTS(HttpStatus.CONFLICT, 3404, "이미 활성 상태의 셀프 프로모션 게시글이 존재합니다."),
 
     // 4xx 클라이언트 에러 - Tag (3500 ~ 3599)
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, 3501, "해당 기술 태그를 찾을 수 없습니다."),

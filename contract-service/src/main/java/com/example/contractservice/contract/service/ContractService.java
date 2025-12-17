@@ -1,22 +1,23 @@
 package com.example.contractservice.contract.service;
 
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.*;
-import static com.example.contractservice.contract.service.mapper.ContractMapper.*;
 
-import com.example.contractservice.common.util.UriConstructor;
 import com.example.contractservice.common.domain.exception.DomainException;
+import com.example.contractservice.common.util.feign.CommissionClient;
+import com.example.contractservice.common.util.feign.MemberClient;
+import com.example.contractservice.contract.controller.dto.request.ContractCancelRequest;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
-import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
+import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -37,46 +37,46 @@ import org.springframework.web.client.RestTemplate;
 public class ContractService {
     private static final int CONTRACT_MEMBER_NUM = 2;
 
+    private final MemberClient memberClient;
+    private final CommissionClient commissionClient;
     private final ContractRepository contractRepository;
-    private final RestTemplate restTemplate;
-    private final UriConstructor uriConstructor;
     private final ContractPayService contractPayService;
+    private final ContractCancelService contractCancelService;
 
     public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
-        // 코드를 기반으로 모든 ContractEntity를 한 번에 조회
-        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(codes);
+        // 코드를 기반으로 모든 Contract를 한 번에 조회
+        List<Contract> contracts = contractRepository.findAllByCodes(codes);
 
-        if (contractEntities.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
+        if (contracts.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
             return Collections.emptyList();
         }
 
-        // 계약 목록에서 클라이언트, 프리랜서 code 수집
-        Set<String> memberCodes = contractEntities.stream()
-                .flatMap(entity -> Stream.of(entity.getClientCode(), entity.getFreelancerCode()))
+        // 계약 목록에서 클라이언트, 프리랜서 memberCode 수집
+        Set<String> memberCodes = contracts.stream()
+                .flatMap(contract -> Stream.of(contract.getInfo().clientCode(), contract.getInfo().freelancerCode()))
                 .collect(Collectors.toSet());
 
         // member 모듈로부터 정보 가져오기
-        URI memberInfoUri = uriConstructor.createMemberInfoUrl(memberCodes.stream().toList());
-        List<MemberInfo> memberInfos = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
-                .orElseThrow(() -> new ContractException(INVALID_MEMBER))
-                .members();
+        List<MemberInfo> memberInfos = memberClient.getMemberInfo(memberCodes.stream().toList()).data()
+                .internalMemberInfos();
         Map<String, String> membersByCode = memberInfos.stream()
-                .collect(Collectors.toMap(MemberInfo::code, MemberInfo::name)); // code별로 info 분류
+                .collect(Collectors.toMap(MemberInfo::memberCode, MemberInfo::nickName)); // code별로 info 분류
 
-        return contractEntities.stream()
-                .map(contractEntity -> convertToBriefResponse(contractEntity, membersByCode))
+        return contracts.stream()
+                .map(contract -> convertToBriefResponse(contract, membersByCode))
                 .toList();
     }
 
     @Transactional
     public ContractCreateResponse requestContract(ContractCreateRequest request) {
         isValidMember(request.clientCode(), request.freelancerCode());
+        isCommissionOpen(request.commissionCode());
 
         Contract createdContract = request.toContract();
 
-        ContractEntity contractEntity = contractRepository.saveContract(toEntity(createdContract));
+        Contract contract = contractRepository.saveContract(createdContract);
 
-        return ContractCreateResponse.of(contractEntity.getCode());
+        return ContractCreateResponse.of(contract.getCode());
     }
 
     /** 계약 코드를 받아 결제를 수행합니다. 다음 단계로 수행될 수 있습니다. <br />
@@ -101,28 +101,55 @@ public class ContractService {
         return new ContractPayResponse(success, fail);
     }
 
-    private ContractBriefWithNicknameResponse convertToBriefResponse(ContractEntity contractEntity,
+    public void cancelContract(ContractCancelRequest request) {
+        Contract contract = contractRepository.findByCode(request.contractCode());
+
+        validateCancelRequest(request.xCode(), contract);
+
+        contractCancelService.processCancel(contract);
+    }
+
+    private void isCommissionOpen(String commissionCode) {
+        boolean isOpen = commissionClient.getRecruitmentStatus(commissionCode).data().isOpen();
+
+        if (!isOpen) {
+            throw new ContractException(COMMISSION_NOT_AVAILABLE);
+        }
+    }
+
+    public MemberRoleStatusResponse getMemberRoleStatus(String memberCode) {
+        boolean hasClientContracts = contractRepository.existsClientContractBy(memberCode);
+        boolean hasFreelancerContracts = contractRepository.existsFreelancerContractBy(memberCode);
+
+        return new MemberRoleStatusResponse(hasClientContracts, hasFreelancerContracts);
+    }
+
+    private void validateCancelRequest(String xCode, Contract contract) {
+        if (!contract.isRelatedWith(xCode)) {
+            throw new ContractException(MEMBER_NOT_RELATED);
+        }
+    }
+
+    private ContractBriefWithNicknameResponse convertToBriefResponse(Contract contract,
             Map<String, String> membersByCode) {
         return ContractBriefWithNicknameResponse.of(
-                contractEntity,
-                membersByCode.get(contractEntity.getClientCode()),
-                membersByCode.get(contractEntity.getFreelancerCode())
+                contract,
+                membersByCode.get(contract.getInfo().clientCode()),
+                membersByCode.get(contract.getInfo().freelancerCode())
         );
     }
 
     private void isValidMember(String clientCode, String freelancerCode) {
-        URI memberInfoUri = uriConstructor.createMemberInfoUrl(List.of(clientCode, freelancerCode));
-        MemberInfoResponse memberInfoResponse = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
-                .orElseThrow(() -> new ContractException(INVALID_MEMBER));
+        MemberInfoResponse memberInfoResponse = memberClient.getMemberInfo(List.of(clientCode, freelancerCode)).data();
 
-        List<MemberInfo> memberInfos = memberInfoResponse.members();
+        List<MemberInfo> memberInfos = memberInfoResponse.internalMemberInfos();
 
         if (memberInfos.size() != CONTRACT_MEMBER_NUM) {
             throw new ContractException(INVALID_MEMBER);
         }
 
         MemberInfo freelancerInfo = memberInfos.stream()
-                .filter(memberInfo -> memberInfo.code().equals(freelancerCode))
+                .filter(memberInfo -> memberInfo.memberCode().equals(freelancerCode))
                 .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
         if (!freelancerInfo.canWork()) {
@@ -150,5 +177,4 @@ public class ContractService {
 
         return true;
     }
-
 }

@@ -1,26 +1,22 @@
 package com.example.contractservice.deposit.service;
 
 import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.ALREADY_EXISTS;
-import static com.example.contractservice.deposit.service.mapper.DepositHistoryMapper.toEntity;
-import static com.example.contractservice.deposit.service.mapper.DepositMapper.toDomain;
 
 import com.example.contractservice.common.aop.OptimisticRetry;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
+import com.example.contractservice.deposit.controller.dto.response.DepositHistoryInfo;
 import com.example.contractservice.deposit.controller.dto.response.DepositInfoResponse;
 import com.example.contractservice.deposit.controller.dto.response.DepositRechargeResponse;
 import com.example.contractservice.deposit.domain.Deposit;
 import com.example.contractservice.deposit.domain.DepositHistory;
 import com.example.contractservice.deposit.domain.exception.DepositException;
-import com.example.contractservice.deposit.entity.DepositEntity;
-import com.example.contractservice.deposit.entity.DepositHistoryEntity;
+import com.example.contractservice.deposit.domain.vo.DepositChange;
 import com.example.contractservice.deposit.repository.DepositRepository;
 import com.example.contractservice.deposit.service.dto.request.DepositHistoryCursorRequest;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.deposit.service.dto.response.DepositCreatedResponse;
 import com.example.contractservice.deposit.service.dto.response.DepositProcessResponse;
-import com.example.contractservice.deposit.service.mapper.DepositHistoryMapper;
-import com.example.contractservice.deposit.service.mapper.DepositMapper;
 import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +33,26 @@ public class DepositService {
     private final DepositRepository depositRepository;
 
     public DepositInfoResponse getMyDeposit(String memberCode) {
-        DepositEntity depositEntity = depositRepository.findDepositByMemberCode(memberCode);
-        return DepositInfoResponse.of(depositEntity);
+        Deposit deposit = depositRepository.findDepositByMemberCode(memberCode);
+        return DepositInfoResponse.of(deposit);
     }
 
     public DepositHistoryCursorResponse getDepositHistories(DepositHistoryCursorRequest request) {
-        DepositEntity depositEntity = depositRepository.findDepositByMemberCode(request.memberCode());
+        Deposit deposit = depositRepository.findDepositByMemberCode(request.memberCode());
 
-        List<DepositHistoryEntity> contractEntities = depositRepository.findAllBy(depositEntity.getCode(), request.cursorDate(),
+        List<DepositHistory> contracts = depositRepository.findAllHistoriesBy(deposit.getCode(), request.cursorDate(),
                 request.cursorCode(), PAGE_SIZE);
 
-        return DepositHistoryCursorResponse.of(contractEntities, PAGE_SIZE);
+        return DepositHistoryCursorResponse.of(contracts, PAGE_SIZE);
+    }
+
+    public DepositHistoryInfo getDepositHistoryForRefund(String clientCode, String contractCode) {
+        DepositHistory history = depositRepository.findHistoryBy(clientCode, contractCode);
+
+        return new DepositHistoryInfo(history.getCreatedAt(),
+                history.getDepositChange().changeAmount(),
+                history.getDepositChange().resultAmount(),
+                history.getSummary());
     }
 
     /** 회원가입한 사용자에 대한 예치금 엔티티를 생성합니다.
@@ -62,7 +67,7 @@ public class DepositService {
             throw new DepositException(ALREADY_EXISTS);
         }
 
-        DepositEntity savedDeposit = depositRepository.saveDeposit(DepositEntity.createBy(memberCode));
+        Deposit savedDeposit = depositRepository.saveDeposit(Deposit.createdBy(memberCode));
 
         return DepositCreatedResponse.of(savedDeposit.getCode());
     }
@@ -70,7 +75,7 @@ public class DepositService {
     @Transactional
     @OptimisticRetry
     public DepositRechargeResponse recharge(DepositRechargeRequest request) {
-        DepositProcessRequest processRequest = new DepositProcessRequest(request.memberCode(), request.amount(),
+        DepositProcessRequest processRequest = new DepositProcessRequest(request.memberCode(), null, request.amount(),
                 "예치금 입금");
 
         DepositProcessResponse processResponse = transfer(processRequest);
@@ -81,19 +86,19 @@ public class DepositService {
     @Transactional
     @OptimisticRetry
     public DepositProcessResponse withdraw(DepositProcessRequest request) {
-        DepositEntity depositEntity = process(request, Deposit::withdraw);
+        Deposit deposit = process(request, Deposit::withdraw);
 
-        return new DepositProcessResponse(depositEntity.getCode(), depositEntity.getMemberCode(),
-                depositEntity.getAmount());
+        return new DepositProcessResponse(deposit.getCode(), deposit.getMemberCode(),
+                deposit.getAmount());
     }
 
     @Transactional
     @OptimisticRetry
     public DepositProcessResponse transfer(DepositProcessRequest request) {
-        DepositEntity depositEntity = process(request, Deposit::transfer);
+        Deposit deposit = process(request, Deposit::transfer);
 
-        return new DepositProcessResponse(depositEntity.getCode(), depositEntity.getMemberCode(),
-                depositEntity.getAmount());
+        return new DepositProcessResponse(deposit.getCode(), deposit.getMemberCode(),
+                deposit.getAmount());
     }
 
     /**
@@ -103,26 +108,24 @@ public class DepositService {
      * 2. 예치금에 action(출금/입금 등) 한다. </br>
      * 3. 변동된 예치금을 바탕으로 예치금 내역을 만들고 저장한다. </br>
      */
-    private DepositEntity process(DepositProcessRequest request, BiConsumer<Deposit, Long> action) {
-        DepositEntity depositEntity = depositRepository.findDepositByMemberCode(request.memberCode());
-        Deposit deposit = toDomain(depositEntity);
+    private Deposit process(DepositProcessRequest request, BiConsumer<Deposit, Long> action) {
+        Deposit deposit = depositRepository.findDepositByMemberCode(request.memberCode());
 
         Long beforeAmount = deposit.getAmount();
         action.accept(deposit, request.amount());
         Long afterAmount = deposit.getAmount();
 
-        DepositMapper.applyToEntity(deposit, depositEntity);
-        depositRepository.saveDeposit(depositEntity);
+        depositRepository.saveDeposit(deposit);
 
         saveHistory(request, deposit, afterAmount - beforeAmount);
-        return depositEntity;
+        return deposit;
     }
 
     private void saveHistory(DepositProcessRequest request, Deposit deposit, Long changeAmount) {
-        DepositHistory depositHistory = DepositHistoryMapper.toDomain(deposit, changeAmount, request.summary());
-        DepositHistoryEntity depositHistoryEntity = toEntity(depositHistory);
+        DepositChange depositChange = new DepositChange(changeAmount, deposit.getAmount());
+        DepositHistory depositHistory = new DepositHistory(deposit.getCode(), request.contractCode(), depositChange, request.summary());
 
-        depositRepository.saveDepositHistory(depositHistoryEntity);
+        depositRepository.saveDepositHistory(depositHistory);
     }
 
 }

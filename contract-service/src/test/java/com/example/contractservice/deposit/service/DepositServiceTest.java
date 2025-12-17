@@ -3,6 +3,7 @@ package com.example.contractservice.deposit.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.example.contractservice.common.TestConfig;
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
 import com.example.contractservice.deposit.domain.exception.DepositErrorCode;
@@ -27,8 +28,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
+@Import(TestConfig.class)
 class DepositServiceTest {
 
     private static final int PAGE_SIZE = 20;
@@ -38,6 +44,11 @@ class DepositServiceTest {
     DepositJpaRepository depositRepository;
     @Autowired
     DepositHistoryJpaRepository depositHistoryJpaRepository;
+
+    @MockitoBean
+    KafkaTemplate<String, String> kafkaTemplate;
+    @MockitoBean
+    KafkaAdmin kafkaAdmin;
 
     Random random = new Random();
 
@@ -122,7 +133,7 @@ class DepositServiceTest {
         DepositHistoryCursorResponse firstResp = depositService.getDepositHistories(
                 new DepositHistoryCursorRequest(memberCode, null, null));
         DepositHistoryCursorResponse secondResp = depositService.getDepositHistories(
-                new DepositHistoryCursorRequest(memberCode, firstResp.CursorDate(), firstResp.cursorCode()));
+                new DepositHistoryCursorRequest(memberCode, firstResp.cursorDate(), firstResp.cursorCode()));
 
         // then
         assertEquals(PAGE_SIZE, firstResp.infos().size());
@@ -144,7 +155,7 @@ class DepositServiceTest {
 
         int withdrawCnt = 3;
         long withdrawAmount = 5_000L;
-        DepositProcessRequest request = new DepositProcessRequest(memberCode, withdrawAmount, "");
+        DepositProcessRequest request = new DepositProcessRequest(memberCode, null, withdrawAmount, "");
 
         CyclicBarrier barrier = new CyclicBarrier(withdrawCnt); // 태스크 동시 시작용
         ExecutorService executorService = Executors.newFixedThreadPool(3); // 3개 커널 스레드 할당

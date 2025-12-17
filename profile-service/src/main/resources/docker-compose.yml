@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # 1. MySQL 컨테이너 (기존 사용하던 설정 기반)
+  mysql:
+    image: mysql:8.0
+    container_name: profile-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: hexagon
+    ports:
+      - "3306:3306"
+    volumes:
+      # 로컬에 데이터 영속성을 유지하고 싶다면 주석 해제
+      # - ./data/mysql:/var/lib/mysql
+      - ./init/mysql:/docker-entrypoint-initdb.d # 초기 데이터 스크립트 위치 (선택 사항)
+
+  # 2. Kafka 컨테이너
+  kafka:
+    image: apache/kafka
+    container_name: profile-kafka
+    restart: always
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_NODE_ID=1
+      - CLUSTER_ID=ZWU1Y2JiNDctNDg3ZC4tNGY2Ny1iNzJh
+      - KAFKA_PROCESS_ROLES=controller,broker
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9091
+      - KAFKA_LISTENERS=PLAINTEXT://:9090,CONTROLLER://:9091,EXTERNAL://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9090,EXTERNAL://kafka:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1

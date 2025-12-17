@@ -9,18 +9,21 @@ import com.example.profileservice.tag.model.entity.MemberTagEntity;
 import com.example.profileservice.tag.model.entity.TagEntity;
 import com.example.profileservice.tag.repository.MemberTagRepository;
 import com.example.profileservice.tag.repository.TagRepository;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.tag.TagInitEvent;
 import org.hexagon.core.vo.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -201,6 +204,23 @@ public class TagService {
                 .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND)); // TAG_NOT_FOUND 예외 사용
 
         return toResponse(tag);
+    }
+
+    // 멤버 모듈의 요청을 받아 해당 프리랜서의 모든 태그 연결 정보(MemberTagEntity)를 삭제
+    @Transactional
+    public void deleteMemberTagsByMemberCode(String memberCode) {
+        log.info("프리랜서 등록 취소 - MemberTag 연결 정보 일괄 삭제 시작. memberCode: {}", memberCode);
+
+        // 1. 일괄 Hard Delete 처리
+        memberTagRepository.deleteAllByMemberCode(memberCode);
+
+        // 2. 이벤트 발행
+        TagInitEvent event = new TagInitEvent(Collections.emptyList());
+
+        // memberCode를 키로 사용하여 해당 회원의 데이터 변경을 알림
+        kafkaProducer.send(tagTopic, memberCode, event);
+
+        log.info("MemberTag 연결 정보 일괄 삭제 및 빈 태그 목록 이벤트 발행 완료. memberCode: {}", memberCode);
     }
 
     private TagResponse toResponse(TagEntity entity) {

@@ -18,6 +18,9 @@ public class DepositHistoryEntity extends BaseEntity {
     @Column(name = "deposit_code", nullable = false, columnDefinition = "CHAR(36)")
     private String depositCode;
 
+    @Column(name = "contract_code", columnDefinition = "CHAR(36)")
+    private String contractCode;
+
     @Column(name = "code", nullable = false, columnDefinition = "CHAR(36)")
     private String code;
 
@@ -31,9 +34,10 @@ public class DepositHistoryEntity extends BaseEntity {
     private Long resultAmount;
 
     @Builder
-    public DepositHistoryEntity(String depositCode, String code, Long changeAmount, String summary, Long resultAmount) {
+    public DepositHistoryEntity(String depositCode, String code, String contractCode, Long changeAmount, String summary, Long resultAmount) {
         this.depositCode = depositCode;
         this.code = code;
+        this.contractCode = contractCode;
         this.changeAmount = changeAmount;
         this.summary = summary;
         this.resultAmount = resultAmount;

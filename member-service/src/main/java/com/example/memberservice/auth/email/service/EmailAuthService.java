@@ -61,11 +61,11 @@ public class EmailAuthService {
             throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_EXCEEDED);
         }
 
-        memberJpaRepository.findByCode(verifyEmailAuthInput.memberCode())
+        memberJpaRepository.findByCode(memberCode)
             .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         Optional<String> optionalExistAuthCode = emailAuthRepository.findAuthCodeByMemberCode(
-            verifyEmailAuthInput.memberRole(), verifyEmailAuthInput.memberCode());
+            memberRole, memberCode);
 
         String existAuthCode = optionalExistAuthCode.orElseThrow(
             () -> new BusinessException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));

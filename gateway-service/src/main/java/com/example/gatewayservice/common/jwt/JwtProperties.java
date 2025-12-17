@@ -14,4 +14,7 @@ public class JwtProperties {
 
     @Value("${jwt.claims.is-sign}")
     private String isSignClaims;
+
+    @Value("${jwt.claims.member-role}")
+    private String memberRoleClaims;
 }

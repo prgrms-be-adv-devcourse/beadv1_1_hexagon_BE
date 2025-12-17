@@ -22,42 +22,51 @@ public class EmailAuthRedisRepository implements EmailAuthRepository{
     @Value("${mail.ttl.verified}")
     private long verifiedExpirationMinute;
 
-
+    @Override
     public void saveAuthCode(MemberRole memberRole, String memberCode, String authCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
         keyValueRepository.setSingleData(key, authCode, authCodeExpirationMinute);
     }
-
+    @Override
     public void saveAuthVerification(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
         keyValueRepository.setSingleData(key, "verify", verifiedExpirationMinute);
     }
-
+    @Override
     public Optional<String> findAuthCodeByMemberCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
         return keyValueRepository.getSingleData(key);
     }
-
+    @Override
     public Optional<String> findVerificationByMemberCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
         return keyValueRepository.getSingleData(key);
     }
 
+    @Override
+    public boolean existVerificationByMemberCode(MemberRole memberRole, String memberCode) {
+        String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
+        Optional<String> optionalObject = keyValueRepository.getSingleData(key);
+
+        return optionalObject.isPresent();
+    }
+
+    @Override
     public boolean deleteAuthCode(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFICATION_CODE);
         return keyValueRepository.deleteSingleData(key);
     }
-
+    @Override
     public boolean deleteVerified(MemberRole role, String memberCode) {
         String key = buildKey(role, memberCode, RedisKeyPrefix.EMAIL_VERIFIED);
         return keyValueRepository.deleteSingleData(key);
     }
-
+    @Override
     public Long incrementRetryCount(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
         return keyValueRepository.incrementKey(key, authCodeExpirationMinute);
     }
-
+    @Override
     public boolean deleteRetryCount(MemberRole memberRole, String memberCode) {
         String key = buildKey(memberRole, memberCode, RedisKeyPrefix.EMAIL_VERIFIED_COUNT);
         return keyValueRepository.deleteSingleData(key);

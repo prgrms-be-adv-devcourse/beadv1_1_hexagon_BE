@@ -14,6 +14,7 @@ import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionU
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.model.entity.SelfPromotionEntity;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,12 +51,15 @@ public class SelfPromotionService {
     }
 
     // 특정 회원이 작성한 셀프 프로모션 게시글 목록을 최신순으로 조회
+    @Transactional(readOnly = true)
     public List<SelfPromotionResponse> getMyPromotions(String memberCode) {
-        List<SelfPromotionEntity> myPromotions = selfPromotionRepository.findAllByMemberCodeAndIsDeletedFalseOrderByCreatedAtDesc(memberCode);
+        // 1:1 관계 강제에 따라 단건 조회
+        Optional<SelfPromotionEntity> myPromotion = selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode);
 
-        return myPromotions.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        // API 호환성을 위해 List로 래핑하여 반환
+        return myPromotion.map(this::toResponse)
+                .map(List::of)
+                .orElse(Collections.emptyList());
     }
 
     // 특정 셀프 프로모션 게시글의 상세 정보를 조회
@@ -75,7 +79,20 @@ public class SelfPromotionService {
         // 2. 이력서 유효성 검증
         validateResumeCode(request.resumeCode());
 
-        // 3. SelfPromotion 엔티티 생성 및 저장
+        // 3. 기존 활성 프로모션 확인 및 Soft Delete 처리
+        selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
+                .ifPresent(existingPromotion -> {
+                    // 기존 활성 프로모션이 있다면 논리적으로 삭제 처리 (isDeleted = true)
+                    log.info("기존 활성 프로모션({})을 비활성화 처리합니다. (memberCode: {})", existingPromotion.getCode(), memberCode);
+                    existingPromotion.delete(); // BaseEntity의 isDeleted 필드를 true로 변경하는 메서드 가정
+                    selfPromotionRepository.save(existingPromotion);
+
+                    // 기존 프로모션 삭제 이벤트 발행 (AI/Search 모듈 인덱스 업데이트용)
+                    SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(existingPromotion.getCode());
+                    kafkaProducer.send(selfPromotionTopic, existingPromotion.getCode(), deletedEvent);
+                });
+
+        // 4. SelfPromotion 엔티티 생성 및 저장
         SelfPromotionEntity promotion = SelfPromotionEntity.create(
                 memberCode,
                 request.title(),
@@ -89,7 +106,7 @@ public class SelfPromotionService {
 
         SelfPromotionResponse response = toResponse(promotion);
 
-        // 4. 이벤트 발행 (CREATE)
+        // 5. 이벤트 발행 (CREATE)
         SelfPromotion selfPromotionVo = toSelfPromotionVo(promotion);
 
         SelfPromotionCreatedEvent createdEvent = new SelfPromotionCreatedEvent(
@@ -203,6 +220,26 @@ public class SelfPromotionService {
             // 존재하지 않는다면 CustomException을 던짐
             throw new CustomException(ErrorCode.INVALID_MEMBER_CODE);
         }
+    }
+
+    // 멤버 모듈의 요청을 받아 해당 프리랜서의 모든 활성 Self Promotion을 논리적으로 삭제
+    public void deletePromotionsByMemberCode(String memberCode) {
+        log.info("프리랜서 등록 취소 - Self Promotion 삭제 시작. memberCode: {}", memberCode);
+
+        // Optional로 조회
+        selfPromotionRepository.findByMemberCodeAndIsDeletedFalse(memberCode)
+                .ifPresent(promotion -> {
+                    promotion.delete(); // Soft Delete 처리
+                    selfPromotionRepository.save(promotion); // 변경 사항 저장
+
+                    // 삭제 이벤트 발행
+                    SelfPromotionDeletedEvent deletedEvent = new SelfPromotionDeletedEvent(promotion.getCode());
+                    kafkaProducer.send(selfPromotionTopic, promotion.getCode(), deletedEvent);
+
+                    log.info("삭제된 활성 SelfPromotion: {}", promotion.getCode());
+                });
+
+        log.info("프리랜서 등록 취소 - Self Promotion 삭제 완료.");
     }
 
     // SelfPromotionService.java 내부에 SelfPromotion VO 변환 헬퍼

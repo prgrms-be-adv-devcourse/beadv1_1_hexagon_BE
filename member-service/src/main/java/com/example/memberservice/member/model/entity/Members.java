@@ -4,6 +4,7 @@ package com.example.memberservice.member.model.entity;
 import com.example.memberservice.member.model.enums.Gender;
 
 import com.example.memberservice.common.security.model.vo.Provider;
+import com.example.memberservice.member.model.enums.MemberRole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 
@@ -26,7 +27,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Members {
 
-    //TODO(이후 common 모듈 생성시 적용)
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -54,7 +55,7 @@ public class Members {
     @Comment("닉네임")
     private String nickName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false,unique = false)
     @Comment("이메일")
     private String email;
 
@@ -80,12 +81,14 @@ public class Members {
     @Comment("OAuth 서버 제공 ID")
     private String providerId;
 
-    @Column(name = "can_work", nullable = false)
-    private Boolean canWork;
+    @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MemberRole role;
 
     @Builder
-    private Members(String nickName, String code, String email, String phoneNumber, LocalDate birthDate, Gender gender,
-        Provider provider, String providerId) {
+    private Members(String nickName, String code, String email, String phoneNumber,
+        LocalDate birthDate, Gender gender,
+        Provider provider, String providerId, MemberRole role) {
         this.nickName = nickName;
         this.code = code;
         this.email = email;
@@ -95,7 +98,12 @@ public class Members {
         this.provider = provider;
         this.providerId = providerId;
 
-        this.canWork = false;
+        if(role==null){
+            this.role = MemberRole.NONE;
+        }else{
+            this.role = role;
+        }
+
     }
 
     // 닉네임 변경
@@ -103,14 +111,54 @@ public class Members {
         this.nickName = newNickName;
     }
 
-    //판매자 등록 가능 여부 확인
-    public boolean canEnableWork() {
-        return Boolean.FALSE.equals(this.canWork);
+    public boolean canRegisterRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                return canRegisterClientState();
+            }
+            case FREELANCER -> {
+                return canRegisterFreelancerState();
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
-    // 판매자 등록 변경
-    public void updateCanWork(Boolean canWork) {
-        this.canWork = canWork;
+    public boolean canDeleteRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                return canDeleteClientState();
+            }
+            case FREELANCER -> {
+                return canDeleteFreelancerState();
+            }
+            default -> {
+                return false;
+            }
+        }
+    }
+
+    public void registerRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                registerClientState();
+            }
+            case FREELANCER -> {
+                registerFreelancerState();
+            }
+        }
+    }
+
+    public void deleteRoleState(MemberRole role) {
+        switch (role) {
+            case CLIENT -> {
+                deleteClientState();
+            }
+            case FREELANCER -> {
+                deleteFreelancerState();
+            }
+        }
     }
 
     // 핸드폰 번호 변경
@@ -122,7 +170,6 @@ public class Members {
     public void updateBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
-
     // 성별 변경
     public void updateGender(Gender gender) {
         this.gender = gender;
@@ -136,4 +183,51 @@ public class Members {
         this.isDeleted = false;
     }
 
+    private boolean canRegisterClientState() {
+        return (this.role.equals(MemberRole.NONE) || this.role.equals(MemberRole.FREELANCER));
+    }
+
+    private boolean canRegisterFreelancerState() {
+        return (this.role.equals(MemberRole.NONE) || this.role.equals(MemberRole.CLIENT));
+    }
+
+    private boolean canDeleteClientState() {
+        return (this.role.equals(MemberRole.CLIENT) || this.role.equals(MemberRole.BOTH));
+    }
+
+    private boolean canDeleteFreelancerState() {
+        return (this.role.equals(MemberRole.FREELANCER) || this.role.equals(MemberRole.BOTH));
+    }
+
+    private void registerClientState() {
+        if (this.role.equals(MemberRole.FREELANCER)) {
+            this.role = MemberRole.BOTH;
+        } else if (this.role.equals(MemberRole.NONE)) {
+            this.role = MemberRole.CLIENT;
+        }
+    }
+
+    private void registerFreelancerState() {
+        if (this.role.equals(MemberRole.CLIENT)) {
+            this.role = MemberRole.BOTH;
+        } else if (this.role.equals(MemberRole.NONE)) {
+            this.role = MemberRole.FREELANCER;
+        }
+    }
+
+    private void deleteClientState() {
+        if (this.role.equals(MemberRole.CLIENT)) {
+            this.role = MemberRole.NONE;
+        } else if (this.role.equals(MemberRole.BOTH)) {
+            this.role = MemberRole.FREELANCER;
+        }
+    }
+
+    private void deleteFreelancerState() {
+        if (this.role.equals(MemberRole.FREELANCER)) {
+            this.role = MemberRole.NONE;
+        } else if (this.role.equals(MemberRole.BOTH)) {
+            this.role = MemberRole.CLIENT;
+        }
+    }
 }

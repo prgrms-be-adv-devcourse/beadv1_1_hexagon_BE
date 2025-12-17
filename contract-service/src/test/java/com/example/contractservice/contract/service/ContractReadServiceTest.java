@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.example.contractservice.common.TestConfig;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.common.Order;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefResponse;
@@ -30,9 +31,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
+@Import(TestConfig.class)
 class ContractReadServiceTest {
 
     private static final int PAGE_SIZE = 20;
@@ -43,6 +49,11 @@ class ContractReadServiceTest {
 
     @MockBean
     RestTemplate restTemplate;
+
+    @MockitoBean
+    KafkaTemplate<String, String> kafkaTemplate;
+    @MockitoBean
+    KafkaAdmin kafkaAdmin;
 
     private String memberCode;
 

@@ -2,12 +2,14 @@ package com.example.communicationservice.service;
 
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
+import com.example.communicationservice.controller.dto.request.ChatMessageSendRequest;
 import com.example.communicationservice.controller.dto.response.ChatMessageListReadResponse;
 import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
 import com.example.communicationservice.repository.ChatMessageRepository;
 import com.example.communicationservice.repository.ChatRoomRepository;
+import com.example.communicationservice.type.MessageType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +40,7 @@ class ChatMessageServiceTest {
     private static final String MY_CODE = "USER_A";
     private static final String PARTNER_CODE = "USER_B";
     private static final String ROOM_NAME = "채팅방";
-    private static final String CHAT_CONTENT = "테스트 메시지입니다.";
+    private static final String CHAT_TEXT = "테스트 메시지입니다.";
 
     @InjectMocks
     private ChatMessageService chatMessageService;
@@ -130,8 +132,16 @@ class ChatMessageServiceTest {
         ChatMessage savedMessage = ChatMessage.builder()
             .roomId(ROOM_ID)
             .senderCode(MY_CODE)
-            .content(CHAT_CONTENT)
+            .type(MessageType.TEXT)
+            .text(CHAT_TEXT)
             .build();
+        ChatMessageSendRequest request = new ChatMessageSendRequest(
+            ROOM_ID,
+            MY_CODE,
+            MessageType.TEXT,
+            CHAT_TEXT,
+            null
+        );
 
         ReflectionTestUtils.setField(savedMessage, "id", messageId);
         ReflectionTestUtils.setField(savedMessage, "sentAt", Instant.now());
@@ -142,12 +152,12 @@ class ChatMessageServiceTest {
             .willReturn(savedMessage);
 
         // when
-        ChatMessageSendResponse response = chatMessageService.saveMessage(ROOM_ID, MY_CODE, CHAT_CONTENT);
+        ChatMessageSendResponse response = chatMessageService.saveMessage(request);
 
         // then
         assertThat(response).isNotNull();
         assertThat(response.messageId()).isEqualTo(messageId);
-        assertThat(response.content()).isEqualTo(CHAT_CONTENT);
+        assertThat(response.text()).isEqualTo(CHAT_TEXT);
 
         verify(chatRoomRepository, times(1)).findById(eq(ROOM_ID));
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
@@ -157,12 +167,20 @@ class ChatMessageServiceTest {
     @Test
     void 존재하지_않는_채팅방에_메시지_저장을_시도하면_예외가_발생한다() {
         // given
+        ChatMessageSendRequest request = new ChatMessageSendRequest(
+            ROOM_ID,
+            MY_CODE,
+            MessageType.TEXT,
+            CHAT_TEXT,
+            null
+        );
+
         given(chatRoomRepository.findById(any(String.class)))
             .willReturn(Optional.empty());
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatMessageService.saveMessage(ROOM_ID, MY_CODE, CHAT_CONTENT));
+            () -> chatMessageService.saveMessage(request));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_NOT_FOUND);
 
@@ -175,13 +193,20 @@ class ChatMessageServiceTest {
         // given
         String unauthorizedUser = "UNAUTHORIZED_USER";
         ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+        ChatMessageSendRequest request = new ChatMessageSendRequest(
+            ROOM_ID,
+            unauthorizedUser,
+            MessageType.TEXT,
+            CHAT_TEXT,
+            null
+        );
 
         given(chatRoomRepository.findById(eq(ROOM_ID)))
             .willReturn(Optional.of(chatRoom));
 
         // when & then
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-            () -> chatMessageService.saveMessage(ROOM_ID, unauthorizedUser, CHAT_CONTENT));
+            () -> chatMessageService.saveMessage(request));
 
         assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_FORBIDDEN);
 
@@ -200,11 +225,12 @@ class ChatMessageServiceTest {
         return chatRoom;
     }
 
-    private ChatMessage createMockMessage(String content, String senderCode) {
+    private ChatMessage createMockMessage(String text, String senderCode) {
         ChatMessage message = ChatMessage.builder()
             .roomId(ROOM_ID)
             .senderCode(senderCode)
-            .content(content)
+            .type(MessageType.TEXT)
+            .text(text)
             .build();
 
         ReflectionTestUtils.setField(message, "id", "msg-" + Instant.now().getNano());
