@@ -31,24 +31,4 @@ public class KafkaCommissionEventPublisher {
     public void deleteProducer(CommissionDeletedEvent commissionDeletedEvent) {
         kafkaTemplate.send(commissionStatusTopic, commissionDeletedEvent);
     }
-
-    public void finishProducer(CommissionServiceMessage finishMessage) {
-
-        CommissionUpsertEvent commissionUpdatedEvent = new CommissionUpsertEvent(
-                finishMessage.code(),
-                finishMessage.title(),
-                finishMessage.content(),
-                finishMessage.memberCode(),
-                finishMessage.memberNickname(),
-                finishMessage.tags(),
-                finishMessage.startedAt(),
-                finishMessage.endedAt(),
-                finishMessage.paymentType(),
-                finishMessage.payAmount(),
-                finishMessage.isClosed(),
-                finishMessage.updatedAt()
-        );
-
-        kafkaTemplate.send(commissionStatusTopic, commissionUpdatedEvent);
-    }
 }

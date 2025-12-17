@@ -161,8 +161,8 @@ public class DomainCompositeService {
     }
 
     @Transactional
-    public void finishCommission(String code, String commissionCode) {
-        if (!commissionsService.isOwner(code, commissionCode)) {
+    public void finishCommission(String memberCode, String commissionCode) {
+        if (!commissionsService.isOwner(memberCode, commissionCode)) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
 
@@ -171,24 +171,7 @@ public class DomainCompositeService {
         CommissionReadResult commissionResult = commissionsService.read(commissionCode);
         TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
 
-        CommissionServiceMessage finishMessage = new CommissionServiceMessage(
-                commissionCode,
-                commissionResult.title(),
-                commissionResult.content(),
-                commissionResult.memberCode(),
-                commissionResult.writerName(),
-                tagResult.tagCodes(),
-                commissionResult.startedAt(),
-                commissionResult.endedAt(),
-                commissionResult.paymentType(),
-                commissionResult.unitAmount(),
-                false,
-                commissionResult.updatedAt()
-        );
-
-        // kafka
-        commissionKafkaService.finishProducer(finishMessage);
-
+        applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(commissionResult, tagResult));
     }
 
     @Transactional

@@ -123,8 +123,8 @@ public class OrchestrationService {
         domainCompositeService.softDeleteCommission(memberCode, commissionCode);
     }
 
-    public void finishCommission(String code, String commissionCode) {
-
+    public void finishCommission(String memberCode, String commissionCode) {
+        domainCompositeService.finishCommission(memberCode, commissionCode);
     }
 
     public void openCommission(String memberCode, String commissionCode) {
