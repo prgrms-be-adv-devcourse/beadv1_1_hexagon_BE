@@ -75,9 +75,9 @@
           "ai, 인공지능"
         ]
       },
-      "edge_ngram_1_20": {
+      "edge_ngram_2_20": {
         "type": "edge_ngram",
-        "min_gram": 1,
+        "min_gram": 2,
         "max_gram": 20
       }
     },
@@ -88,8 +88,7 @@
         "filter": [
           "nori_readingform",
           "nori_postfilter",
-          "lowercase",
-          "edge_ngram_1_20"
+          "lowercase"
         ]
       },
       "commission_search_analyzer": {
