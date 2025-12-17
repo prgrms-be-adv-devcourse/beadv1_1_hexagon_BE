@@ -12,17 +12,16 @@ import com.example.contractservice.contract.controller.dto.response.ContractCrea
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
+import com.example.contractservice.contract.repository.CommissionsCapacityRepository;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayServiceRequest;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,6 +41,7 @@ public class ContractService {
     private final ContractRepository contractRepository;
     private final ContractPayService contractPayService;
     private final ContractCancelService contractCancelService;
+    private final CommissionsCapacityRepository commissionsCapacityRepository;
 
     public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
         // 코드를 기반으로 모든 Contract를 한 번에 조회
@@ -69,6 +69,8 @@ public class ContractService {
 
     @Transactional
     public ContractCreateResponse requestContract(ContractCreateRequest request) {
+        commissionsCapacityRepository.increaseAppliedCount(request.commissionCode());
+
         isValidMember(request.clientCode(), request.freelancerCode());
         isCommissionOpen(request.commissionCode());
 
