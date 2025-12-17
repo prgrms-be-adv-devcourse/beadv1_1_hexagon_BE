@@ -12,7 +12,7 @@ public class CartKafkaService {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${search.topic.name}")
+    @Value("${kafka.topic.commission.name}")
     private String targetTopicName;
 
     public void deleteProducer(String contractCode) {

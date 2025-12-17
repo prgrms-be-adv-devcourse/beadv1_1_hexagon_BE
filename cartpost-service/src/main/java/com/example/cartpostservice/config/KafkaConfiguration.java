@@ -17,11 +17,23 @@ public class KafkaConfiguration {
     @Value("${cartpost.config.topic-replications}")
     private int topic_replications;
 
-    @Value("${contract.topic.name}")
+    @Value("${kafka.topic.contract.name}")
     private String contractTopicName;
 
-    @Value("${search.topic.name}")
-    private String searchTopicName;
+    @Value("${kafka.topic.commission.name}")
+    private String commissionEventTopicName;
+
+    @Value("${kafka.topic.commission.status.name}")
+    private String commissionStatusTopicName;
+
+    @Value("${kafka.topic.member.create.name}")
+    private String memberCreateTopicName;
+
+    @Value("${kafka.topic.member.role.name}")
+    private String memberRoleTopicName;
+
+    @Value("${kafka.topic.member.cancel.name}")
+    private String memberCancelTopicName;
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate(
@@ -39,8 +51,40 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public NewTopic createSearchTopic() {
-        return TopicBuilder.name(searchTopicName)
+    public NewTopic createCommissionEVentTopic() {
+        return TopicBuilder.name(commissionEventTopicName)
+                .partitions(topic_partitions)
+                .replicas(topic_replications)
+                .build();
+    }
+
+    @Bean
+    public NewTopic createCommissionStatusTopic() {
+        return TopicBuilder.name(commissionStatusTopicName)
+                .partitions(topic_partitions)
+                .replicas(topic_replications)
+                .build();
+    }
+
+    @Bean
+    public NewTopic createMemberCreateTopic() {
+        return TopicBuilder.name(memberCreateTopicName)
+                .partitions(topic_partitions)
+                .replicas(topic_replications)
+                .build();
+    }
+
+    @Bean
+    public NewTopic createMemberRoleTopic() {
+        return TopicBuilder.name(memberRoleTopicName)
+                .partitions(topic_partitions)
+                .replicas(topic_replications)
+                .build();
+    }
+
+    @Bean
+    public NewTopic createMemberCancelTopic() {
+        return TopicBuilder.name(memberCancelTopicName)
                 .partitions(topic_partitions)
                 .replicas(topic_replications)
                 .build();

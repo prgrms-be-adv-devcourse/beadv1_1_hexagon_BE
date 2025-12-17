@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 // 클래스 레벨 리스너: 여러 토픽을 구독합니다.
 @KafkaListener(
         topics = {
-                "${member.topic.name}",   // Member 서버 이벤트 토픽
-                "${contract.topic.name}"  // Contract 서버 이벤트 토픽
+                "${kafka.topic.member.create.name}",   // Member 서버 이벤트 토픽
+                "${kafka.topic.contract.name}"  // Contract 서버 이벤트 토픽
         },
         groupId = "${spring.kafka.consumer.group-id}" // 컨슈머 그룹 ID
 )
