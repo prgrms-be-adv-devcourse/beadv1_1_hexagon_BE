@@ -140,7 +140,7 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
                 .orElseThrow(() -> new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION));
 
         if (commission.getRecruitmentStatus() == RecruitmentStatus.HALTED) {
-            throw new BusinessException(CustomStatusCode.NOT_OPEN_COMMISSION);
+            throw new BusinessException(CustomStatusCode.CANNOT_OPEN_COMMISSION);
         }
 
         commission.openRecruitmentStatus();

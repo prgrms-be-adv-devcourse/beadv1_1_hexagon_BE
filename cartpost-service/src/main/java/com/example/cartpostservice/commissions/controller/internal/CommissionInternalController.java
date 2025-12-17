@@ -25,7 +25,7 @@ public class CommissionInternalController implements CommissionInternalApi {
     private final CommissionsManagerService commissionsManagerService;
 
     @Override
-    @GetMapping("/recruitment-status")
+    @GetMapping("/recruitment-status/{commission-code}")
     public ResponseEntity<ResponseDto<CommissionRecruitmentStatusResponse>> getRecruitmentStatus(
             @PathVariable("commission-code")
             @NotBlank(message = "의뢰글 uuid를 전달해 주시기 바랍니다")

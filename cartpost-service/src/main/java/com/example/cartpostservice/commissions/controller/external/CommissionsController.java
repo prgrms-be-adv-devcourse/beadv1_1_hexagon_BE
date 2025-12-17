@@ -97,6 +97,7 @@ public class CommissionsController implements CommissionsApi {
     }
 
     @Override
+    @PostMapping("/reopen/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
             String commissionCode) {
 
