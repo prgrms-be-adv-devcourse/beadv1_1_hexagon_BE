@@ -25,8 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RequiredArgsConstructor
 public class CommissionInternalController implements CommissionInternalApi {
-
-    private final DomainCompositeService domainCompositeService;
+    
     private final OrchestrationService orchestrationService;
     private final CommissionResponseAssembler commissionResponseAssembler;
 
@@ -36,7 +35,7 @@ public class CommissionInternalController implements CommissionInternalApi {
             @NotBlank(message = "의뢰글 uuid를 전달해 주시기 바랍니다")
             @PathVariable("commission-code") String commissionsCode) {
 
-        CommissionRecruitmentStatusResponse statusResponse = domainCompositeService.getRecruitmentStatus(
+        CommissionRecruitmentStatusResponse statusResponse = orchestrationService.getRecruitmentStatus(
                 commissionsCode);
 
         return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, statusResponse), HttpStatus.OK);

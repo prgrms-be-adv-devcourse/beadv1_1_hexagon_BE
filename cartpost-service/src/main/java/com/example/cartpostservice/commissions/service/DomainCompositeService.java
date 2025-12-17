@@ -1,7 +1,6 @@
 package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
-import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.event.CommissionDeleteEventFactory;
 import com.example.cartpostservice.commissions.service.event.CommissionUpsertEventFactory;
@@ -186,20 +185,17 @@ public class DomainCompositeService {
 
 
     @Transactional
-    public void canAccessCommission(String code, String commissionCode) {
-        if (!commissionsService.isOwner(code, commissionCode)) {
+    public void canAccessCommission(String memberCode, String commissionCode) {
+        if (!commissionsService.isOwner(memberCode, commissionCode)) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
     }
 
     @Transactional
-    public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
+    public boolean getRecruitmentStatus(String commissionCode) {
         CommissionReadResult commissionsServiceResult = commissionsService.read(
                 commissionCode);
 
-        return new CommissionRecruitmentStatusResponse(
-                commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN));
+        return commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN);
     }
-
-
 }

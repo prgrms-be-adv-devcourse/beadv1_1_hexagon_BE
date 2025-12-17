@@ -138,10 +138,10 @@ public class CommissionsController implements CommissionsApi {
 
     @Override
     @GetMapping("/exist/{commission-code}")
-    public ResponseEntity<ResponseDto<Empty>> canAccessCommission(@RequestHeader("X-CODE") String code,
+    public ResponseEntity<ResponseDto<Empty>> canAccessCommission(@RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        orchestrationService.canAccessCommission(code, commissionCode);
+        orchestrationService.canAccessCommission(memberCode, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));

@@ -130,12 +130,13 @@ public class OrchestrationService {
         domainCompositeService.openCommission(memberCode, commissionCode);
     }
 
-    public void canAccessCommission(String code, String commissionCode) {
-
+    public void canAccessCommission(String memberCode, String commissionCode) {
+        domainCompositeService.canAccessCommission(memberCode, commissionCode);
     }
 
     public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
-        return null;
+
+        return new CommissionRecruitmentStatusResponse(domainCompositeService.getRecruitmentStatus(commissionCode));
     }
 
 
