@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.controller.internal;
 
+import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionElementReadResponse;
 import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,4 +28,14 @@ public interface CommissionInternalApi {
     ResponseEntity<ResponseDto<CommissionRecruitmentStatusResponse>> getRecruitmentStatus(
             @PathVariable String commissionCode);
 
+    @Operation(summary = "의뢰글 상세 내역 반환", description = "의뢰글의 상세 내역을 내부 모듈 요청을 위해 반환 하는 기능입니다.")
+    @Parameter(
+            description = "조회할 의뢰글의 code",
+            schema = @Schema(description = "조회하고 싶은 의뢰글 코드를 전달해 주세요")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "의뢰글 생성 성공"),
+    })
+    ResponseEntity<ResponseDto<CommissionElementReadResponse>> readCommissionDetail(
+            @PathVariable(name = "commission-code") String commissionCode);
 }
