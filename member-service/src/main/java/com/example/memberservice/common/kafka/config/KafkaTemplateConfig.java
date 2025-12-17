@@ -24,6 +24,15 @@ public class KafkaTemplateConfig {
     @Value("${kafka.topic.member.update-topic}")
     private String memberUpdateTopicName;
 
+    @Value("${kafka.topic.member.delete-topic}")
+    private String memberDeleteTopicName;
+
+    @Value("${kafka.topic.member.delete-freelancer-role-topic}")
+    private String memberDeleteFreelancerRoleTopicName;
+
+    @Value("${kafka.topic.member.delete-client-role-topic}")
+    private String memberDeleteClientRoleTopicName;
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -62,6 +71,31 @@ public class KafkaTemplateConfig {
     @Bean
     public NewTopic memberUpdateTopic() {
         return TopicBuilder.name(memberUpdateTopicName)
+            .partitions(topicPartitions)
+            .replicas(topicReplications)
+            .build();
+    }
+
+
+    @Bean
+    public NewTopic memberDeleteTopic() {
+        return TopicBuilder.name(memberDeleteTopicName)
+            .partitions(topicPartitions)
+            .replicas(topicReplications)
+            .build();
+    }
+
+    @Bean
+    public NewTopic memberDeleteFreelancerRoleTopic() {
+        return TopicBuilder.name(memberDeleteFreelancerRoleTopicName)
+            .partitions(topicPartitions)
+            .replicas(topicReplications)
+            .build();
+    }
+
+    @Bean
+    public NewTopic memberDeleteClientRoleTopic() {
+        return TopicBuilder.name(memberDeleteClientRoleTopicName)
             .partitions(topicPartitions)
             .replicas(topicReplications)
             .build();

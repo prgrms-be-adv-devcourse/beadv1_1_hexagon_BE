@@ -10,7 +10,7 @@ import com.example.memberservice.member.service.model.dto.input.MemberExistByNam
 import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
 import com.example.memberservice.member.service.model.dto.input.MemberUpdateRoleStateInput;
-import org.hexagon.core.events.selfpromotion.SelfPromotionCreatedEvent;
+import org.hexagon.core.events.selfpromotion.SelfPromotionUpsertEvent;
 
 public final class MemberServiceInputMapper {
 
@@ -50,8 +50,7 @@ public final class MemberServiceInputMapper {
         return new MemberUpdateRoleStateInput(memberCode, request.role());
     }
 
-    //TODO(Profile 에서 카프카 메세지 구현 이후 의존)
-    public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(SelfPromotionCreatedEvent event){
+    public static MemberUpdateRoleStateInput toUpdateMemberRoleStateInput(SelfPromotionUpsertEvent event){
         return new MemberUpdateRoleStateInput(event.memberCode(), MemberRole.FREELANCER);
     }
 

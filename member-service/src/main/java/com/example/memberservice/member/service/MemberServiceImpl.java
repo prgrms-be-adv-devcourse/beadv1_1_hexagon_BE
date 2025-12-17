@@ -232,6 +232,8 @@ public class MemberServiceImpl implements MemberService {
         existMember.registerRoleState(inputRole);
 
         Members updatedMember = memberJpaRepository.save(existMember);
+
+        emailAuthRepository.deleteVerified(inputRole,updatedMember.getCode());
     }
 
     @Override
