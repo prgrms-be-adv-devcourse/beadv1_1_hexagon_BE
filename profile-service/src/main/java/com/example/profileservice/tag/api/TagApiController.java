@@ -102,4 +102,9 @@ public interface TagApiController {
     ResponseEntity<ResponseDto<TagResponse>> getTagBySkill(
             @Parameter(description = "조회할 기술 태그 이름", example = "Java")
             @RequestParam("skill") String skill);
+
+    // 태그 코드 목록으로 태그 정보 일괄 조회
+    @Operation(summary = "태그 코드 목록으로 조회", description = "여러 개의 태그 코드를 전달받아 해당 태그들의 정보를 일괄 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "태그 목록 조회 성공")
+    ResponseEntity<ResponseDto<List<TagResponse>>> getTagsByCodes(@RequestParam("codes") List<String> codes);
 }

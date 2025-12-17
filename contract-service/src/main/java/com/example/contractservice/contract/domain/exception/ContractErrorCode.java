@@ -17,7 +17,8 @@ public class ContractErrorCode extends DomainErrorCode {
     public static final ContractErrorCode INVALID_MEMBER_COUNT;
 
     public static final ContractErrorCode COMMISSION_CAPACITY_NOT_FOUND;
-    public static final ContractErrorCode COMMISSION_RECRUIT_FULL;
+    public static final ContractErrorCode COMMISSION_SELECTION_COUNT_FULL;
+    public static final ContractErrorCode COMMISSION_APPLIED_COUNT_FULL;
 
     public static final ContractErrorCode CANCEL_NOT_AVAILABLE;
     public static final ContractErrorCode COMMISSION_NOT_AVAILABLE;
@@ -35,8 +36,9 @@ public class ContractErrorCode extends DomainErrorCode {
 
         INVALID_MEMBER_COUNT = new ContractErrorCode(HttpStatus.BAD_REQUEST, 4030, "계약 참여자 수를 만족하지 않습니다.");
 
-        COMMISSION_CAPACITY_NOT_FOUND = new ContractErrorCode(HttpStatus.NOT_FOUND, 4040, "해당 의뢰글의 모집 인원, 선정 인원 정보가 존재하지 않습니다.");
-        COMMISSION_RECRUIT_FULL = new ContractErrorCode(HttpStatus.CONFLICT, 4041, "해당 의뢰글에 대한 모집 인원이 꽉 찼습니다.");
+        COMMISSION_CAPACITY_NOT_FOUND = new ContractErrorCode(HttpStatus.NOT_FOUND, 4040, "해당 의뢰글의 지원 인원, 선정 인원 정보가 존재하지 않습니다.");
+        COMMISSION_SELECTION_COUNT_FULL = new ContractErrorCode(HttpStatus.CONFLICT, 4041, "해당 의뢰글에 대한 선정 인원이 꽉 찼습니다.");
+        COMMISSION_APPLIED_COUNT_FULL = new ContractErrorCode(HttpStatus.CONFLICT, 4042, "해당 의뢰글의 지원 가능 인원 수가 꽉 찼습니다.");
 
         CANCEL_NOT_AVAILABLE = new ContractErrorCode(HttpStatus.BAD_REQUEST, 4050, "취소할 수 있는 계약의 상태가 아닙니다.");
         COMMISSION_NOT_AVAILABLE = new ContractErrorCode(HttpStatus.BAD_REQUEST, 4051, "관련 의뢰글이 존재하지 않거나 마감되었습니다.");

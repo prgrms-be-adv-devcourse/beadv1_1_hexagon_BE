@@ -1,10 +1,10 @@
 package com.example.profileservice.common.model.vo.util;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record MemberUnregisteredEvent(
         String memberCode,
-        LocalDateTime timestam
+        Instant timestamp
 ) {
 
 }

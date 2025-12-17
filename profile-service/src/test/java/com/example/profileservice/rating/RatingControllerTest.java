@@ -5,9 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.profileservice.common.model.util.TestKafkaConfig;
+import com.example.profileservice.common.model.vo.util.CompletedContractStore;
+import com.example.profileservice.common.model.vo.util.ContractInfo;
+import com.example.profileservice.common.model.vo.util.ContractStatus;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
-import com.example.profileservice.common.model.util.TestKafkaConfig;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.repository.RatingRepository;
 import com.example.profileservice.rating.service.RatingService;
@@ -42,6 +45,10 @@ public class RatingControllerTest {
     private static final String RECEIVER_CODE_INITIALIZED = "member-receiver-uuid-010";
     private static final String RECEIVER_CODE_NEW = "member-receiver-uuid-020";
     private static final String RECEIVER_CODE_INVALID = "invalid-member-code-999";
+    private static final String VALID_CONTRACT_CODE = "contract-valid-code-12345";
+    private static final String INVALID_CONTRACT_CODE = "contract-invalid-code-99999";
+    private static final String UNCOMPLETED_CONTRACT_CODE = "contract-uncompleted-code-77777";
+    private static final String ALREADY_RATED_CONTRACT_CODE = "contract-rated-code-88888";
 
     @Autowired
     private MockMvc mockMvc;
@@ -57,6 +64,9 @@ public class RatingControllerTest {
 
     @MockitoBean
     private MemberFeignClient memberFeignClient;
+
+    @Autowired
+    private CompletedContractStore completedContractStore;
 
     private RatingRequest satisfiedRequest;
     private RatingRequest unsatisfiedRequest;
@@ -74,11 +84,26 @@ public class RatingControllerTest {
         Mockito.when(memberFeignClient.existMemberByCode(Mockito.anyList()))
                 .thenReturn(mockSuccessResponse);
 
-        // 1. 초기 평가 데이터 설정 및 저장 (만족 10, 불만족 5)
-        RatingRequest satisfied = new RatingRequest(true);
-        RatingRequest unsatisfied = new RatingRequest(false);
+        // 2-1. 유효한 계약 (DONE 상태, 당사자 매칭, 미평가)
+        ContractInfo validContract = new ContractInfo(
+                CALLER_CODE, // 클라이언트: CALLER_CODE
+                RECEIVER_CODE_INITIALIZED, // 프리랜서: RECEIVER_CODE_INITIALIZED
+                "comm-1",
+                null, null, null, null,
+                ContractStatus.DONE // 필수: DONE 상태
+        );
 
-        // Note: updateRating 호출 시, Feign Client Mocking이 작동하여 유효성 검증을 통과해야 함.
+        completedContractStore.markCompleted(VALID_CONTRACT_CODE);
+
+        completedContractStore.markCompleted("another-contract-code");
+
+        // 2-2. 계약 상태가 DONE이 아닌 경우 (UNCOMPLETED_CONTRACT_CODE)
+        ContractInfo uncompletedContract = validContract.progress(); // IN_PROGRESS로 상태 변경
+
+        // 3. RatingRequest 생성자에 contractCode 추가 (setUp에서는 Mocking된 VALID_CONTRACT_CODE 사용)
+        RatingRequest satisfied = new RatingRequest(VALID_CONTRACT_CODE, true);
+        RatingRequest unsatisfied = new RatingRequest(VALID_CONTRACT_CODE, false);
+
         // 만족 10회 증가
         for (int i = 0; i < 10; i++) {
             ratingService.updateRating(CALLER_CODE, RECEIVER_CODE_INITIALIZED, satisfied);
@@ -89,9 +114,9 @@ public class RatingControllerTest {
             ratingService.updateRating(CALLER_CODE, RECEIVER_CODE_INITIALIZED, unsatisfied);
         }
 
-        // 2. 요청 DTO 설정
-        satisfiedRequest = new RatingRequest(true);
-        unsatisfiedRequest = new RatingRequest(false);
+        // 4. 요청 DTO 설정
+        satisfiedRequest = new RatingRequest(VALID_CONTRACT_CODE, true);
+        unsatisfiedRequest = new RatingRequest(VALID_CONTRACT_CODE, false);
     }
 
     // 평가 조회 (GET) 테스트
@@ -206,8 +231,8 @@ public class RatingControllerTest {
     @Test
     @DisplayName("PATCH /api/ratings/{memberCode} - RatingRequest의 satisfied 필드 누락 시 400 Bad Request")
     void updateRating_MissingRequiredField_Failure() throws Exception {
-        // given: satisfied 필드가 없는 요청
-        String invalidRequestContent = "{}";
+        // given: "contractCode"는 명시해주어 요청
+        String invalidRequestContent = "{\"contractCode\": \"some-code\"}";
 
         // when & then: 필수 필드 누락 검증
         mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
@@ -217,5 +242,36 @@ public class RatingControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("만족 여부는 필수입니다. (Field: satisfied)"))
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @DisplayName("PATCH - DONE 이벤트를 받지 못한 계약은 평가 불가")
+    void updateRating_NotCompletedKafkaContract_Failure() throws Exception {
+
+        RatingRequest request = new RatingRequest("not-done-contract", true);
+
+        mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
+                        .header(HEADER_X_CODE, CALLER_CODE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(3204)); // CONTRACT_NOT_COMPLETED
+    }
+
+    @Test
+    @DisplayName("PATCH /api/ratings/{memberCode} - RatingRequest의 contractCode 필드 누락 시 400 Bad Request")
+    void updateRating_MissingContractCode_Failure() throws Exception {
+        // given: contractCode 필드가 없는 요청
+        String invalidRequestContent = "{\"satisfied\": true}";
+
+        // when & then: 필수 필드 누락 검증
+        mockMvc.perform(patch(BASE_URL + "/{memberCode}", RECEIVER_CODE_INITIALIZED)
+                        .header(HEADER_X_CODE, CALLER_CODE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRequestContent))
+                .andExpect(status().isBadRequest())
+                // 계약 코드가 필수이므로, 해당 에러 메시지를 확인
+                .andExpect(jsonPath("$.message").value("계약 코드는 필수입니다. (Field: contractCode)"))
+                .andExpect(jsonPath("$.code").value(3001)); // INVALID_INPUT_VALUE
     }
 }

@@ -17,6 +17,7 @@ public abstract class ContractMapper {
                 .code(contract.getCode())
                 .clientCode(contractInfo.clientCode())
                 .freelancerCode(contractInfo.freelancerCode())
+                .commissionCode(contractInfo.commissionCode())
                 .status(contractInfo.status())
                 .startedAt(contractInfo.startedAt())
                 .endedAt(contractInfo.endedAt())

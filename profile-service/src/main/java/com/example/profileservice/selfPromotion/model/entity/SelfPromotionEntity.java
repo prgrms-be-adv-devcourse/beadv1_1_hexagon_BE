@@ -43,18 +43,23 @@ public class SelfPromotionEntity extends BaseEntity {
     @Column(name = "resume_code", columnDefinition = "VARCHAR(36)")
     private String resumeCode;
 
+    // PDF S3 Key 필드
+    @Column(name = "pdf_key", columnDefinition = "VARCHAR(255)")
+    private String pdfKey;
+
     @Builder
-    public SelfPromotionEntity(String memberCode, String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode) {
+    public SelfPromotionEntity(String memberCode, String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode, String pdfKey) {
         this.memberCode = memberCode;
         this.title = title;
         this.content = content;
         this.paymentType = paymentType;
         this.unitAmount = unitAmount;
         this.resumeCode = resumeCode;
+        this.pdfKey = pdfKey;
     }
 
     // 정적 팩토리 메서드로 생성 로직 캡슐화
-    public static SelfPromotionEntity create(String memberCode, String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode) {
+    public static SelfPromotionEntity create(String memberCode, String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode, String pdfKey) {
         return SelfPromotionEntity.builder()
                 .memberCode(memberCode)
                 .title(title)
@@ -62,15 +67,17 @@ public class SelfPromotionEntity extends BaseEntity {
                 .paymentType(paymentType)
                 .unitAmount(unitAmount)
                 .resumeCode(resumeCode)
+                .pdfKey(pdfKey)
                 .build();
     }
 
-    public void update(String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode) {
+    public void update(String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode, String pdfKey) {
         this.title = title;
         this.content = content;
         this.paymentType = paymentType;
         this.unitAmount = unitAmount;
         this.resumeCode = resumeCode;
+        this.pdfKey = pdfKey;
     }
 
     // 권한 검사 메서드 (BaseEntity.code를 사용)

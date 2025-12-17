@@ -26,7 +26,10 @@ public record SelfPromotionCreateRequest(
         Long unitAmount,
 
         @Schema(description = "연결할 이력서 코드 (선택 사항)", example = "sa546a6-asd7f-sd57fs-sd5f7ds567ds5d", nullable = true)
-        String resumeCode
+        String resumeCode,
+
+        @Schema(description = "PDF 파일의 S3 Key (선택 사항)", example = "self_promotions/uuid-file.pdf", nullable = true)
+        String pdfKey
 ) {
 
 }

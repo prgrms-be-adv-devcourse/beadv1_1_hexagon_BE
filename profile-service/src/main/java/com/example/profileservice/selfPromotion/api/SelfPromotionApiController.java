@@ -28,21 +28,25 @@ public interface SelfPromotionApiController {
     @ApiResponse(responseCode = "200", description = "목록 조회 성공")
     ResponseEntity<ResponseDto<List<SelfPromotionResponse>>> getAllPromotions();
 
-    // 내 프로모션 목록 조회
-    @Operation(summary = "내 프로모션 목록 조회", description = "요청 회원이 작성한 모든 활성 프로모션 목록을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "목록 조회 성공")
-    ResponseEntity<ResponseDto<List<SelfPromotionResponse>>> getMyPromotions(
+    // 내 프로모션 조회
+    @Operation(summary = "내 프로모션 조회", description = "요청 회원이 작성한 활성 프로모션 단건을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @ApiResponse(responseCode = "200", description = "활성 프로모션이 없는 경우 'data' 필드는 null",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ResponseDto.class),
+                    examples = @ExampleObject(name = "Not Found", value = "{\"code\": 0, \"httpStatus\": 200, \"message\": \"요청 성공\", \"data\": null}")))
+    ResponseEntity<ResponseDto<SelfPromotionResponse>> getMyPromotions(
             @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
             @RequestHeader(value = "X-CODE") String memberCode);
 
     // 프로모션 등록
-    @Operation(summary = "프로모션 등록", description = "새로운 셀프 프로모션 게시글을 등록합니다.")
+    @Operation(summary = "프로모션 등록", description = "새로운 셀프 프로모션 게시글을 등록합니다. (멤버당 1건만 활성 가능)")
     @ApiResponse(responseCode = "201", description = "등록 성공")
-    @ApiResponse(responseCode = "400", description = "유효성 검증 실패 또는 유효하지 않은 이력서 코드",
+    @ApiResponse(responseCode = "409", description = "이미 활성 프로모션이 존재함",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ResponseDto.class),
-                    examples = @ExampleObject(name = "Invalid Resume Code",
-                            value = "{\"code\": 3403, \"httpStatus\": 400, \"message\": \"연결하려는 이력서 코드가 유효하지 않거나 존재하지 않습니다.\", \"data\": null}")))
+                    examples = @ExampleObject(name = "Promotion Already Exists",
+                            value = "{\"code\": 3404, \"httpStatus\": 409, \"message\": \"이미 활성 상태의 셀프 프로모션 게시글이 존재합니다.\", \"data\": null}")))
     ResponseEntity<ResponseDto<SelfPromotionResponse>> createPromotion(
             @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
             @RequestHeader(value = "X-CODE") String memberCode,
