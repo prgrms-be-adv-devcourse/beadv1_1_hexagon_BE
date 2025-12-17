@@ -156,7 +156,7 @@ public class ContractService {
                 .filter(memberInfo -> memberInfo.memberCode().equals(freelancerCode))
                 .findAny().orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
-        if (freelancerInfo.memberRole() != MemberRole.FREELANCER) {
+        if (freelancerInfo.role() != MemberRole.FREELANCER) {
             throw new ContractException(NOT_FREELANCER);
         }
     }
