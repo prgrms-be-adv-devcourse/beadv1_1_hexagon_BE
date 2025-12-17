@@ -5,6 +5,11 @@ spring:
   application:
     name: member-service
 
+  cloud:
+    openfeign:
+      httpclient:
+        hc5:
+          enabled: true
   jpa:
     open-in-view: false
     hibernate:
