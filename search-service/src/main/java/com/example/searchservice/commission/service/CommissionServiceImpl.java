@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
@@ -90,24 +91,29 @@ public class CommissionServiceImpl implements CommissionService {
                                     MultiMatchQuery.of(m -> m
                                             .query(query)
                                             .fields("title^2", "content")
-                                            .minimumShouldMatch("2<80%")
-//                                            .fuzziness("1")
+                                            .operator(Operator.And)
+//                                            .minimumShouldMatch("2<80%")
+                                            .fuzziness("1")
                                     )._toQuery()
                             );
                             case TITLE -> boolQuery.must(
                                     MatchQuery.of(m -> m
                                             .field("title")
                                             .query(query)
-                                            .minimumShouldMatch("2<80%")
-//                                            .fuzziness("1")
+                                            .operator(Operator.And)
+
+//                                            .minimumShouldMatch("2<80%")
+                                            .fuzziness("1")
                                     )._toQuery()
                             );
                             case CONTENT -> boolQuery.must(
                                     MatchQuery.of(m -> m
                                             .field("content")
                                             .query(query)
-                                            .minimumShouldMatch("2<80%")
-//                                            .fuzziness("1")
+                                            .operator(Operator.And)
+
+//                                            .minimumShouldMatch("2<80%")
+                                            .fuzziness("1")
                                     )._toQuery()
                             );
                         }

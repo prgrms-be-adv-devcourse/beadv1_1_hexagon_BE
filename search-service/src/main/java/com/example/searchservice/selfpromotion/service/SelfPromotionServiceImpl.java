@@ -3,6 +3,7 @@ package com.example.searchservice.selfpromotion.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
@@ -80,24 +81,27 @@ public class SelfPromotionServiceImpl implements SelfPromotionService {
                                     MultiMatchQuery.of(m -> m
                                             .query(query)
                                             .fields("title^2", "content")
-                                            .minimumShouldMatch("2<80%")
-//                                            .fuzziness("1")
+                                            .operator(Operator.And)
+//                                            .minimumShouldMatch("2<80%")
+                                            .fuzziness("1")
                                     )._toQuery()
                             );
                             case TITLE -> b.must(
                                     MatchQuery.of(m -> m
                                             .field("title")
                                             .query(query)
-                                            .minimumShouldMatch("2<80%")
-//                                            .fuzziness("1")
+                                            .operator(Operator.And)
+//                                            .minimumShouldMatch("2<80%")
+                                            .fuzziness("1")
                                     )._toQuery()
                             );
                             case CONTENT -> b.must(
                                     MatchQuery.of(m -> m
                                             .field("content")
                                             .query(query)
-                                            .minimumShouldMatch("2<80%")
-//                                            .fuzziness("1")
+                                            .operator(Operator.And)
+//                                            .minimumShouldMatch("2<80%")
+                                            .fuzziness("1")
                                     )._toQuery()
                             );
                         }
