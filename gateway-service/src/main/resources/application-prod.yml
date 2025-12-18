@@ -103,13 +103,20 @@ spring:
               predicates:
                 - Path=/api/commissions/{comissions_code}
                 - Method=GET
+            - id: cartpost-service-2
+              uri: lb://CARTPOST-SERVICE
+              predicates:
+                - Path=/api/commissions/exist/**
+                - Method=GET
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
 
             # 클라이언트 자격이 필요한 API 요청
             - id: cartpost-service-with-client
               uri: lb://CARTPOST-SERVICE
               predicates:
-                - Path=/api/commissions/**,/api/commissions
-                  ,/api/carts/**
+                - Path=/api/commissions/**,/api/commissions,/api/carts/**
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
@@ -172,18 +179,11 @@ spring:
 
             #region MEMBER_SERVICE_ROUTES
 
-
-
             - id: member-service-no-auth
               uri: lb://MEMBER-SERVICE
               predicates:
                 - Path=/api/members
                 - Method=GET
-
-            - id: auth-service
-              uri: lb://member-service
-              predicates:
-                - Path=/api/auth/**
 
             # 회원가입의 경우 IsSign 필요 없음.
             - id: member-service-sign
@@ -211,7 +211,7 @@ spring:
             - id: member-service-need-auth
               uri: lb://MEMBER-SERVICE
               predicates:
-                - Path=/api/members,/api/members/**
+                - Path=/api/members,/api/members/**,/api/auth/email/**
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
@@ -278,6 +278,16 @@ spring:
                 - Path=/api/self-promotions,/api/self-promotions/{promotionCode}
                 - Method=GET
 
+            - id: profile-self-promotions-isSign
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/self-promotions
+                - Method=POST
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
             - id: profile-self-promotions-freelancer
               uri: lb://PROFILE-SERVICE
               predicates:
@@ -315,23 +325,27 @@ spring:
                 - Path=/api/search/**
 
             #endregion SEARCH_SERVICE_ROUTES
-            - id: s3-service-upload-url
-              uri: lb://s3-service
-              predicates:
-                - Path=/api/s3/upload-url
-              filters:
-                - GlobalExceptionHandlingFilter
-                - TokenAuthenticationFilter
 
             #region S3_SERVICE_ROUTES
             - id: s3-service
               uri: lb://s3-service
               predicates:
                 - Path=/api/s3/**,/api/s3
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
             #endregion S3_SERVICE_ROUTES
 
             #region AI_SERVICE_ROUTES
-
+            - id: ai-service
+              uri: lb://recommendation-service
+              predicates:
+                - Path=/api/recommendations/**
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsClientCheckFilter
             #endregion AI_SERVICE_ROUTES
 
 cors:

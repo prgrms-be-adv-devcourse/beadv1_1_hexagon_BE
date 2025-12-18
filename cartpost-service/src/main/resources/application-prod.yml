@@ -49,10 +49,27 @@ spring:
         spring.json.trusted.packages: org.hexagon.core.*
         allow.auto.create.topics: false
 
+
 cartpost:
   config:
     topic-partitions: 1
     topic-replications: 1
+
+kafka:
+  topic:
+    contract:
+      name: contract-topic
+    commission:
+      name: commission-events
+      status:
+        name: commission-open-close-topic
+    member:
+      create:
+        name: member-create-topic
+      role:
+        name: member-delete-client-role-topic
+      cancel:
+        name: member-delete-topic
 
 contract:
   topic:
@@ -65,6 +82,13 @@ search:
 member:
   topic:
     name: member-create-topic
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 2000 # 2초
+        readTimeout: 5000    # 5초
 
 springdoc:
   swagger-ui:

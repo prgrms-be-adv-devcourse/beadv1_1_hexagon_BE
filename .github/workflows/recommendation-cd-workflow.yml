@@ -1,11 +1,11 @@
-name: gateway-service ci/cd
+name: recommendation-service ci/cd
 
 on:
   push:
     branches:
-      - feat/ci-cd/225
+      - main
     paths:
-      - 'gateway-service/**'
+      - 'recommendation-service/**'
 
 jobs:
 
@@ -18,14 +18,14 @@ jobs:
       packages: write
       id-token: write
     with:
-      service-name: hexagon-gateway-service
-      service-dir: ./gateway-service
-      file-name: Dockerfile_gateway
+      service-name: hexagon-recommendation-service
+      service-dir: ./recommendation-service
+      file-name: Dockerfile_recommendation
 
   deploying:
     needs: releasing
     uses: ./.github/workflows/deploy-workflow.yml
     secrets: inherit
     with:
-      service-name: hexagon-gateway-service
+      service-name: hexagon-recommendation-service
       image-tag: ${{ needs.releasing.outputs.tag_name }}

@@ -1,0 +1,59 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: recommendation-service
+
+  ai:
+    # retry
+    retry:
+      max-attempts: 3
+
+    # embedding client
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL}
+
+    # vector store
+    vectorstore:
+      pinecone:
+        api-key: ${VECTOR_DB_API_KEY}
+        index-name: ${INDEX_NAME}
+
+  kafka:
+    # kafka cluster
+    bootstrap-servers: kafka:9092
+
+    # kafka consumer
+    consumer:
+      group-id: recommendation-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: org.hexagon.core.*
+        spring.json.use.type.headers: true
+        allow.auto.create.topics: false
+
+# kafka topic
+kafka:
+  event:
+    topic:
+      profile-changed: profile.changed
+
+eureka:
+  instance:
+    instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
+    hostname: hexagon-recommendation-service
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+
+# mock data
+mock:
+  freelancer:
+    code: "3815886c-dbd2-11f0-ba37-727853d8dd6a,38158aac-dbd2-11f0-ba37-727853d8dd6a,38158c2e-dbd2-11f0-ba37-727853d8dd6a,38158fa5-dbd2-11f0-ba37-727853d8dd6a,381598f3-dbd2-11f0-ba37-727853d8dd6a,38159e59-dbd2-11f0-ba37-727853d8dd6a,3815a272-dbd2-11f0-ba37-727853d8dd6a,3815a4a7-dbd2-11f0-ba37-727853d8dd6a,3815a68a-dbd2-11f0-ba37-727853d8dd6a,3815a83f-dbd2-11f0-ba37-727853d8dd6a"
+
+

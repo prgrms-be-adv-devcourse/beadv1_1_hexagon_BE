@@ -3,7 +3,11 @@ package com.example.profileservice.common.model.vo.util;
 public record InternalMemberInfo(
     String memberCode,
     String nickName,
-    boolean canWork
+    MemberRole role
+
 ) {
+    enum MemberRole {
+        NONE, CLIENT, FREELANCER, BOTH, ADMIN
+    }
 
 }
