@@ -1,22 +1,25 @@
 package com.example.cartpostservice.cart.service;
 
+import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import com.example.cartpostservice.cart.controller.dto.response.ContractInfo;
 import com.example.cartpostservice.cart.controller.dto.response.PaidResultResponse;
-import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
-import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
-import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.ContractPayResponse;
 import com.example.cartpostservice.cart.infra.clinet.internal.ContractClient;
+import com.example.cartpostservice.cart.infra.clinet.internal.RecommendClient;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.ContractPayResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.FreelancerRecommendListResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.FreelancerRecommendResponse;
 import com.example.cartpostservice.cart.model.CartItemsEntity;
 import com.example.cartpostservice.cart.model.CartsEntity;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
-import com.example.cartpostservice.cart.infra.kafka.publisher.KafkaCartEventPublisher;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
@@ -33,8 +36,8 @@ public class CartServiceImpl implements CartService {
 
     private final CartsRepository cartsRepository;
     private final CartItemsRepository cartItemsRepository;
-    private final KafkaCartEventPublisher kafkaCartEventPublisher;
     private final ContractClient contractClient;
+    private final RecommendClient recommendClient;
     private final ApplicationEventPublisher applicationEventPublisher;
 
 
@@ -59,6 +62,14 @@ public class CartServiceImpl implements CartService {
 
                     CartItemsEntity cartItem = cartItemEntities.get(0);
 
+                    int recommendCount = Math.min(entry.getValue().size() / 3, 5);
+                    ResponseDto<FreelancerRecommendListResponse> freelancerRecommend = recommendClient.recommendFreelancers(
+                            commissionCode, recommendCount);
+
+                    Set<String> recommendationCodes = freelancerRecommend.data().recommendations().stream()
+                            .map(FreelancerRecommendResponse::freelancerCode)
+                            .collect(Collectors.toSet());
+
                     List<ContractInfo> contractInfos = cartItemEntities.stream()
                             .map(entity -> new ContractInfo(
                                     entity.getContractCode(),
@@ -66,6 +77,7 @@ public class CartServiceImpl implements CartService {
                                     entity.getClientName(),
                                     entity.getFreelancerName(),
                                     entity.getFreelancerCode(),
+                                    recommendationCodes.contains(entity.getFreelancerCode()),
                                     entity.getContractTitle()
                             ))
                             .toList();
@@ -108,10 +120,7 @@ public class CartServiceImpl implements CartService {
 
         ResponseDto<ContractPayResponse> response = contractClient.payContract(requests);
 
-        List<String> succeedContract = response.data().success();
-        List<String> failContract = response.data().fail();
-
-        for (String succeed : succeedContract) {
+        for (String succeed : response.data().success()) {
             cartItemsRepository.deleteByContractCode(succeed);
         }
 

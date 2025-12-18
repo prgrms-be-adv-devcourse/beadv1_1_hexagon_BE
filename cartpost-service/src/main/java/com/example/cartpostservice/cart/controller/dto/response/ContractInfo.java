@@ -11,6 +11,8 @@ public record ContractInfo(
 
         String freelancerCode,
 
+        boolean isRecommend,
+
         String contractTitle
 
 ) {
