@@ -330,7 +330,15 @@ spring:
             #endregion S3_SERVICE_ROUTES
 
             #region AI_SERVICE_ROUTES
-
+            - id: ai-service
+              uri: lb://recommendation-service
+              predicates:
+                - Path=/api/recommendations/**
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+                - IsClientCheckFilter
             #endregion AI_SERVICE_ROUTES
 
 cors:
