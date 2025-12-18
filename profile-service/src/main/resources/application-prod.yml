@@ -18,8 +18,8 @@ spring:
       ddl-auto: validate # 처음에는 create로 시작하여 엔티티 확인 후 validate로 변경
     properties:
       hibernate:
-        show_sql: true
-        format_sql: true #쿼리 로그를 보기 쉽게 포맷
+        show_sql: false
+        format_sql: false #쿼리 로그를 보기 쉽게 포맷
 
 
   kafka:
@@ -50,29 +50,22 @@ spring:
 
 kafka:
   topic:
-    contract:
-      name: contract-topic
+    contract: contract-topic
     tag-events:
       name: tag-events
-      self-promotion-events:
-        name: selfpromotion-events
-    # 초기화 이벤트 토픽 추가
+    self-promotion-events:
+      name: selfpromotion-events
     tag-init-events:
       name: tag-init-events
-      self-promotion-init-events:
-        name: selfpromotion-init-events
-# --- H2 인메모리 DB 설정 ---
-#datasource:
-#  url: jdbc:h2:mem:profiledb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-#  driver-class-name: org.h2.Driver
-#  username: sa
-#  password:
-#
-# H2 콘솔 설정을 통해 웹에서 DB 상태를 확인 가능 (개발 시 편의)
-#h2:
-#  console:
-#    enabled: true
-#    path: /h2-console
+    self-promotion-init-events:
+      name: selfpromotion-init-events
+    member-unregister:
+      name: member-delete-topic
+    member-role-revoke:
+      name: member-delete-freelancer-role-topic
+    profile-changed:
+      name: profile.changed
+
 
 eureka:
   instance:

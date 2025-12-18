@@ -11,11 +11,6 @@ on:
         type: string
   workflow_dispatch:
 
-concurrency:
-  group: production-deploy
-  cancel-in-progress: false
-
-
 env:
   REGISTRY: docker.io
 
