@@ -39,9 +39,14 @@ public class CartItemsEntity {
     @Column(name = "cart_code", nullable = false, updatable = false)
     private String cartCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private ContractStatus status;
+    @Column(name = "commission_code", nullable = false, updatable = false)
+    private String commissionCode;
+
+    @Column(name = "client_code", nullable = false, updatable = false)
+    private String clientCode;
+
+    @Column(name = "freelancer_code", nullable = false, updatable = false)
+    private String freelancerCode;
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
@@ -55,6 +60,15 @@ public class CartItemsEntity {
 
     @Column(name = "amount", nullable = false)
     private String amount;
+
+    @Column
+    private String clientName;
+
+    @Column
+    private String freelancerName;
+
+    @Column
+    private String contractTitle;
 
     @PrePersist
     public void prePersist() {
