@@ -3,7 +3,7 @@ name: payment-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/225
     paths:
       - 'payment-service/**'
 

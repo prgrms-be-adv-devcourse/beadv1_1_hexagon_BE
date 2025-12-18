@@ -3,7 +3,7 @@ name: contract-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/225
     paths:
       - 'contract-service/**'
 

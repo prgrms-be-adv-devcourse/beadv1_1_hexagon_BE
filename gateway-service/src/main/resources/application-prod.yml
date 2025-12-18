@@ -172,18 +172,11 @@ spring:
 
             #region MEMBER_SERVICE_ROUTES
 
-
-
             - id: member-service-no-auth
               uri: lb://MEMBER-SERVICE
               predicates:
                 - Path=/api/members
                 - Method=GET
-
-            - id: auth-service
-              uri: lb://member-service
-              predicates:
-                - Path=/api/auth/**
 
             # 회원가입의 경우 IsSign 필요 없음.
             - id: member-service-sign
@@ -211,7 +204,7 @@ spring:
             - id: member-service-need-auth
               uri: lb://MEMBER-SERVICE
               predicates:
-                - Path=/api/members,/api/members/**
+                - Path=/api/members,/api/members/**,/api/auth/email/**
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
@@ -278,6 +271,16 @@ spring:
                 - Path=/api/self-promotions,/api/self-promotions/{promotionCode}
                 - Method=GET
 
+            - id: profile-self-promotions-isSign
+              uri: lb://PROFILE-SERVICE
+              predicates:
+                - Path=/api/self-promotions
+                - Method=POST
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
+
             - id: profile-self-promotions-freelancer
               uri: lb://PROFILE-SERVICE
               predicates:
@@ -315,19 +318,16 @@ spring:
                 - Path=/api/search/**
 
             #endregion SEARCH_SERVICE_ROUTES
-            - id: s3-service-upload-url
-              uri: lb://s3-service
-              predicates:
-                - Path=/api/s3/upload-url
-              filters:
-                - GlobalExceptionHandlingFilter
-                - TokenAuthenticationFilter
 
             #region S3_SERVICE_ROUTES
             - id: s3-service
               uri: lb://s3-service
               predicates:
                 - Path=/api/s3/**,/api/s3
+              filters:
+                - GlobalExceptionHandlingFilter
+                - TokenAuthenticationFilter
+                - IsSignCheckFilter
             #endregion S3_SERVICE_ROUTES
 
             #region AI_SERVICE_ROUTES
