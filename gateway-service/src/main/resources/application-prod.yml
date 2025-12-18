@@ -327,7 +327,6 @@ spring:
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
-                - IsSignCheckFilter
             #endregion S3_SERVICE_ROUTES
 
             #region AI_SERVICE_ROUTES
