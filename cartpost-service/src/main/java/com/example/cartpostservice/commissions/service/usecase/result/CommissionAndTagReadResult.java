@@ -29,13 +29,13 @@ public record CommissionAndTagReadResult(
 
         Instant updatedAt,
 
-        int plannedHires,
+        Integer plannedHires,
 
-        int selectedCount,
+        Integer selectedCount,
 
-        int eligibleApplicants,
+        Integer eligibleApplicants,
 
-        int appliedCount,
+        Integer appliedCount,
 
         Instant lastSyncTime,
 
