@@ -80,11 +80,6 @@ jobs:
           mkdir -p ./search-service/src/main/resources
           echo '${{ vars.SEARCH_YML }}' > ./search-service/src/main/resources/application.yml
           echo '${{ vars.TEST_YML }}' > ./search-service/src/main/resources/application-test.yml
-      - name: s3 yml 생성
-        run: |
-          mkdir -p ./s3-service/src/main/resources
-          echo '${{ vars.SEARCH_YML }}' > ./s3-service/src/main/resources/application.yml
-          echo '${{ vars.TEST_YML }}' > ./s3-service/src/main/resources/application-test.yml
       - name: 전체 모듈 gradlew 권한 세팅
         run: |
           chmod +x ./cartpost-service/gradlew
@@ -96,7 +91,6 @@ jobs:
           chmod +x ./payment-service/gradlew
           chmod +x ./profile-service/gradlew
           chmod +x ./search-service/gradlew
-          chmod +x ./s3-service/gradlew
       - name: Configure sysctl limits
         run: |
           sudo swapoff -a
@@ -200,11 +194,6 @@ jobs:
 
       - name: profile-service 테스트 실행
         working-directory: ./profile-service
-        run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
-        continue-on-error: true
-
-      - name: s3-service 테스트 실행
-        working-directory: ./s3-service
         run: ./gradlew test -Dspring.profiles.active=test --no-daemon --continue
         continue-on-error: true
 
