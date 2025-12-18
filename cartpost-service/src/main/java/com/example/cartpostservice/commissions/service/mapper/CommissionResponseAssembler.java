@@ -33,6 +33,7 @@ public class CommissionResponseAssembler {
         }
 
         return new CommissionElementReadResponse(
+                commissionAndTagReadResult.memberCode(),
                 commissionAndTagReadResult.title(),
                 commissionAndTagReadResult.content(),
                 commissionAndTagReadResult.paymentType(),
