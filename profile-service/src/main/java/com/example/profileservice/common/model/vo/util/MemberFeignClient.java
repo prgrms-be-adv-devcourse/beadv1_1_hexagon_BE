@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 // member-service의 /internal/members 경로로 요청
-@FeignClient(name = "MEMBER-SERVICE", url = "http://MEMBER-SERVICE/internal/members")
+@FeignClient(name = "MEMBER-SERVICE", path = "/internal/members")
 public interface MemberFeignClient {
 
     @GetMapping("/exist")

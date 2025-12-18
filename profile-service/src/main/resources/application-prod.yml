@@ -4,7 +4,11 @@ server:
 spring:
   application:
     name: profile-service
-
+  cloud:
+    openfeign:
+      httpclient:
+        hc5:
+          enabled: true
   datasource:
     # TODO: 프로젝트 환경에 맞게 DB URL, Username, Password 수정 필요!!
     url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000

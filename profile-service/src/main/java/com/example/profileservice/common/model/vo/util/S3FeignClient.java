@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "S3-SERVICE", url = "http://S3-SERVICE")
+@FeignClient(name = "S3-SERVICE")
 public interface S3FeignClient {
 
     // 1. S3 Internal Controller의 Store Keys API 호출 (Create 시 사용)
