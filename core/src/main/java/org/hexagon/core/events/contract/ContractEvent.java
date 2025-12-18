@@ -5,6 +5,8 @@ import java.time.Instant;
 public record ContractEvent(
         String contractCode,
         String commissionCode,
+        String clientCode,
+        String freelancerCode,
         Instant createdAt,
         String status
 ) {

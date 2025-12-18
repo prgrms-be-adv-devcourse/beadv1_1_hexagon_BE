@@ -4,6 +4,7 @@ import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.vo.ContractContent;
 import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.contractservice.contract.entity.ContractEntity;
+import org.hexagon.core.events.contract.ContractEvent;
 
 public abstract class ContractMapper {
 
@@ -57,6 +58,19 @@ public abstract class ContractMapper {
                 contractInfo.status(),
                 contractContent.name(),
                 contractContent.body()
+        );
+    }
+
+    public static ContractEvent toContractEvent(Contract contract) {
+        ContractInfo contractInfo = contract.getInfo();
+
+        return new ContractEvent(
+                contract.getCode(),
+                contractInfo.commissionCode(),
+                contractInfo.clientCode(),
+                contractInfo.freelancerCode(),
+                contract.getCreatedAt(),
+                contractInfo.status().name()
         );
     }
 }
