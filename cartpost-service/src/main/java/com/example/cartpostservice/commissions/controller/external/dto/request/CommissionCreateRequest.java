@@ -24,7 +24,6 @@ public record CommissionCreateRequest(
 
         @Schema(description = "결제 방식", example = "PER_JOB")
         @NotNull(message = "paymentType은 반드시 선택해야 합니다.")
-        @Pattern(regexp = "^[0-9]+$", message = "금액은 숫자만 입력 가능합니다.")
         PaymentType paymentType,
 
         @Schema(description = "단위 금액", example = "50000")
