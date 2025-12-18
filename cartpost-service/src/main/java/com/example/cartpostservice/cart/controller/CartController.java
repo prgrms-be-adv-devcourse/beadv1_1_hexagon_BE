@@ -3,8 +3,9 @@ package com.example.cartpostservice.cart.controller;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
-import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
+import com.example.cartpostservice.cart.controller.dto.response.PaidResultResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.service.CartService;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.util.List;
@@ -55,11 +56,12 @@ public class CartController implements CartApi {
 
     @Override
     @GetMapping("/pay/items")
-    public ResponseEntity<ResponseDto<Empty>> payRequest(String xCode, ContractPayRequest requests) {
+    public ResponseEntity<ResponseDto<PaidResultResponse>> payRequest(@RequestHeader(name = "X-CODE") String xCode,
+            ContractPayRequest requests) {
 
-        Empty emptyResponse = cartService.payCartItems(xCode, requests);
+        PaidResultResponse response = cartService.payCartItems(xCode, requests);
 
-        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, emptyResponse),
+        return new ResponseEntity<>(getSuccessResponse(CustomStatusCode.SUCCESS, response),
                 CustomStatusCode.SUCCESS.getStatus());
     }
 }

@@ -1,6 +1,5 @@
 package com.example.cartpostservice.commissions.infra.kafka.publisher;
 
-import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
 import org.hexagon.core.events.commission.CommissionUpsertEvent;
@@ -30,25 +29,5 @@ public class KafkaCommissionEventPublisher {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void deleteProducer(CommissionDeletedEvent commissionDeletedEvent) {
         kafkaTemplate.send(commissionStatusTopic, commissionDeletedEvent);
-    }
-
-    public void finishProducer(CommissionServiceMessage finishMessage) {
-
-        CommissionUpsertEvent commissionUpdatedEvent = new CommissionUpsertEvent(
-                finishMessage.code(),
-                finishMessage.title(),
-                finishMessage.content(),
-                finishMessage.memberCode(),
-                finishMessage.memberNickname(),
-                finishMessage.tags(),
-                finishMessage.startedAt(),
-                finishMessage.endedAt(),
-                finishMessage.paymentType(),
-                finishMessage.payAmount(),
-                finishMessage.isClosed(),
-                finishMessage.updatedAt()
-        );
-
-        kafkaTemplate.send(commissionStatusTopic, commissionUpdatedEvent);
     }
 }

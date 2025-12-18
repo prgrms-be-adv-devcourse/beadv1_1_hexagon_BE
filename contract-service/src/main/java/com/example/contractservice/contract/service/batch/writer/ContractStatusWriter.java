@@ -2,6 +2,7 @@ package com.example.contractservice.contract.service.batch.writer;
 
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.repository.ContractRepository;
+import com.example.contractservice.contract.service.mapper.ContractMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
@@ -26,7 +27,9 @@ public abstract class ContractStatusWriter implements ItemWriter<Contract> {
         });
     }
 
-    protected abstract void changeStatus(Contract contractEntity);
+    protected void publishEvent(Contract contract) {
+        applicationEventPublisher.publishEvent(ContractMapper.toContractEvent(contract));
+    }
 
-    protected abstract void publishEvent(Contract contractEntity);
+    protected abstract void changeStatus(Contract contract);
 }

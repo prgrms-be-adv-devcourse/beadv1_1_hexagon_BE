@@ -122,20 +122,21 @@ public class OrchestrationService {
         domainCompositeService.softDeleteCommission(memberCode, commissionCode);
     }
 
-    public void finishCommission(String code, String commissionCode) {
-
+    public void finishCommission(String memberCode, String commissionCode) {
+        domainCompositeService.finishCommission(memberCode, commissionCode);
     }
 
     public void openCommission(String memberCode, String commissionCode) {
-
+        domainCompositeService.openCommission(memberCode, commissionCode);
     }
 
-    public void canAccessCommission(String code, String commissionCode) {
-
+    public void canAccessCommission(String memberCode, String commissionCode) {
+        domainCompositeService.canAccessCommission(memberCode, commissionCode);
     }
 
     public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
-        return null;
+
+        return new CommissionRecruitmentStatusResponse(domainCompositeService.getRecruitmentStatus(commissionCode));
     }
 
 

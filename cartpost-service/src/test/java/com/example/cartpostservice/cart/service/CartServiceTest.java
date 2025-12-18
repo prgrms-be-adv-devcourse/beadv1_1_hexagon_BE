@@ -6,7 +6,7 @@ import com.example.cartpostservice.cart.model.CartsEntity;
 import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
-import com.example.cartpostservice.cart.service.kafka.CartKafkaService;
+import com.example.cartpostservice.cart.infra.kafka.publisher.KafkaCartEventPublisher;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import org.hexagon.core.dto.Empty;
@@ -37,7 +37,7 @@ public class CartServiceTest {
     private CartItemsRepository cartItemsRepository;
 
     @Mock
-    private CartKafkaService cartKafkaService;
+    private KafkaCartEventPublisher kafkaCartEventPublisher;
 
     @InjectMocks
     private CartServiceImpl cartService;
@@ -130,7 +130,7 @@ public class CartServiceTest {
 
         // then
         assertThat(response).isNotNull();
-        verify(cartKafkaService, times(1)).deleteProducer(any());
+        verify(kafkaCartEventPublisher, times(1)).deleteProducer(any());
         verify(cartItemsRepository, times(1)).delete(item);
     }
 

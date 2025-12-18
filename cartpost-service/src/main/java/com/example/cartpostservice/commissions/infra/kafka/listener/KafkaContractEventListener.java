@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
         topics = {
                 "${kafka.topic.contract.name}"
         },
-        groupId = "commission-service"
+        groupId = "${spring.kafka.consumer.group-id}"
 )
 public class KafkaContractEventListener {
 

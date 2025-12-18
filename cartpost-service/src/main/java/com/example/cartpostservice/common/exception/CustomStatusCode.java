@@ -21,6 +21,7 @@ public enum CustomStatusCode {
     BAD_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST, 6424, "파리미터 값이 잘못되었습니다"),
     ALREADY_CLOSED_COMMISSION(HttpStatus.BAD_REQUEST, 6434, "이미 마감된 의뢰글 입니다"),
     BAD_REQUEST_INTERNAL_MODULE_SERVER(HttpStatus.BAD_REQUEST, 6444, "내부 모듈 시스템에 잘못된 요청을 보냈습니다"),
+    BAD_REQUEST_CLOSED_COMMISSION(HttpStatus.BAD_REQUEST, 6444, "더 이상 모집할 인원이 없는 의뢰글 입니다"),
 
     NOT_FOUND_INTERNAL_MODULE_SERVER(HttpStatus.NOT_FOUND, 6454, "내부 모듈 시스템에서 값을 찾지 못하였습니다"),
 

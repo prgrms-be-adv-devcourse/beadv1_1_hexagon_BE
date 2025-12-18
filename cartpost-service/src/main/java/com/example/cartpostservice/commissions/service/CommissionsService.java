@@ -13,6 +13,7 @@ import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -126,6 +127,10 @@ public class CommissionsService implements CrudService<CommissionsServiceCommand
 
         if (commission.getRecruitmentStatus() == RecruitmentStatus.HALTED) {
             throw new BusinessException(CustomStatusCode.CANNOT_OPEN_COMMISSION);
+        }
+
+        if (Objects.equals(commission.getCacheSelectionCapacity(), commission.getCacheSelectedCount())) {
+            throw new BusinessException(CustomStatusCode.BAD_REQUEST_CLOSED_COMMISSION);
         }
 
         commission.openRecruitmentStatus();

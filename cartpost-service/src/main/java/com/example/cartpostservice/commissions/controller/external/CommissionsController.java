@@ -2,7 +2,6 @@ package com.example.cartpostservice.commissions.controller.external;
 
 import static com.example.cartpostservice.common.model.dto.ResponseDtoMapper.getSuccessResponse;
 
-import com.example.cartpostservice.commissions.controller.external.CommissionsApi;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.request.CommissionUpdateRequest;
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionCreateResponse;
@@ -118,10 +117,10 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @PatchMapping("/deadline/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> finishCommission(
-            @RequestHeader("X-CODE") String code,
+            @RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        orchestrationService.finishCommission(code, commissionCode);
+        orchestrationService.finishCommission(memberCode, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));
@@ -130,7 +129,7 @@ public class CommissionsController implements CommissionsApi {
     @Override
     @PostMapping("/reopen/{commission-code}")
     public ResponseEntity<ResponseDto<Empty>> openCommission(@RequestHeader("X-CODE") String memberCode,
-            String commissionCode) {
+            @PathVariable(name = "commission-code") String commissionCode) {
 
         orchestrationService.openCommission(memberCode, commissionCode);
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
@@ -139,10 +138,10 @@ public class CommissionsController implements CommissionsApi {
 
     @Override
     @GetMapping("/exist/{commission-code}")
-    public ResponseEntity<ResponseDto<Empty>> canAccessCommission(@RequestHeader("X-CODE") String code,
+    public ResponseEntity<ResponseDto<Empty>> canAccessCommission(@RequestHeader("X-CODE") String memberCode,
             @PathVariable(name = "commission-code") String commissionCode) {
 
-        orchestrationService.canAccessCommission(code, commissionCode);
+        orchestrationService.canAccessCommission(memberCode, commissionCode);
 
         return ResponseEntity.status(CustomStatusCode.SUCCESS.getStatus())
                 .body(getSuccessResponse(CustomStatusCode.SUCCESS, Empty.getInstance()));

@@ -22,6 +22,7 @@ import com.example.contractservice.contract.service.dto.request.ContractPayServi
 import com.example.contractservice.contract.service.dto.response.CommissionRecruitmentResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
+import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberRole;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.repository.DepositHistoryJpaRepository;
@@ -229,8 +230,8 @@ class ContractServiceTest {
         ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         CountDownLatch countDownLatch = new CountDownLatch(tryCount);
 
-        List<MemberInfo> memberInfoList = List.of(new MemberInfo(clientCode, "클라이언트", false),
-                new MemberInfo(freelancerCode, "프리랜서", true));
+        List<MemberInfo> memberInfoList = List.of(new MemberInfo(clientCode, "클라이언트", MemberRole.CLIENT),
+                new MemberInfo(freelancerCode, "프리랜서", MemberRole.FREELANCER));
 
         when(memberClient.getMemberInfo(any()))
                 .thenReturn(new ResponseDto<>(0, HttpStatus.OK.value(), "", new MemberInfoResponse(memberInfoList)));

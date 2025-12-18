@@ -1,8 +1,8 @@
 package com.example.cartpostservice.cart.kafka;
 
 
-import com.example.cartpostservice.cart.controller.dto.response.ContractBriefWithNicknameResponse;
-import com.example.cartpostservice.cart.controller.internal.ContractClient;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.ContractBriefWithNicknameResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.ContractClient;
 import com.example.cartpostservice.cart.model.CartItemsEntity;
 import com.example.cartpostservice.cart.model.CartsEntity;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
@@ -43,7 +43,7 @@ import static org.mockito.Mockito.verify;
 @EmbeddedKafka(
         partitions = 1,
         // 성공 사례처럼 변수(${...})를 사용
-        topics = { "${member.topic.name}", "${contract.topic.name}" }
+        topics = {"${member.topic.name}", "${contract.topic.name}"}
 )
 @TestPropertySource(properties = {
         // 1. [핵심] 위에서 사용한 토픽 변수의 값을 여기서 정의 (성공 코드 패턴 적용)
@@ -68,7 +68,7 @@ import static org.mockito.Mockito.verify;
         "spring.sql.init.mode=never",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
-class CartPostKafkaListenerTest {
+class KafkaCartEventListenerTest {
 
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
@@ -132,7 +132,8 @@ class CartPostKafkaListenerTest {
 
         // 4. Mocking: 외부 Feign Client (ContractClient) 응답 설정
         ContractBriefWithNicknameResponse briefInfo = new ContractBriefWithNicknameResponse(
-                contractCode, "requestorName", "contractorName", Instant.now(), Instant.now().plus(3, ChronoUnit.DAYS), "MONTHLY", 10000L, "홍길동과 JohnDoe의 계약"
+                contractCode, "requestorName", "contractorName", Instant.now(), Instant.now().plus(3, ChronoUnit.DAYS),
+                "MONTHLY", 10000L, "홍길동과 JohnDoe의 계약"
         );
         ResponseDto<List<ContractBriefWithNicknameResponse>> responseDto =
                 getSuccessResponse(CustomStatusCode.SUCCESS, List.of(briefInfo));

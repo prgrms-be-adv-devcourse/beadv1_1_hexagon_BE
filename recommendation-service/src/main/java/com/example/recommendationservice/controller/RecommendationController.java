@@ -12,13 +12,12 @@ import static com.example.recommendationservice.common.exception.status.Response
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/internal/recommendations")
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
 
     // 프리랜서 추천 API
-    @GetMapping("/commissions/{commission-code}/freelancers")
+    @GetMapping("/internal/recommendations/commissions/{commission-code}/freelancers")
     public ResponseDto<FreelancerRecommendListResponse> recommendFreelancers(
         @PathVariable("commission-code") String commissionCode,
         @RequestParam(defaultValue = "3") int count
@@ -33,8 +32,9 @@ public class RecommendationController {
     }
 
     // 프리랜서 추천 사유 조회 API
-    @GetMapping("/commissions/{commission-code}/freelancers/{freelancer-code}/reason")
+    @GetMapping("/api/recommendations/commissions/{commission-code}/freelancers/{freelancer-code}/reason")
     public ResponseDto<FreelancerRecommendReasonResponse> getRecommendationReason(
+        @RequestHeader(name = "X-CODE") String currentMemberCode,
         @PathVariable("commission-code") String commissionCode,
         @PathVariable("freelancer-code") String freelancerCode
     ) {

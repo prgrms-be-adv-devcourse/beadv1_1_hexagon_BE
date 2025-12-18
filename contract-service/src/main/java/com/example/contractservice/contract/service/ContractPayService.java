@@ -5,13 +5,13 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 import static com.example.contractservice.contract.domain.exception.ContractErrorCode.NOT_REQUESTED_STATUS;
 
 import com.example.contractservice.common.aop.OptimisticRetry;
-import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.CommissionsCapacity;
 import com.example.contractservice.contract.repository.CommissionsCapacityRepository;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
+import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.contract.service.mapper.ContractSettlementMapper;
 import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
@@ -21,7 +21,6 @@ import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
-import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -59,8 +58,7 @@ public class ContractPayService {
 
         saveSettlements(contract);
 
-        applicationEventPublisher.publishEvent(
-                new ContractEvent(contract.getCode(), contract.getInfo().commissionCode(), contract.getCreatedAt(), ContractStatus.PAID.name()));
+        applicationEventPublisher.publishEvent(ContractMapper.toContractEvent(contract));
     }
 
     /**

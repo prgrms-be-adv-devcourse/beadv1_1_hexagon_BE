@@ -20,6 +20,7 @@ import com.example.contractservice.contract.service.dto.response.MemberInfoRespo
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.controller.dto.response.MemberRoleStatusResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberRole;
+import com.example.contractservice.contract.service.mapper.ContractMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,7 +82,7 @@ public class ContractService {
 
         Contract contract = contractRepository.saveContract(createdContract);
 
-        applicationEventPublisher.publishEvent(new ContractEvent(contract.getCode(), contract.getInfo().commissionCode(), contract.getCreatedAt(), contract.getInfo().status().name()));
+        applicationEventPublisher.publishEvent(ContractMapper.toContractEvent(contract));
 
         return ContractCreateResponse.of(contract.getCode());
     }

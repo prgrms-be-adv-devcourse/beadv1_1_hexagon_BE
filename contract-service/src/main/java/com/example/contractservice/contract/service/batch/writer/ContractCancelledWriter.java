@@ -1,9 +1,7 @@
 package com.example.contractservice.contract.service.batch.writer;
 
-import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.repository.ContractRepository;
-import org.hexagon.core.events.contract.ContractEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +16,5 @@ public class ContractCancelledWriter extends ContractStatusWriter {
     @Override
     protected void changeStatus(Contract contract) {
         contract.cancel();
-    }
-
-    @Override
-    protected void publishEvent(Contract contract) {
-        applicationEventPublisher.publishEvent(
-                new ContractEvent(contract.getCode(), contract.getInfo().commissionCode(),
-                        contract.getCreatedAt(), ContractStatus.CANCELLED.name()));
     }
 }

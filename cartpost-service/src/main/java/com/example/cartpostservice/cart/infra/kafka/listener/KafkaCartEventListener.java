@@ -1,5 +1,6 @@
-package com.example.cartpostservice.kafka;
+package com.example.cartpostservice.cart.infra.kafka.listener;
 
+import com.example.cartpostservice.cart.service.CartPostKafkaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.contract.ContractEvent;
@@ -15,12 +16,12 @@ import org.springframework.stereotype.Component;
 // 클래스 레벨 리스너: 여러 토픽을 구독합니다.
 @KafkaListener(
         topics = {
-                "${member.topic.name}",   // Member 서버 이벤트 토픽
-                "${contract.topic.name}"  // Contract 서버 이벤트 토픽
+                "${kafka.topic.member.create.name}",   // Member 서버 이벤트 토픽
+                "${kafka.topic.contract.name}"  // Contract 서버 이벤트 토픽
         },
         groupId = "${spring.kafka.consumer.group-id}" // 컨슈머 그룹 ID
 )
-public class CartPostKafkaListener {
+public class KafkaCartEventListener {
 
     private final CartPostKafkaService cartPostKafkaService;
 

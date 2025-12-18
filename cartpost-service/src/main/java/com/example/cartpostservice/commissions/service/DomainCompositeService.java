@@ -1,12 +1,9 @@
 package com.example.cartpostservice.commissions.service;
 
 import com.example.cartpostservice.commissions.controller.external.dto.response.CommissionReadResponse;
-import com.example.cartpostservice.commissions.controller.internal.dto.response.CommissionRecruitmentStatusResponse;
-import com.example.cartpostservice.commissions.infra.kafka.publisher.KafkaCommissionEventPublisher;
 import com.example.cartpostservice.commissions.model.vo.RecruitmentStatus;
 import com.example.cartpostservice.commissions.service.event.CommissionDeleteEventFactory;
 import com.example.cartpostservice.commissions.service.event.CommissionUpsertEventFactory;
-import com.example.cartpostservice.commissions.service.kafka.dto.request.CommissionServiceMessage;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionAndTagPartitionInfoCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheCreatedCommand;
 import com.example.cartpostservice.commissions.service.usecase.command.CommissionCacheUpdatedCommand;
@@ -40,7 +37,6 @@ public class DomainCompositeService {
 
     private final CommissionsService commissionsService;
     private final CommissionsTagService commissionsTagService;
-    private final KafkaCommissionEventPublisher commissionKafkaService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
@@ -161,8 +157,8 @@ public class DomainCompositeService {
     }
 
     @Transactional
-    public void finishCommission(String code, String commissionCode) {
-        if (!commissionsService.isOwner(code, commissionCode)) {
+    public void finishCommission(String memberCode, String commissionCode) {
+        if (!commissionsService.isOwner(memberCode, commissionCode)) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
 
@@ -171,24 +167,7 @@ public class DomainCompositeService {
         CommissionReadResult commissionResult = commissionsService.read(commissionCode);
         TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
 
-        CommissionServiceMessage finishMessage = new CommissionServiceMessage(
-                commissionCode,
-                commissionResult.title(),
-                commissionResult.content(),
-                commissionResult.memberCode(),
-                commissionResult.writerName(),
-                tagResult.tagCodes(),
-                commissionResult.startedAt(),
-                commissionResult.endedAt(),
-                commissionResult.paymentType(),
-                commissionResult.unitAmount(),
-                false,
-                commissionResult.updatedAt()
-        );
-
-        // kafka
-        commissionKafkaService.finishProducer(finishMessage);
-
+        applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(commissionResult, tagResult));
     }
 
     @Transactional
@@ -197,27 +176,26 @@ public class DomainCompositeService {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
 
-        // 추후 선정 인원수를 보고 예외 처리하는 코드 추가
-
         commissionsService.openCommission(commissionCode);
+        CommissionReadResult commissionResult = commissionsService.read(commissionCode);
+        TagsReadResult tagResult = commissionsTagService.read(commissionResult.code());
+
+        applicationEventPublisher.publishEvent(CommissionUpsertEventFactory.createEvent(commissionResult, tagResult));
     }
 
 
     @Transactional
-    public void canAccessCommission(String code, String commissionCode) {
-        if (!commissionsService.isOwner(code, commissionCode)) {
+    public void canAccessCommission(String memberCode, String commissionCode) {
+        if (!commissionsService.isOwner(memberCode, commissionCode)) {
             throw new BusinessException(CustomStatusCode.FORBIDDEN_COMMISSION);
         }
     }
 
     @Transactional
-    public CommissionRecruitmentStatusResponse getRecruitmentStatus(String commissionCode) {
+    public boolean getRecruitmentStatus(String commissionCode) {
         CommissionReadResult commissionsServiceResult = commissionsService.read(
                 commissionCode);
 
-        return new CommissionRecruitmentStatusResponse(
-                commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN));
+        return commissionsServiceResult.recruitmentStatus().equals(RecruitmentStatus.OPEN);
     }
-
-
 }

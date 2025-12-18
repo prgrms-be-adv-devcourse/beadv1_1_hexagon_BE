@@ -1,21 +1,21 @@
 package com.example.cartpostservice.cart.model;
 
-import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import jakarta.persistence.*;
-import lombok.*;
 import org.hexagon.core.vo.PaymentType;
 
 @Entity
@@ -39,9 +39,14 @@ public class CartItemsEntity {
     @Column(name = "cart_code", nullable = false, updatable = false)
     private String cartCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private ContractStatus status;
+    @Column(name = "commission_code", nullable = false, updatable = false)
+    private String commissionCode;
+
+    @Column(name = "client_code", nullable = false, updatable = false)
+    private String clientCode;
+
+    @Column(name = "freelancer_code", nullable = false, updatable = false)
+    private String freelancerCode;
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
@@ -55,6 +60,15 @@ public class CartItemsEntity {
 
     @Column(name = "amount", nullable = false)
     private String amount;
+
+    @Column
+    private String clientName;
+
+    @Column
+    private String freelancerName;
+
+    @Column
+    private String contractTitle;
 
     @PrePersist
     public void prePersist() {
