@@ -3,7 +3,7 @@ name: cartpost-service ci/cd
 on:
   push:
     branches:
-      - main
+      - feat/ci-cd/225
     paths:
       - 'cartpost-service/**'
 
