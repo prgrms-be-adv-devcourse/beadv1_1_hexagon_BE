@@ -3,7 +3,7 @@ name: recommendation-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/225
     paths:
       - 'recommendation-service/**'
 

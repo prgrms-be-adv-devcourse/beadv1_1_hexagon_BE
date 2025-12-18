@@ -3,7 +3,7 @@ name: s3-service ci/cd
 on:
   push:
     branches:
-      - main
+      - test/ci-cd/225
     paths:
       - 's3-service/**'
 
