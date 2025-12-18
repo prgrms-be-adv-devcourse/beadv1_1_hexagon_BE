@@ -1,6 +1,7 @@
 package com.example.cartpostservice.cart.service;
 
-import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
+import com.example.cartpostservice.cart.controller.dto.response.PaidResultResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import java.util.List;
 import org.hexagon.core.dto.Empty;
@@ -13,5 +14,5 @@ public interface CartService {
 
     Empty deleteCartItems(String xCode, String itemCode);
 
-    Empty payCartItems(String xCode, ContractPayRequest requests);
+    PaidResultResponse payCartItems(String xCode, ContractPayRequest requests);
 }

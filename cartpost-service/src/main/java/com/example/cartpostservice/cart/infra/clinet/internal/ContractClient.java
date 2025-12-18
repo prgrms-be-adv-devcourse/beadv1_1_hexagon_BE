@@ -1,15 +1,14 @@
-package com.example.cartpostservice.cart.controller.internal;
+package com.example.cartpostservice.cart.infra.clinet.internal;
 
-import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
-import com.example.cartpostservice.cart.controller.dto.response.ContractBriefWithNicknameResponse;
-import com.example.cartpostservice.cart.controller.dto.response.ContractInfoResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.ContractBriefWithNicknameResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.ContractPayResponse;
 import java.util.List;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "contract-service", path = "/internal/contracts", contextId = "ContractInfoClient")
@@ -17,8 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface ContractClient {
 
     @PostMapping("/pay")
-    ResponseDto<List<ContractInfoResponse>> payContract(
-            @RequestHeader("X-CODE") String xCode,
+    ResponseDto<ContractPayResponse> payContract(
             @RequestBody ContractPayRequest request
     );
 

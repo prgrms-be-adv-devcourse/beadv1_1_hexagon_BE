@@ -1,5 +1,6 @@
-package com.example.cartpostservice.kafka;
+package com.example.cartpostservice.cart.infra.kafka.listener;
 
+import com.example.cartpostservice.cart.service.CartPostKafkaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.contract.ContractEvent;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
         },
         groupId = "${spring.kafka.consumer.group-id}" // 컨슈머 그룹 ID
 )
-public class CartPostKafkaListener {
+public class KafkaCartEventListener {
 
     private final CartPostKafkaService cartPostKafkaService;
 

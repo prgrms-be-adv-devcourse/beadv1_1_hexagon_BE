@@ -1,25 +1,29 @@
 package com.example.cartpostservice.cart.service;
 
-import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
+import com.example.cartpostservice.cart.controller.dto.response.ContractInfo;
+import com.example.cartpostservice.cart.controller.dto.response.PaidResultResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
-import com.example.cartpostservice.cart.controller.dto.response.ContractInfoResponse;
-import com.example.cartpostservice.cart.controller.internal.ContractClient;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.response.ContractPayResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.ContractClient;
 import com.example.cartpostservice.cart.model.CartItemsEntity;
 import com.example.cartpostservice.cart.model.CartsEntity;
-import com.example.cartpostservice.cart.model.vo.ContractStatus;
 import com.example.cartpostservice.cart.repository.CartItemsRepository;
 import com.example.cartpostservice.cart.repository.CartsRepository;
-import com.example.cartpostservice.cart.service.kafka.CartKafkaService;
+import com.example.cartpostservice.cart.infra.kafka.publisher.KafkaCartEventPublisher;
 import com.example.cartpostservice.common.exception.BusinessException;
 import com.example.cartpostservice.common.exception.CustomStatusCode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.events.cartpost.CartItemDeletedEvent;
 import org.hexagon.core.vo.PaymentType;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +33,9 @@ public class CartServiceImpl implements CartService {
 
     private final CartsRepository cartsRepository;
     private final CartItemsRepository cartItemsRepository;
-    private final CartKafkaService cartKafkaService;
+    private final KafkaCartEventPublisher kafkaCartEventPublisher;
     private final ContractClient contractClient;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
 
     @Override
@@ -46,20 +51,36 @@ public class CartServiceImpl implements CartService {
             return Collections.emptyList();
         }
 
-        List<CartItemsGetResponse> cartItemsGetResponses = cartItems.stream()
-                .filter(entity -> entity.getStatus() == ContractStatus.CONFIRMED)
-                .map(entity -> new CartItemsGetResponse(
-                        entity.getCode(),
-                        entity.getContractCode(),
-                        entity.getStartedAt(),
-                        entity.getEndedAt(),
-                        entity.getPaymentType().toString(),
-                        calculateTotalAmount(entity.getStartedAt(), entity.getEndedAt(), entity.getPaymentType(),
-                                entity.getAmount())
-                ))
-                .toList();
+        return cartItems.stream().collect(Collectors.groupingBy(CartItemsEntity::getCommissionCode))
+                .entrySet().stream()
+                .map(entry -> {
+                    String commissionCode = entry.getKey();
+                    List<CartItemsEntity> cartItemEntities = entry.getValue();
 
-        return cartItemsGetResponses;
+                    CartItemsEntity cartItem = cartItemEntities.get(0);
+
+                    List<ContractInfo> contractInfos = cartItemEntities.stream()
+                            .map(entity -> new ContractInfo(
+                                    entity.getContractCode(),
+                                    entity.getCode(),
+                                    entity.getClientName(),
+                                    entity.getFreelancerName(),
+                                    entity.getFreelancerCode(),
+                                    entity.getContractTitle()
+                            ))
+                            .toList();
+
+                    return new CartItemsGetResponse(
+                            commissionCode,
+                            contractInfos,
+                            cartItem.getStartedAt(),
+                            cartItem.getEndedAt(),
+                            cartItem.getPaymentType().name(),
+                            Long.parseLong(cartItem.getAmount())
+                    );
+
+
+                }).collect(Collectors.toList());
     }
 
     @Override
@@ -78,24 +99,23 @@ public class CartServiceImpl implements CartService {
 
         cartItemsRepository.delete(cartItem);
 
-        cartKafkaService.deleteProducer(cartItem.getContractCode());
-
+        applicationEventPublisher.publishEvent(new CartItemDeletedEvent(cartItem.getContractCode()));
         return Empty.getInstance();
     }
 
     @Override
-    public Empty payCartItems(String xCode, ContractPayRequest requests) {
+    public PaidResultResponse payCartItems(String xCode, ContractPayRequest requests) {
 
-        ResponseDto<List<ContractInfoResponse>> response = contractClient.payContract(xCode, requests);
+        ResponseDto<ContractPayResponse> response = contractClient.payContract(requests);
 
-        for (ContractInfoResponse contract : response.data()) {
-            if ("PAID".equals(contract.status())) {
+        List<String> succeedContract = response.data().success();
+        List<String> failContract = response.data().fail();
 
-                cartItemsRepository.deleteByContractCode(contract.code());
-            }
+        for (String succeed : succeedContract) {
+            cartItemsRepository.deleteByContractCode(succeed);
         }
 
-        return Empty.getInstance();
+        return new PaidResultResponse(response.data().success(), response.data().fail());
     }
 
     private Long calculateTotalAmount(Instant startedAt, Instant endedAt, PaymentType paymentType, String amount) {

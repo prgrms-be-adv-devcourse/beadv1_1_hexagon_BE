@@ -1,4 +1,4 @@
-package com.example.cartpostservice.cart.service.kafka;
+package com.example.cartpostservice.cart.infra.kafka.publisher;
 
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.commission.CommissionDeletedEvent;
@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CartKafkaService {
+public class KafkaCartEventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topic.commission.name}")
+    @Value("${kafka.topic.cart.name}")
     private String targetTopicName;
 
     public void deleteProducer(String contractCode) {

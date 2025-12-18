@@ -1,6 +1,7 @@
 package com.example.cartpostservice.cart.controller;
 
-import com.example.cartpostservice.cart.controller.dto.request.ContractPayRequest;
+import com.example.cartpostservice.cart.controller.dto.response.PaidResultResponse;
+import com.example.cartpostservice.cart.infra.clinet.internal.dto.request.ContractPayRequest;
 import com.example.cartpostservice.cart.controller.dto.response.CartItemsGetResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -66,6 +67,6 @@ public interface CartApi {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "결제 성공", content = @Content(mediaType = "application/json")),
     })
-    ResponseEntity<ResponseDto<Empty>> payRequest(@RequestHeader(name = "X-CODE") String xCode,
+    ResponseEntity<ResponseDto<PaidResultResponse>> payRequest(@RequestHeader(name = "X-CODE") String xCode,
             @RequestBody ContractPayRequest requests);
 }
