@@ -116,8 +116,7 @@ spring:
             - id: cartpost-service-with-client
               uri: lb://CARTPOST-SERVICE
               predicates:
-                - Path=/api/commissions/**,/api/commissions
-                  ,/api/carts/**
+                - Path=/api/commissions/**,/api/commissions,/api/carts/**
               filters:
                 - GlobalExceptionHandlingFilter
                 - TokenAuthenticationFilter
