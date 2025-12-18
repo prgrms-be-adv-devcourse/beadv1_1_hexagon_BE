@@ -27,7 +27,7 @@ public record CommissionCreateRequest(
         PaymentType paymentType,
 
         @Schema(description = "단위 금액", example = "50000")
-        @NotBlank(message = "unitAmount는 반드시 입력해야 합니다.")
+        @NotNull(message = "unitAmount는 반드시 입력해야 합니다.")
         Long unitAmount,
 
         @Schema(description = "시작 날짜 (yyyy-MM-dd)", example = "2025-01-01")
