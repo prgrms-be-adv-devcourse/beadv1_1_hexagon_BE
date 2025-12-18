@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hexagon.core.events.profile.ProfileChangedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,9 @@ public class TagService {
     // Search Service에서 사용할 토픽 이름
     @Value("${topics.tag-events:tag-events}")
     private String tagTopic;
+
+    @Value("${kafka.topic.profile-changed.name}")
+    private String profileChangedTopic;
 
     // 전체 태그 목록 조회
     public List<TagResponse> getAllTags() {
@@ -110,6 +114,10 @@ public class TagService {
 //
 //        // memberCode를 키로 사용하여 해당 회원의 데이터 변경을 알림
 //        kafkaProducer.send(tagTopic, memberCode, event);
+
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
     }
 
     // 마이페이지에서 특정 태그 연결을 해제

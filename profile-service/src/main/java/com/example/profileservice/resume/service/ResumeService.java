@@ -1,6 +1,7 @@
 package com.example.profileservice.resume.service;
 
 import com.example.profileservice.common.model.vo.ErrorCode;
+import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.exception.CustomException;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.events.profile.ProfileChangedEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,10 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
     private final ExperienceRepository experienceRepository;
     private final MemberFeignClient memberFeignClient;
+    private final KafkaProducer kafkaProducer;
+
+    @Value("${kafka.topic.profile-changed.name}")
+    private String profileChangedTopic;
 
     // 본인용 조회: memberCode로 즉시 조회
     public ResumeDetailResponse getMyResume(String memberCode) {
@@ -76,6 +83,10 @@ public class ResumeService {
                 .build();
 
         resumeRepository.save(resume);
+
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
 
         return toDetailResponse(resume, List.of());
     }
@@ -129,6 +140,10 @@ public class ResumeService {
                 .map(this::toExperienceResponse)
                 .collect(Collectors.toList());
 
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
+
         return toDetailResponse(resume, experienceResponses);
     }
 
@@ -159,6 +174,10 @@ public class ResumeService {
         );
         experienceRepository.save(experience);
 
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
+
         return toExperienceResponse(experience);
     }
 
@@ -180,6 +199,10 @@ public class ResumeService {
                 request.startedAt(),
                 request.endedAt()
         );
+
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
 
         return toExperienceResponse(experience);
     }

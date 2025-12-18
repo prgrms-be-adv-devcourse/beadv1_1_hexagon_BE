@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.dto.ResponseDto;
+import org.hexagon.core.events.profile.ProfileChangedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionDeletedEvent;
 import org.hexagon.core.events.selfpromotion.SelfPromotionUpsertEvent;
 import org.hexagon.core.vo.SelfPromotion;
@@ -41,6 +42,9 @@ public class SelfPromotionService {
     // Search Service에서 사용할 토픽 이름
     @Value("${topics.selfpromotion-events:selfpromotion-events}")
     private String selfPromotionTopic;
+
+    @Value("${kafka.topic.profile-changed.name}")
+    private String profileChangedTopic;
 
     // 모든 활성 셀프 프로모션 게시글 목록을 최신순으로 조회
     public List<SelfPromotionResponse> getAllPromotions() {
@@ -117,6 +121,10 @@ public class SelfPromotionService {
 
         kafkaProducer.send(selfPromotionTopic, response.promotionCode(), createdEvent);
 
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
+
         return toResponse(promotion);
     }
 
@@ -173,6 +181,10 @@ public class SelfPromotionService {
         );
 
         kafkaProducer.send(selfPromotionTopic, response.promotionCode(), updatedEvent);
+
+        // 프로필 생성/수정 이벤트 발행
+        ProfileChangedEvent profileChangedEvent = new ProfileChangedEvent(memberCode);
+        kafkaProducer.send(profileChangedTopic, memberCode, profileChangedEvent);
 
         return toResponse(promotion);
     }
