@@ -20,9 +20,7 @@ INSERT INTO settlements (code,
                          progressing_at,
                          created_at,
                          settled_at,
-                         settlement_rate,
-                         is_deleted -- 테이블 정의엔 없었으나 BaseEntity라면 있을 수 있음 (없으면 제외)
-)
+                         settlement_rate)
 SELECT UUID(),
        c.freelancer_code,
        c.code,
@@ -32,8 +30,7 @@ SELECT UUID(),
        NOW(6),   -- progressing_at
        NOW(6),   -- created_at
        NULL,     -- settled_at
-       NULL,     -- settlement_rate
-       0         -- is_deleted (만약 컬럼이 있다면)
+       NULL      -- settlement_rate
 FROM contracts c
          -- 500개를 만들기 위해 contracts 테이블을 충분히 뻥튀기(Self Join 등)하거나
          -- contracts가 50개뿐이라면 이를 반복해서 500개를 만듦
