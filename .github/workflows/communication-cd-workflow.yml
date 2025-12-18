@@ -3,7 +3,7 @@ name: communication-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/225
+      - main
     paths:
       - 'communication-service/**'
 

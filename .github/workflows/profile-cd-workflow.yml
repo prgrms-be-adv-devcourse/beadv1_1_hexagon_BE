@@ -3,7 +3,7 @@ name: profile-service ci/cd
 on:
   push:
     branches:
-      - test/ci-cd/225
+      - main
     paths:
       - 'profile-service/**'
 
