@@ -101,7 +101,7 @@ spring:
             - id: cartpost-service
               uri: lb://CARTPOST-SERVICE
               predicates:
-                - Path=/api/commissions/{comissions_code}
+                - Path=/api/commissions/{comissions_code},/api/commissions/exist/**
                 - Method=GET
 
             # 클라이언트 자격이 필요한 API 요청
