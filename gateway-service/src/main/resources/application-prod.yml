@@ -348,7 +348,6 @@ spring:
                 - IsClientCheckFilter
             #endregion AI_SERVICE_ROUTES
 
-
 cors:
   allowed:
     origin: ${CORS_ALLOWED_ORIGIN}
@@ -361,24 +360,6 @@ jwt:
     is-sign: is-signed-up
     member-role: role
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    urls:
-      - name: member-service
-        url: /api/members/v3/api-docs
-      - name: contract-service
-        url: /api/contracts/v3/api-docs
-      - name: cartpost-service
-        url: /api/commissions/api-docs
-      - name: communication-service
-        url: /api/chatrooms/v3/api-docs
-      - name: payment-service
-        url: /api/payments/v3/api-docs
-      - name: profile-service
-        url: /api/profiles/v3/api-docs
-      - name: search-service
-        url: /api/search/v3/api-docs
 
 eureka:
   client:
