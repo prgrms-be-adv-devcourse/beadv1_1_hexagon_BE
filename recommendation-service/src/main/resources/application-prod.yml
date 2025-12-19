@@ -5,6 +5,13 @@ spring:
   application:
     name: recommendation-service
 
+  datasource:
+    # TODO: 프로젝트 환경에 맞게 DB URL, Username, Password 수정 필요!!
+    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+
   ai:
     # retry
     retry:
@@ -50,10 +57,3 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://eureka-server:8761/eureka/
-
-# mock data
-mock:
-  freelancer:
-    code: "3815886c-dbd2-11f0-ba37-727853d8dd6a,38158aac-dbd2-11f0-ba37-727853d8dd6a,38158c2e-dbd2-11f0-ba37-727853d8dd6a,38158fa5-dbd2-11f0-ba37-727853d8dd6a,381598f3-dbd2-11f0-ba37-727853d8dd6a,38159e59-dbd2-11f0-ba37-727853d8dd6a,3815a272-dbd2-11f0-ba37-727853d8dd6a,3815a4a7-dbd2-11f0-ba37-727853d8dd6a,3815a68a-dbd2-11f0-ba37-727853d8dd6a,3815a83f-dbd2-11f0-ba37-727853d8dd6a"
-
-

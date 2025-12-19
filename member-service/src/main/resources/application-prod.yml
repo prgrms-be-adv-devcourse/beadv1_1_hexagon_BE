@@ -162,6 +162,7 @@ springdoc:
   api-docs:
     path: /api/members/v3/api-docs
 
+
 request:
   uri:
     ratings:
