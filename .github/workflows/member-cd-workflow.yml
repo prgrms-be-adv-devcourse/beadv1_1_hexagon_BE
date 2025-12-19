@@ -3,7 +3,7 @@ name: member-service ci/cd
 on:
   push:
     branches:
-      - main
+      - feat/ci-cd/225
     paths:
       - 'member-service/**'
 
